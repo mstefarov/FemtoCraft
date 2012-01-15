@@ -1,4 +1,5 @@
-﻿namespace FemtoCraft {
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+namespace FemtoCraft {
     class BitMap {
         readonly int[] array;
 

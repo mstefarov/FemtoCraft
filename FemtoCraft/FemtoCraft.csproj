@@ -46,7 +46,7 @@
     <Compile Include="BitMap.cs" />
     <Compile Include="Block.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="DATMapConverter.cs" />
+    <Compile Include="DatMapConverter.cs" />
     <Compile Include="Heartbeat.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Map.cs" />

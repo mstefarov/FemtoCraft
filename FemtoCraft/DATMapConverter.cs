@@ -1,5 +1,5 @@
-﻿// Based on fCraft.MapConversion.MapDAT
-// Copyright 2009-2012 Matvei Stefarov <me@matvei.org>
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+// Based on fCraft.MapConversion.MapDAT - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 using System;
 using System.IO;
 using System.IO.Compression;

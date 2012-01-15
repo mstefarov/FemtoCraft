@@ -1,9 +1,6 @@
-﻿// Based on fCraft.Position
-// Copyright 2009-2012 Matvei Stefarov <me@matvei.org>
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+// Based on fCraft.Position - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace FemtoCraft {
     public struct Position {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System;
 using System.IO;
 
 namespace FemtoCraft {
