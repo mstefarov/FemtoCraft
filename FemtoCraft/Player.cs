@@ -1,5 +1,5 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
-
+// Based on fCraft.Player - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,7 +60,7 @@ namespace FemtoCraft {
                 if( !LoginSequence() ) return;
 
                 while( canSend ) {
-                    // todo: poll
+                    // todo: poll / ping
 
                     // todo: position updates
 
@@ -79,7 +79,6 @@ namespace FemtoCraft {
                     while( canReceive && stream.DataAvailable ) {
                         OpCode opcode = reader.ReadOpCode();
                         switch( opcode ) {
-
                             case OpCode.Message:
                                 if( !ProcessMessagePacket() ) return;
                                 break;
@@ -89,7 +88,7 @@ namespace FemtoCraft {
                                 break;
 
                             case OpCode.SetBlockClient:
-                                ProcessSetBlockPacket();
+                                if( !ProcessSetBlockPacket() ) return;
                                 break;
 
                             case OpCode.Ping:
@@ -271,7 +270,7 @@ namespace FemtoCraft {
         }
 
 
-        #region Sending
+        #region Send / Kick
 
         readonly object queueLock = new object();
         readonly Queue<Packet> sendQueue = new Queue<Packet>();
@@ -289,10 +288,6 @@ namespace FemtoCraft {
             writer.Write( packet.Bytes );
         }
 
-        #endregion
-
-
-        #region Kicking
 
         public void Kick( string message ) {
             Packet packet = PacketWriter.MakeDisconnect(message);
@@ -413,7 +408,16 @@ namespace FemtoCraft {
 
         #region Block Placement
 
+        bool PlaceWater, PlaceLava, PlaceSolid;
+
+        readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
+
+        const int AntiGriefBlocks = 47;
+        const int AntiGriefSeconds = 6;
+        const int MaxLegalBlockType = 49;
+
         const int MaxBlockPlacementRange = 7 * 32;
+
 
         bool ProcessSetBlockPacket() {
             ResetIdleTimer();
@@ -424,7 +428,7 @@ namespace FemtoCraft {
             byte rawType = reader.ReadByte();
 
             // check if block type is valid
-            if( rawType > 49 ) {
+            if( rawType > MaxLegalBlockType ) {
                 KickNow( "Hacking detected." );
                 Logger.Log( "Player {0} tried to place an invalid block type.", Name );
                 return false;
@@ -477,6 +481,7 @@ namespace FemtoCraft {
             }
 
             // update map
+            // todo: queue for physics processing
             Server.Map.SetBlock( x, y, z, block );
             if( (byte)block != rawType ) {
                 writer.WriteSetBlock( x, y, z, block );
@@ -484,12 +489,6 @@ namespace FemtoCraft {
             return true;
         }
 
-        bool PlaceWater, PlaceLava, PlaceSolid;
-
-        readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
-
-        const int AntiGriefBlocks = 47;
-        const int AntiGriefSeconds = 6;
 
         bool DetectBlockSpam() {
             if( spamBlockLog.Count >= AntiGriefBlocks ) {
@@ -518,9 +517,9 @@ namespace FemtoCraft {
             }
 
             if( MessageHandler.ContainsInvalidChars( message ) ) {
+                KickNow( "Hacking detected." );
                 Logger.Log( "Player {0} attempted to write illegal characters in chat and was kicked.",
                             Name );
-                KickNow( "Illegal characters in chat." );
                 return false;
             }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 

@@ -1,4 +1,5 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+
 namespace FemtoCraft {
     struct Packet {
         public Packet( OpCode opCode ) {

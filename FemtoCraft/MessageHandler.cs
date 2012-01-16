@@ -1,7 +1,6 @@
-﻿using System;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace FemtoCraft {
     static class MessageHandler {

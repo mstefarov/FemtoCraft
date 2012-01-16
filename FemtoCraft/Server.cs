@@ -7,21 +7,25 @@ using System.Threading;
 
 namespace FemtoCraft {
     static class Server {
-        const string MapFileName = "map.lvl";
-        const string BansFileName = "banned.txt";
-        const string OpsFileName = "admins.txt";
-        const string IPBanFileName = "banned-ip.txt";
 
-        public const string VersionString = "FemtoCraft 0.08";
+        public const string VersionString = "FemtoCraft 0.09";
+
         public static readonly string Salt = Util.GenerateSalt();
-
         public static Uri Uri { get; set; }
+
         public static int PlayerCount { get; set; }
 
+        const string MapFileName = "map.lvl";
+        const int MapSaveInterval = 300;
         public static Map Map { get; set; }
 
+        const string BansFileName = "banned.txt";
         public static PlayerNameSet Bans { get; private set; }
+
+        const string OpsFileName = "admins.txt";
         public static PlayerNameSet Ops { get; private set; }
+
+        const string IPBanFileName = "banned-ip.txt";
         public static IPAddressSet IPBans { get; private set; }
 
 
@@ -73,9 +77,6 @@ namespace FemtoCraft {
 #endif
         }
 
-        static TcpListener listener;
-
-        const int MapSaveInterval = 300;
 
         static void MainLoop() {
             int tick = 0;
@@ -97,6 +98,8 @@ namespace FemtoCraft {
                 Thread.Sleep( 10 );
             }
         }
+        static TcpListener listener;
+
 
         static void AcceptCallback( IAsyncResult e ) {
             TcpClient client = listener.EndAcceptTcpClient( e );
