@@ -12,7 +12,7 @@ namespace FemtoCraft {
         const string OpsFileName = "admins.txt";
         const string IPBanFileName = "banned-ip.txt";
 
-        public const string VersionString = "FemtoCraft 0.06";
+        public const string VersionString = "FemtoCraft 0.07";
         public static readonly string Salt = Util.GenerateSalt();
 
         public static Uri Uri { get; set; }

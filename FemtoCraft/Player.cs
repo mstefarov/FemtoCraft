@@ -21,6 +21,7 @@ namespace FemtoCraft {
         public IPAddress IP { get; private set; }
         public string Name { get; private set; }
         public bool IsOp { get; private set; }
+        public Position Position { get; private set; }
 
         public bool Connected { get; private set; }
 
@@ -52,7 +53,9 @@ namespace FemtoCraft {
             try {
                 if( !LoginSequence() ) return;
 
-                while( true ) {}
+                while( true ) {
+
+                }
 
 
             } catch( IOException ) {} catch( SocketException ) {
@@ -205,6 +208,25 @@ namespace FemtoCraft {
             writer.WriteBE( (short)map.Width );
             writer.WriteBE( (short)map.Height );
             writer.WriteBE( (short)map.Length );
+
+            // write spawn point
+            writer.Write( OpCode.AddEntity );
+            writer.Write( (byte)255 );
+            writer.WriteMCString( Name );
+            writer.WriteBE( map.Spawn.X );
+            writer.WriteBE( map.Spawn.Z );
+            writer.WriteBE( map.Spawn.Y );
+            writer.Write( map.Spawn.R );
+            writer.Write( map.Spawn.L );
+            
+            // write self-teleport
+            writer.Write( OpCode.Teleport );
+            writer.Write( (byte)255 );
+            writer.WriteBE( map.Spawn.X );
+            writer.WriteBE( map.Spawn.Z );
+            writer.WriteBE( map.Spawn.Y );
+            writer.Write( map.Spawn.R );
+            writer.Write( map.Spawn.L );
         }
 
 

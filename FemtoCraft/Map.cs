@@ -6,8 +6,8 @@ using System.IO.Compression;
 
 namespace FemtoCraft {
     unsafe class Map {
-        public static Map CreateFlatgrass( int width, int height, int length ) {
-            Map map = new Map( width, height, length );
+        public static Map CreateFlatgrass( int width, int length, int height ) {
+            Map map = new Map( width, length, height );
             map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
             map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
             map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
@@ -30,6 +30,8 @@ namespace FemtoCraft {
             Height = height;
             Volume = width * length * height;
             Blocks = new byte[Volume];
+            Spawn = new Position( Width * 16, Length * 16,
+                                  Math.Min( Height * 32, short.MaxValue ) );
         }
 
 
