@@ -45,9 +45,11 @@
   <ItemGroup>
     <Compile Include="BitMap.cs" />
     <Compile Include="Block.cs" />
+    <Compile Include="ClickAction.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="IPAddressSet.cs" />
     <Compile Include="DatMapConverter.cs" />
+    <Compile Include="MessageHandler.cs" />
     <Compile Include="Networking\Heartbeat.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Map.cs" />

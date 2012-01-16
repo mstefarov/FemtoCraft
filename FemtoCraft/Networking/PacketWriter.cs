@@ -31,5 +31,44 @@ namespace FemtoCraft {
             if( value == null ) throw new ArgumentNullException( "value" );
             Write( Encoding.ASCII.GetBytes( value.PadRight( 64 ).Substring( 0, 64 ) ) );
         }
+
+
+        public void WriteAddEntity( byte id, string name, Position position ) {
+            Write( OpCode.AddEntity );
+            Write( id );
+            WriteMCString( name );
+            WriteBE( position.X );
+            WriteBE( position.Z );
+            WriteBE( position.Y );
+            Write( position.R );
+            Write( position.L );
+        }
+
+
+        public void WriteSetBlock( short x, short y, short z, Block block ) {
+            Write( OpCode.SetBlockServer );
+            WriteBE( x );
+            WriteBE( z );
+            WriteBE( y );
+            Write( (byte)block );
+        }
+
+
+        public void WriteTeleport( byte id, Position position ) {
+            Write( OpCode.AddEntity );
+            Write( id );
+            WriteBE( position.X );
+            WriteBE( position.Z );
+            WriteBE( position.Y );
+            Write( position.R );
+            Write( position.L );
+        }
+
+
+        public static Packet MakeDisconnect( string reason ) {
+            Packet packet = new Packet( OpCode.Kick );
+            Encoding.ASCII.GetBytes( reason.PadRight( 64 ), 0, 64, packet.Bytes, 1 );
+            return packet;
+        }
     }
 }

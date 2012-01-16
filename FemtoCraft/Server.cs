@@ -12,7 +12,7 @@ namespace FemtoCraft {
         const string OpsFileName = "admins.txt";
         const string IPBanFileName = "banned-ip.txt";
 
-        public const string VersionString = "FemtoCraft 0.07";
+        public const string VersionString = "FemtoCraft 0.08";
         public static readonly string Salt = Util.GenerateSalt();
 
         public static Uri Uri { get; set; }
@@ -73,9 +73,12 @@ namespace FemtoCraft {
 #endif
         }
 
-        static TcpListener listener ;
+        static TcpListener listener;
+
+        const int MapSaveInterval = 300;
 
         static void MainLoop() {
+            int tick = 0;
             while( true ) {
                 if( listener.Pending() ) {
                     try {
@@ -85,6 +88,12 @@ namespace FemtoCraft {
                     }
                 }
 
+                if( tick % MapSaveInterval == 0 ) {
+                    Map.Save( MapFileName );
+                    Logger.Log( "Map saved to {0}", MapFileName );
+                }
+
+                tick++;
                 Thread.Sleep( 10 );
             }
         }

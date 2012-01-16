@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -13,9 +14,9 @@ using System.Threading;
 namespace FemtoCraft {
     sealed class Player {
         readonly TcpClient client;
-        readonly NetworkStream stream;
-        readonly PacketReader reader;
-        readonly PacketWriter writer;
+        NetworkStream stream;
+        PacketReader reader;
+        PacketWriter writer;
         readonly Thread thread;
 
         public IPAddress IP { get; private set; }
@@ -31,6 +32,24 @@ namespace FemtoCraft {
         public Player( TcpClient newClient ) {
             try {
                 client = newClient;
+                thread = new Thread( IoThread ) {
+                    IsBackground = true
+                };
+                thread.Start();
+
+            } catch( Exception ex ) {
+                Logger.LogError( "Player: Error setting up session: {0}", ex );
+                Disconnect();
+            }
+        }
+
+        bool canReceive = true,
+             canSend = true,
+             canQueue = true;
+
+
+        void IoThread() {
+            try {
                 client.SendTimeout = Timeout;
                 client.ReceiveTimeout = Timeout;
                 IP = ( (IPEndPoint)( client.Client.RemoteEndPoint ) ).Address;
@@ -38,32 +57,63 @@ namespace FemtoCraft {
                 reader = new PacketReader( stream );
                 writer = new PacketWriter( stream );
 
-                thread = new Thread( IoThread ) {
-                                                    IsBackground = true
-                                                };
-                thread.Start();
-            } catch( Exception ex ) {
-                Logger.LogError( "Player: Error setting up session: {0}", ex );
-                Disconnect();
-            }
-        }
-
-
-        void IoThread() {
-            try {
                 if( !LoginSequence() ) return;
 
-                while( true ) {
+                while( canSend ) {
+                    // todo: poll
 
+                    // todo: position updates
+
+                    while( canSend && sendQueue.Count > 0 ) {
+                        Packet packet;
+                        lock( sendQueue ) {
+                            packet = sendQueue.Dequeue();
+                        }
+                        writer.Write( packet.Bytes );
+                        if( packet.OpCode == OpCode.Kick ) {
+                            writer.Flush();
+                            return;
+                        }
+                    }
+
+                    while( canReceive && stream.DataAvailable ) {
+                        OpCode opcode = reader.ReadOpCode();
+                        switch( opcode ) {
+
+                            case OpCode.Message:
+                                if( !ProcessMessagePacket() ) return;
+                                break;
+
+                            case OpCode.Teleport:
+                                ProcessMovementPacket();
+                                break;
+
+                            case OpCode.SetBlockClient:
+                                ProcessSetBlockPacket();
+                                break;
+
+                            case OpCode.Ping:
+                                continue;
+
+                            default:
+                                Logger.Log( "Player {0} was kicked after sending an invalid opcode ({1}).",
+                                            Name, opcode );
+                                KickNow( "Unknown packet opcode " + opcode );
+                                return;
+                        }
+                    }
                 }
 
 
-            } catch( IOException ) {} catch( SocketException ) {
+            } catch( IOException ) {
+            } catch( SocketException ) {
 #if !DEBUG
             } catch( Exception ex ) {
                 Logger.LogError( "Player: Session crashed: {0}", ex );
 #endif
             } finally {
+                canQueue = false;
+                canSend = false;
                 Disconnect();
             }
         }
@@ -89,6 +139,7 @@ namespace FemtoCraft {
             // read the first packet
             OpCode opCode = reader.ReadOpCode();
             if( opCode != OpCode.Handshake ) {
+                KickNow( "Enexpected handshake packet opcode." );
                 Logger.LogWarning( "Player from {0}: Enexpected handshake packet opcode ({1})",
                                    IP, opCode );
                 return false;
@@ -97,7 +148,8 @@ namespace FemtoCraft {
             // check protocol version
             int protocolVersion = reader.ReadByte();
             if( protocolVersion != PacketWriter.ProtocolVersion ) {
-                Logger.LogWarning( "Player from {0}: Enexpected protocol version ({1})",
+                KickNow( "Wrong protocol version." );
+                Logger.LogWarning( "Player from {0}: Wrong protocol version ({1})",
                                    IP, protocolVersion );
                 return false;
             }
@@ -105,6 +157,7 @@ namespace FemtoCraft {
             // check if name is valid
             string name = reader.ReadMCString();
             if( !IsValidName( name ) ) {
+                KickNow( "Unacceptible player name." );
                 Logger.LogWarning( "Player from {0}: Unacceptible player name ({1})",
                                    IP, name );
                 return false;
@@ -122,6 +175,7 @@ namespace FemtoCraft {
             }
             bool verified = sb.ToString().Equals( mppass, StringComparison.OrdinalIgnoreCase );
             if( !verified ) {
+                KickNow( "Could not verify player name." );
                 Logger.LogWarning( "Player {0} from {1}: Could not verify name.",
                                    name, IP );
                 return false;
@@ -130,14 +184,14 @@ namespace FemtoCraft {
 
             // check if player is banned
             if( Server.Bans.Contains( Name ) ) {
-                Kick( "You are banned!" );
+                KickNow( "You are banned!" );
                 Logger.Log( "Banned player {0} tried to log in from {1}", Name, IP );
                 return false;
             }
 
             // check if player's IP is banned
             if( Server.IPBans.Contains( IP ) ) {
-                Kick( "Your IP address is banned!" );
+                KickNow( "Your IP address is banned!" );
                 Logger.Log( "Player {0} tried to log in from a banned IP ({1})", Name, IP );
                 return false;
             }
@@ -210,27 +264,278 @@ namespace FemtoCraft {
             writer.WriteBE( (short)map.Length );
 
             // write spawn point
-            writer.Write( OpCode.AddEntity );
-            writer.Write( (byte)255 );
-            writer.WriteMCString( Name );
-            writer.WriteBE( map.Spawn.X );
-            writer.WriteBE( map.Spawn.Z );
-            writer.WriteBE( map.Spawn.Y );
-            writer.Write( map.Spawn.R );
-            writer.Write( map.Spawn.L );
-            
-            // write self-teleport
-            writer.Write( OpCode.Teleport );
-            writer.Write( (byte)255 );
-            writer.WriteBE( map.Spawn.X );
-            writer.WriteBE( map.Spawn.Z );
-            writer.WriteBE( map.Spawn.Y );
-            writer.Write( map.Spawn.R );
-            writer.Write( map.Spawn.L );
+            writer.WriteAddEntity( 255, Name, map.Spawn );
+            writer.WriteTeleport( 255, map.Spawn );
+
+            lastValidPosition = map.Spawn;
         }
 
 
-        public static void Kick( string message ) {
+        #region Sending
+
+        readonly object queueLock = new object();
+        readonly Queue<Packet> sendQueue = new Queue<Packet>();
+
+        public void Send( Packet packet ) {
+            lock( queueLock ) {
+                if( canQueue ) {
+                    sendQueue.Enqueue( packet );
+                }
+            }
+        }
+
+
+        public void SendNow( Packet packet ) {
+            writer.Write( packet.Bytes );
+        }
+
+        #endregion
+
+
+        #region Kicking
+
+        public void Kick( string message ) {
+            Packet packet = PacketWriter.MakeDisconnect(message);
+            lock( queueLock ) {
+                canReceive = false;
+                canQueue = false;
+                sendQueue.Enqueue( packet );
+            }
+        }
+
+
+        void KickNow( string message ) {
+            canReceive = false;
+            canQueue = false;
+            writer.Write( OpCode.Kick );
+            writer.WriteMCString( message );
+        }
+
+        #endregion
+
+
+        #region Movement
+
+        // anti-speedhack vars
+        int speedHackDetectionCounter;
+        const int AntiSpeedMaxJumpDelta = 25, // 16 for normal client, 25 for WoM
+                  AntiSpeedMaxDistanceSquared = 1024, // 32 * 32
+                  AntiSpeedMaxPacketCount = 200,
+                  AntiSpeedMaxPacketInterval = 5;
+
+        // anti-speedhack vars: packet spam
+        readonly Queue<DateTime> antiSpeedPacketLog = new Queue<DateTime>();
+        DateTime antiSpeedLastNotification = DateTime.UtcNow;
+        Position lastValidPosition; // used in speedhack detection
+
+
+        void ProcessMovementPacket() {
+            reader.ReadByte();
+            Position newPos = new Position {
+                X = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
+                Z = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
+                Y = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
+                R = reader.ReadByte(),
+                L = reader.ReadByte()
+            };
+
+            Position oldPos = Position;
+
+            // calculate difference between old and new positions
+            Position delta = new Position {
+                X = (short)( newPos.X - oldPos.X ),
+                Y = (short)( newPos.Y - oldPos.Y ),
+                Z = (short)( newPos.Z - oldPos.Z ),
+                R = (byte)Math.Abs( newPos.R - oldPos.R ),
+                L = (byte)Math.Abs( newPos.L - oldPos.L )
+            };
+
+            // skip everything if player hasn't moved
+            if( delta == Position.Zero ) return;
+
+            bool rotChanged = ( delta.R != 0 ) || ( delta.L != 0 );
+
+            // only reset the timer if player rotated
+            // if player is just pushed around, rotation does not change (and timer should not reset)
+            if( rotChanged ) ResetIdleTimer();
+
+            if( !Config.AllowSpeedHack ) {
+                int distSquared = delta.X * delta.X + delta.Y * delta.Y + delta.Z * delta.Z;
+                // speedhack detection
+                if( DetectMovementPacketSpam() ) {
+                    return;
+
+                } else if( ( distSquared - delta.Z * delta.Z > AntiSpeedMaxDistanceSquared || delta.Z > AntiSpeedMaxJumpDelta ) &&
+                           speedHackDetectionCounter >= 0 ) {
+
+                    if( speedHackDetectionCounter == 0 ) {
+                        lastValidPosition = Position;
+                    } else if( speedHackDetectionCounter > 1 ) {
+                        DenyMovement();
+                        speedHackDetectionCounter = 0;
+                        return;
+                    }
+                    speedHackDetectionCounter++;
+
+                } else {
+                    speedHackDetectionCounter = 0;
+                }
+            }
+
+            Position = newPos;
+        }
+
+
+        bool DetectMovementPacketSpam() {
+            if( antiSpeedPacketLog.Count >= AntiSpeedMaxPacketCount ) {
+                DateTime oldestTime = antiSpeedPacketLog.Dequeue();
+                double spamTimer = DateTime.UtcNow.Subtract( oldestTime ).TotalSeconds;
+                if( spamTimer < AntiSpeedMaxPacketInterval ) {
+                    DenyMovement();
+                    return true;
+                }
+            }
+            antiSpeedPacketLog.Enqueue( DateTime.UtcNow );
+            return false;
+        }
+
+
+        void DenyMovement() {
+            writer.WriteTeleport( 255, lastValidPosition );
+            if( DateTime.UtcNow.Subtract( antiSpeedLastNotification ).Seconds > 1 ) {
+                //todo Message( "&WYou are not allowed to speedhack." );
+                antiSpeedLastNotification = DateTime.UtcNow;
+            }
+        }
+
+        #endregion
+
+
+        #region Block Placement
+
+        const int MaxBlockPlacementRange = 7 * 32;
+
+        bool ProcessSetBlockPacket() {
+            ResetIdleTimer();
+            short x = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
+            short z = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
+            short y = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
+            ClickAction action = ( reader.ReadByte() == 1 ) ? ClickAction.Build : ClickAction.Delete;
+            byte rawType = reader.ReadByte();
+
+            // check if block type is valid
+            if( rawType > 49 ) {
+                KickNow( "Hacking detected." );
+                Logger.Log( "Player {0} tried to place an invalid block type.", Name );
+                return false;
+            }
+            Block block = (Block)rawType;
+            if( action == ClickAction.Delete ) block = Block.Air;
+
+            // check if coordinates are within map boundaries (dont kick)
+            if( !Server.Map.InBounds( x, y, z ) ) return true;
+
+            // check if player is close enough to place
+            if( Math.Abs( x * 32 - Position.X ) > MaxBlockPlacementRange ||
+                Math.Abs( y * 32 - Position.Y ) > MaxBlockPlacementRange ||
+                Math.Abs( z * 32 - Position.Z ) > MaxBlockPlacementRange ) {
+                KickNow( "Hacking detected." );
+                Logger.Log( "Player {0} tried to place a block too far away.", Name );
+                return false;
+            }
+
+            // check click rate
+            if( Config.LimitClickRate && DetectBlockSpam() ) {
+                KickNow( "Hacking detected." );
+                Logger.Log( "Player {0} tried to place blocks too quickly.", Name );
+                return false;
+            }
+
+            // apply blocktype mapping
+            if( block == Block.Blue && PlaceWater ) {
+                block = Block.Water;
+            } else if( block == Block.Red && PlaceLava ) {
+                block = Block.Water;
+            } else if( block == Block.Stone && PlaceSolid ) {
+                block = Block.Admincrete;
+            }
+
+            // check if blocktype is permitted
+            if( ( block == Block.Water || block == Block.Lava || block == Block.Admincrete ||
+                  block == Block.StillWater || block == Block.StillLava ) && !IsOp ) {
+                KickNow( "Hacking detected." );
+                Logger.Log( "Player {0} tried to place a restricted block type.", Name );
+                return false;
+            }
+
+            // check if deleting admincrete
+            Block oldBlock = Server.Map.GetBlock( x, y, z );
+            if( oldBlock == Block.Admincrete && !IsOp ) {
+                KickNow( "Hacking detected." );
+                Logger.Log( "Player {0} tried to delete a restricted block type.", Name );
+                return false;
+            }
+
+            // update map
+            Server.Map.SetBlock( x, y, z, block );
+            if( (byte)block != rawType ) {
+                writer.WriteSetBlock( x, y, z, block );
+            }
+            return true;
+        }
+
+        bool PlaceWater, PlaceLava, PlaceSolid;
+
+        readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
+
+        const int AntiGriefBlocks = 47;
+        const int AntiGriefSeconds = 6;
+
+        bool DetectBlockSpam() {
+            if( spamBlockLog.Count >= AntiGriefBlocks ) {
+                DateTime oldestTime = spamBlockLog.Dequeue();
+                double spamTimer = DateTime.UtcNow.Subtract( oldestTime ).TotalSeconds;
+                if( spamTimer < AntiGriefSeconds ) {
+                    return true;
+                }
+            }
+            spamBlockLog.Enqueue( DateTime.UtcNow );
+            return false;
+        }
+
+        #endregion
+
+
+        #region Messaging
+
+        bool ProcessMessagePacket() {
+            ResetIdleTimer();
+            reader.ReadByte();
+            string message = reader.ReadMCString();
+
+            if( message.StartsWith( "/womid " ) ) {
+                return true;
+            }
+
+            if( MessageHandler.ContainsInvalidChars( message ) ) {
+                Logger.Log( "Player {0} attempted to write illegal characters in chat and was kicked.",
+                            Name );
+                KickNow( "Illegal characters in chat." );
+                return false;
+            }
+
+            MessageHandler.Parse( this, message );
+            return true;
+        }
+
+        #endregion
+
+
+        // todo: use for admin-slot kicks
+        public DateTime LastActiveTime { get; private set; }
+
+        void ResetIdleTimer() {
+            LastActiveTime = DateTime.UtcNow;
         }
 
 

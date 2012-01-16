@@ -3,7 +3,7 @@
 using System;
 
 namespace FemtoCraft {
-    public struct Position {
+    public struct Position : IEquatable<Position> {
         public readonly static Position Zero = new Position( 0, 0, 0 );
 
         public short X, Y, Z;
@@ -28,5 +28,30 @@ namespace FemtoCraft {
         public override string ToString() {
             return String.Format( "Position({0},{1},{2} @{3},{4})", X, Y, Z, R, L );
         }
+
+
+        #region Equality
+
+        public static bool operator ==( Position a, Position b ) {
+            return a.Equals( b );
+        }
+
+        public static bool operator !=( Position a, Position b ) {
+            return !a.Equals( b );
+        }
+
+        public bool Equals( Position other ) {
+            return ( X == other.X ) && ( Y == other.Y ) && ( Z == other.Z ) && ( R == other.R ) && ( L == other.L );
+        }
+
+        public override bool Equals( object obj ) {
+            return obj is Position && Equals( (Position)obj );
+        }
+
+        public override int GetHashCode() {
+            return ( X + Y * short.MaxValue ) ^ ( R + L * short.MaxValue ) + Z;
+        }
+
+        #endregion
     }
 }
