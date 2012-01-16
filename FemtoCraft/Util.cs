@@ -1,10 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace FemtoCraft {
     unsafe static class Util {
+        public static string GenerateSalt() {
+            RandomNumberGenerator prng = RandomNumberGenerator.Create();
+            StringBuilder sb = new StringBuilder();
+            byte[] oneChar = new byte[1];
+            while( sb.Length < 32 ) {
+                prng.GetBytes( oneChar );
+                if( oneChar[0] >= 48 && oneChar[0] <= 57 ||
+                    oneChar[0] >= 65 && oneChar[0] <= 90 ||
+                    oneChar[0] >= 97 && oneChar[0] <= 122 ) {
+                    sb.Append( (char)oneChar[0] );
+                }
+            }
+            return sb.ToString();
+        }
+
+
         public static void MemSet( this byte[] array, byte value, int startIndex, int length ) {
             if( array == null ) throw new ArgumentNullException( "array" );
             if( length < 0 || length > array.Length ) {

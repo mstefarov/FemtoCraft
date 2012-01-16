@@ -11,7 +11,7 @@ namespace FemtoCraft {
         public static bool AdminSlot = true;
         public static int MaxPlayers = 20;
         public static int MaxConnections = 3;
-        public static bool Public = true;
+        public static bool Public = false;
 
         public static bool LimitClickRate = true;
         public static bool AllowSpeedHack = false;
