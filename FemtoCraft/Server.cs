@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.100";
+        public const string VersionString = "FemtoCraft 0.04";
         public static readonly string Salt = GenerateSalt();
 
         public static Uri Uri { get; set; }
@@ -20,6 +20,7 @@ namespace FemtoCraft {
             Config.Load();
             Console.Title = Config.ServerName + " - " + VersionString;
             Heartbeat.Start();
+            Console.ReadLine();
         }
 
 
