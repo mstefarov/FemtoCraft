@@ -146,7 +146,6 @@ namespace FemtoCraft {
 
                     // copy the block array... or fail
                     if( foundBlockArray ) {
-                        map.Blocks = new byte[map.Volume];
                         Array.Copy( data, pointer, map.Blocks, 0, map.Blocks.Length );
 
                         fixed( byte* ptr = map.Blocks ) {

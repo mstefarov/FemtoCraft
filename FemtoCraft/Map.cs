@@ -1,12 +1,22 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+// Based on fCraft.MapConversion.MapMCSharp - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 using System;
 using System.IO;
 using System.IO.Compression;
 
 namespace FemtoCraft {
     unsafe class Map {
+        public static Map CreateFlatgrass( int width, int height, int length ) {
+            Map map = new Map( width, height, length );
+            map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
+            map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
+            map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
+            return map;
+        }
+
+
         public readonly int Width, Length, Height, Volume;
-        public byte[] Blocks;
+        public readonly byte[] Blocks;
         public Position Spawn;
 
         public Map( int width, int length, int height ) {
@@ -50,7 +60,7 @@ namespace FemtoCraft {
 
 
 
-        public Map Load( string fileName ) {
+        public static Map Load( string fileName ) {
             using( FileStream mapStream = File.OpenRead( fileName ) ) {
                 using( GZipStream gs = new GZipStream( mapStream, CompressionMode.Decompress ) ) {
                     BinaryReader bs = new BinaryReader( gs );
@@ -81,7 +91,6 @@ namespace FemtoCraft {
                     gs.ReadByte();
 
                     // Read map data
-                    map.Blocks = new byte[map.Volume];
                     int bytesRead = 0;
                     int bytesLeft = map.Blocks.Length;
                     while( bytesLeft > 0 ) {
@@ -104,7 +113,6 @@ namespace FemtoCraft {
             }
         }
 
-
         public void Save( string fileName ) {
             using( FileStream mapStream = File.Create( fileName ) ) {
                 using( GZipStream gs = new GZipStream( mapStream, CompressionMode.Compress ) ) {
@@ -114,14 +122,14 @@ namespace FemtoCraft {
                     bs.Write( (ushort)0x752 );
 
                     // Write the map dimensions
-                    bs.Write( Width );
-                    bs.Write( Length );
-                    bs.Write( Height );
+                    bs.Write( (short)Width );
+                    bs.Write( (short)Length );
+                    bs.Write( (short)Height );
 
                     // Write the spawn location
-                    bs.Write( Spawn.X / 32 );
-                    bs.Write( Spawn.Z / 32 );
-                    bs.Write( Spawn.Y / 32 );
+                    bs.Write( (short)(Spawn.X / 32) );
+                    bs.Write( (short)(Spawn.Z / 32) );
+                    bs.Write( (short)(Spawn.Y / 32) );
 
                     // Write the spawn orientation
                     bs.Write( Spawn.R );

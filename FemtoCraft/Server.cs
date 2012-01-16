@@ -1,10 +1,13 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace FemtoCraft {
     static class Server {
+        const string MapFileName = "map.lvl";
+
         public const string VersionString = "FemtoCraft 0.04";
         public static readonly string Salt = GenerateSalt();
 
@@ -15,12 +18,27 @@ namespace FemtoCraft {
 
 
         static void Main() {
-            Console.Title = VersionString;
-            Logger.Log( "Starting {0}", VersionString );
-            Config.Load();
-            Console.Title = Config.ServerName + " - " + VersionString;
-            Heartbeat.Start();
-            Console.ReadLine();
+#if !DEBUG
+            try {
+#endif
+                Console.Title = VersionString;
+                Logger.Log( "Starting {0}", VersionString );
+                Config.Load();
+                Console.Title = Config.ServerName + " - " + VersionString;
+                Heartbeat.Start();
+
+                if( File.Exists( MapFileName ) ) {
+                    Map = Map.Load( MapFileName );
+                } else {
+                    Map = Map.CreateFlatgrass( 256, 256, 64 );
+                }
+
+                Map.Save( MapFileName );
+#if !DEBUG
+            } catch( Exception ex ) {
+                Logger.LogError( "Server crashed: {0}", ex );
+            }
+#endif
         }
 
 
