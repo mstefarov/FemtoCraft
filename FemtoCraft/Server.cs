@@ -8,7 +8,7 @@ using System.Threading;
 namespace FemtoCraft {
     static class Server {
 
-        public const string VersionString = "FemtoCraft 0.09";
+        public const string VersionString = "FemtoCraft 0.10";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -16,7 +16,7 @@ namespace FemtoCraft {
         public static int PlayerCount { get; set; }
 
         const string MapFileName = "map.lvl";
-        const int MapSaveInterval = 300;
+        const int MapSaveInterval = 3000;
         public static Map Map { get; set; }
 
         const string BansFileName = "banned.txt";
