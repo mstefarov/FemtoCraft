@@ -24,7 +24,8 @@ namespace FemtoCraft {
         public bool IsOp { get; private set; }
         public Position Position { get; private set; }
 
-        public bool Connected { get; private set; }
+        public bool IsRegistered { get; set; }
+        public bool IsOnline { get; set; }
 
         const int Timeout = 10000;
 
@@ -119,9 +120,14 @@ namespace FemtoCraft {
 
 
         void Disconnect() {
-            if( Connected ) {
-                Logger.Log( "Player {0} disconnected.", Name, IP );
+            IsOnline = false;
+
+            if( useSyncKick ) {
+                kickWaiter.Set();
+            } else {
+                Server.UnregisterPlayer( this );
             }
+
             if( reader != null ) {
                 reader.Close();
             }
@@ -203,7 +209,7 @@ namespace FemtoCraft {
 
             SendMap();
 
-            Connected = true;
+            IsOnline = true;
             Logger.Log( "Player {0} connected from {1}", Name, IP );
             return true;
         }
@@ -304,6 +310,23 @@ namespace FemtoCraft {
             canQueue = false;
             writer.Write( OpCode.Kick );
             writer.WriteMCString( message );
+        }
+
+
+        bool useSyncKick;
+        readonly AutoResetEvent kickWaiter = new AutoResetEvent( false );
+        public void KickSynchronously( string message ) {
+            lock( kickWaiter ) {
+                useSyncKick = true;
+                Packet packet = PacketWriter.MakeDisconnect( message );
+                lock( queueLock ) {
+                    canReceive = false;
+                    canQueue = false;
+                    sendQueue.Enqueue( packet );
+                }
+                kickWaiter.WaitOne();
+                Server.UnregisterPlayer( this );
+            }
         }
 
         #endregion
