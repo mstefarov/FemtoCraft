@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace FemtoCraft {
     static class Server {
-
         public const string VersionString = "FemtoCraft 0.10";
 
         public static readonly string Salt = Util.GenerateSalt();
@@ -16,7 +15,6 @@ namespace FemtoCraft {
         public static int PlayerCount { get; set; }
 
         const string MapFileName = "map.lvl";
-        const int MapSaveInterval = 3000;
         public static Map Map { get; set; }
 
         const string BansFileName = "banned.txt";
@@ -79,7 +77,8 @@ namespace FemtoCraft {
 
 
         static void MainLoop() {
-            int tick = 0;
+            DateTime physicsTick = DateTime.UtcNow;
+            DateTime mapTick = DateTime.UtcNow;
             while( true ) {
                 if( listener.Pending() ) {
                     try {
@@ -89,16 +88,28 @@ namespace FemtoCraft {
                     }
                 }
 
-                if( tick % MapSaveInterval == 0 ) {
-                    Map.Save( MapFileName );
-                    Logger.Log( "Map saved to {0}", MapFileName );
+                if( DateTime.UtcNow.Subtract( mapTick ) > MapSaveInterval ) {
+                    ThreadPool.QueueUserWorkItem( MapSaveCallback );
+                    mapTick = DateTime.UtcNow;
                 }
 
-                tick++;
+                while( DateTime.UtcNow.Subtract( physicsTick ) > PhysicsInterval ) {
+                    // todo: tick physics
+                    physicsTick += PhysicsInterval;
+                }
+
                 Thread.Sleep( 10 );
             }
         }
+
+        static void MapSaveCallback( object unused ) {
+            Map.Save( MapFileName );
+            Logger.Log( "Map saved to {0}", MapFileName );
+        }
+
         static TcpListener listener;
+        static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 100 );
+        static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
 
 
         static void AcceptCallback( IAsyncResult e ) {
