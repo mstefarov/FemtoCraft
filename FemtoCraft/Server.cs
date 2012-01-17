@@ -121,36 +121,8 @@ namespace FemtoCraft {
             new Player( client );
         }
 
-
-        // list of all connected sessions
-        static readonly List<Player> Sessions = new List<Player>();
-
-        // Registers a new session, and checks the number of connections from this IP.
-        // Returns true if the session was registered succesfully.
-        // Returns false if the max number of connections was reached.
-        internal static bool RegisterSession( Player session ) {
-            if( session == null ) throw new ArgumentNullException( "session" );
-            lock( PlayerListLock ) {
-                if( !session.IP.Equals( IPAddress.Loopback ) && Config.MaxConnections > 0 ) {
-                    int sessionCount = 0;
-                    for( int i = 0; i < Sessions.Count; i++ ) {
-                        Player p = Sessions[i];
-                        if( p.IP.Equals( session.IP ) ) {
-                            sessionCount++;
-                            if( sessionCount >= Config.MaxConnections ) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                Sessions.Add( session );
-            }
-            return true;
-        }
-
-
         // list of registered players
-        static readonly SortedDictionary<string, Player> PlayerIndex = new SortedDictionary<string, Player>();
+        static readonly List<Player> PlayerIndex = new List<Player>();
 
         /// <summary> List of currently registered players. </summary>
         public static Player[] Players { get; private set; }
@@ -162,23 +134,28 @@ namespace FemtoCraft {
         // Returns true if player was registered succesfully.
         // Returns false if the server was full.
         internal static bool RegisterPlayer( Player player ) {
-            if( player == null ) throw new ArgumentNullException( "player" );
-
-            // Kick other sessions with same player name
             lock( PlayerListLock ) {
-                List<Player> sessionsToKick = new List<Player>();
-                foreach( Player s in Sessions ) {
-                    if( s == player ) continue;
-                    if( s.Name.Equals( player.Name, StringComparison.OrdinalIgnoreCase ) ) {
-                        sessionsToKick.Add( s );
-                        Logger.Log( "Kicked a duplicate connection from {0} for player {1}.",
-                                    s.IP, s.Name );
-                    }
+
+                // Kick other sessions with same player name
+                Player ghost = PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name, StringComparison.OrdinalIgnoreCase ) );
+                if( ghost != null ) {
+                    // Wait for other session to exit/unregister
+                    Logger.Log( "Kicked a duplicate connection from {0} for player {1}.",
+                                ghost.IP, ghost.Name );
+                    ghost.KickSynchronously( "Connected from elsewhere!" );
                 }
 
-                // Wait for other sessions to exit/unregister (if any)
-                foreach( Player sessionToKick in sessionsToKick ) {
-                    sessionToKick.KickSynchronously( "Connected from elsewhere!" );
+                // check the number of connections from this IP.
+                if( !player.IP.Equals( IPAddress.Loopback ) && Config.MaxConnections > 0 ) {
+                    int sessionCount = 0;
+                    foreach( Player p in PlayerIndex ) {
+                        if( p.IP.Equals( player.IP ) ) {
+                            sessionCount++;
+                            if( sessionCount >= Config.MaxConnections ) {
+                                return false;
+                            }
+                        }
+                    }
                 }
 
                 // Add player to the list
@@ -197,7 +174,7 @@ namespace FemtoCraft {
                         return false;
                     }
                 }
-                PlayerIndex.Add( player.Name, player );
+                PlayerIndex.Add( player );
                 player.IsRegistered = true;
             }
 
@@ -208,27 +185,22 @@ namespace FemtoCraft {
 
         // Removes player from the list or registered players, and announces them leaving
         public static void UnregisterPlayer( Player player ) {
+            if( !player.IsRegistered ) return;
             lock( PlayerListLock ) {
-                if( !player.IsRegistered ) return;
-
                 Logger.Log( "Player {0} left the server.", player.Name );
-                if( player.IsRegistered ) {
-                    // todo: announce leaving
-                }
-
+                // todo: announce leaving
                 // todo: release player
-                PlayerIndex.Remove( player.Name );
+                PlayerIndex.Remove( player );
                 UpdatePlayerList();
-                Sessions.Remove( player );
             }
         }
 
 
         static void UpdatePlayerList() {
             lock( PlayerListLock ) {
-                Players = PlayerIndex.Values.Where( p => p.IsOnline )
-                                            .OrderBy( player => player.Name )
-                                            .ToArray();
+                Players = PlayerIndex.Where( p => p.IsOnline )
+                                     .OrderBy( player => player.Name )
+                                     .ToArray();
             }
         }
     }

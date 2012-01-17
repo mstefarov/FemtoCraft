@@ -144,7 +144,6 @@ namespace FemtoCraft {
             // read the first packet
             OpCode opCode = reader.ReadOpCode();
             if( opCode != OpCode.Handshake ) {
-                KickNow( "Enexpected handshake packet opcode." );
                 Logger.LogWarning( "Player from {0}: Enexpected handshake packet opcode ({1})",
                                    IP, opCode );
                 return false;
@@ -153,7 +152,6 @@ namespace FemtoCraft {
             // check protocol version
             int protocolVersion = reader.ReadByte();
             if( protocolVersion != PacketWriter.ProtocolVersion ) {
-                KickNow( "Wrong protocol version." );
                 Logger.LogWarning( "Player from {0}: Wrong protocol version ({1})",
                                    IP, protocolVersion );
                 return false;
@@ -170,6 +168,7 @@ namespace FemtoCraft {
 
             // check if name is verified
             string mppass = reader.ReadMCString();
+            reader.ReadByte();
             while( mppass.Length < 32 ) {
                 mppass = "0" + mppass;
             }
@@ -201,11 +200,10 @@ namespace FemtoCraft {
                 return false;
             }
 
-            // skip the unused byte
-            reader.ReadByte();
-
             // check if player is op
             IsOp = Server.Ops.Contains( Name );
+
+            if( !Server.RegisterPlayer( this ) ) return false;
 
             SendMap();
 
