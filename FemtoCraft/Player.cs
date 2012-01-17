@@ -318,12 +318,7 @@ namespace FemtoCraft {
         public void KickSynchronously( string message ) {
             lock( kickWaiter ) {
                 useSyncKick = true;
-                Packet packet = PacketWriter.MakeDisconnect( message );
-                lock( queueLock ) {
-                    canReceive = false;
-                    canQueue = false;
-                    sendQueue.Enqueue( packet );
-                }
+                Kick( message );
                 kickWaiter.WaitOne();
                 Server.UnregisterPlayer( this );
             }

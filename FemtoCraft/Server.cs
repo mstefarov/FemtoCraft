@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.10";
+        public const string VersionString = "FemtoCraft 0.13";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -122,7 +122,6 @@ namespace FemtoCraft {
         }
 
 
-
         // list of all connected sessions
         static readonly List<Player> Sessions = new List<Player>();
 
@@ -220,9 +219,6 @@ namespace FemtoCraft {
                 // todo: release player
                 PlayerIndex.Remove( player.Name );
                 UpdatePlayerList();
-            }
-
-            lock( SessionLock ) {
                 Sessions.Remove( player );
             }
         }
