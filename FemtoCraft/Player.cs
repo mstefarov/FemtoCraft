@@ -629,7 +629,10 @@ namespace FemtoCraft {
 
 
         public bool CheckPlayerName( string givenName ) {
-            if( !IsValidName( givenName ) ) {
+            if( givenName == null ) {
+                Message( "This command requires a player name." );
+                return false;
+            }else if( !IsValidName( givenName ) ) {
                 Message( "\"{0}\" is not a valid player name.", givenName );
                 return false;
             } else {

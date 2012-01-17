@@ -12,7 +12,7 @@ namespace FemtoCraft {
                 command = message.Substring( 1 ).ToLower();
                 param = null;
             } else {
-                command = message.Substring( 1, spaceIndex ).ToLower();
+                command = message.Substring( 1, spaceIndex - 1 ).ToLower();
                 param = message.Substring( spaceIndex + 1 ).Trim();
             }
 
@@ -27,6 +27,14 @@ namespace FemtoCraft {
 
                 case "kick":
                     KickHandler( player, param );
+                    break;
+
+                case "ban":
+                    BanHandler( player, param );
+                    break;
+
+                case "unban":
+                    UnbanHandler( player, param );
                     break;
             }
         }
@@ -63,7 +71,7 @@ namespace FemtoCraft {
                 Server.Players.Message( null, "Player {0} was demoted by {1}",
                                         targetName, player.Name );
             } else {
-                player.Message( "No op exists with the name {0}", targetName );
+                player.Message( "Player {0} is not an op.", targetName );
             }
         }
 
@@ -74,6 +82,34 @@ namespace FemtoCraft {
             Player target = Server.FindPlayer( player, targetName );
             if( target == null ) return;
             target.Kick( "Kicked by " + player.Name );
+        }
+
+
+        static void BanHandler( Player player, string targetName ) {
+            if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
+
+            if( Server.Bans.Add( targetName ) ) {
+                Player target = Server.FindPlayerExact( targetName );
+                if( target != null ) {
+                    targetName = target.Name;
+                    target.Kick( "Banned by " + player.Name );
+                }
+                Server.Players.Message( null, "Player {0} was banned by {1}",
+                                        targetName, player.Name );
+            } else {
+                player.Message( "Player {0} is already banned.", targetName );
+            }
+        }
+
+        static void UnbanHandler( Player player, string targetName ) {
+            if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
+
+            if( Server.Bans.Remove( targetName ) ) {
+                Server.Players.Message( null, "Player {0} was unbanned by {1}",
+                                        targetName, player.Name );
+            } else {
+                player.Message( "Player {0} is not banned.", targetName );
+            }
         }
     }
 }
