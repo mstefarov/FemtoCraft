@@ -9,37 +9,53 @@ namespace FemtoCraft {
     sealed class PacketWriter : BinaryWriter {
         public const byte ProtocolVersion = 7;
 
+
         public PacketWriter( Stream stream ) :
-            base( stream ) { }
+            base( stream ) {}
+
 
         public void Write( OpCode value ) {
             Write( (byte)value );
         }
 
-        public void Write( Packet packet ) {
-            Write( packet.Bytes );
+
+        public override void Write( short value ) {
+            base.Write( IPAddress.HostToNetworkOrder( value ) );
         }
 
-        public void WriteBE( short value ) {
-            Write( IPAddress.HostToNetworkOrder( value ) );
-        }
 
-        public void WriteBE( int value ) {
-            Write( IPAddress.HostToNetworkOrder( value ) );
-        }
-
-        public void WriteMCString( [NotNull] string value ) {
+        public override void Write( [NotNull] string value ) {
             Write( Encoding.ASCII.GetBytes( value.PadRight( 64 ).Substring( 0, 64 ) ) );
+        }
+
+
+        public void WriteHandshake( bool isOp ) {
+            Write( OpCode.Handshake );
+            Write( ProtocolVersion );
+            Write( Config.ServerName );
+            Write( Config.MOTD );
+            Write( isOp ? (byte)100 : (byte)0 );
         }
 
 
         public void WriteAddEntity( byte id, string name, Position position ) {
             Write( OpCode.AddEntity );
             Write( id );
-            WriteMCString( name );
-            WriteBE( position.X );
-            WriteBE( position.Z );
-            WriteBE( position.Y );
+            Write( name );
+            Write( position.X );
+            Write( position.Z );
+            Write( position.Y );
+            Write( position.R );
+            Write( position.L );
+        }
+
+
+        public void WriteTeleport( byte id, Position position ) {
+            Write( OpCode.AddEntity );
+            Write( id );
+            Write( position.X );
+            Write( position.Z );
+            Write( position.Y );
             Write( position.R );
             Write( position.L );
         }
@@ -47,21 +63,10 @@ namespace FemtoCraft {
 
         public void WriteSetBlock( short x, short y, short z, Block block ) {
             Write( OpCode.SetBlockServer );
-            WriteBE( x );
-            WriteBE( z );
-            WriteBE( y );
+            Write( x );
+            Write( z );
+            Write( y );
             Write( (byte)block );
-        }
-
-
-        public void WriteTeleport( byte id, Position position ) {
-            Write( OpCode.AddEntity );
-            Write( id );
-            WriteBE( position.X );
-            WriteBE( position.Z );
-            WriteBE( position.Y );
-            Write( position.R );
-            Write( position.L );
         }
 
 

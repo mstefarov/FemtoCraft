@@ -216,17 +216,14 @@ namespace FemtoCraft {
 
             IsOnline = true;
             Logger.Log( "Player {0} connected from {1}", Name, IP );
+            Server.Players.Message( this, "Player {0} connected.", Name );
             return true;
         }
 
 
         void SendMap() {
             // write handshake
-            writer.Write( OpCode.Handshake );
-            writer.Write( PacketWriter.ProtocolVersion );
-            writer.WriteMCString( Config.ServerName );
-            writer.WriteMCString( Config.MOTD );
-            writer.Write( IsOp ? (byte)100 : (byte)0 );
+            writer.WriteHandshake( IsOp );
 
             // write MapBegin
             writer.Write( OpCode.MapBegin );
@@ -261,7 +258,7 @@ namespace FemtoCraft {
 
                 // write in chunks of 1024 bytes or less
                 writer.Write( OpCode.MapChunk );
-                writer.WriteBE( (short)chunkSize );
+                writer.Write( (short)chunkSize );
                 writer.Write( buffer, 0, 1024 );
                 writer.Write( progress );
                 mapBytesSent += chunkSize;
@@ -269,9 +266,9 @@ namespace FemtoCraft {
 
             // write MapEnd
             writer.Write( OpCode.MapEnd );
-            writer.WriteBE( (short)map.Width );
-            writer.WriteBE( (short)map.Height );
-            writer.WriteBE( (short)map.Length );
+            writer.Write( (short)map.Width );
+            writer.Write( (short)map.Height );
+            writer.Write( (short)map.Length );
 
             // write spawn point
             writer.WriteAddEntity( 255, Name, map.Spawn );
@@ -299,11 +296,6 @@ namespace FemtoCraft {
         }
 
 
-        public void SendNow( Packet packet ) {
-            writer.Write( packet.Bytes );
-        }
-
-
         public void Kick( [NotNull] string message ) {
             Packet packet = PacketWriter.MakeDisconnect( message );
             lock( sendQueueLock ) {
@@ -318,7 +310,7 @@ namespace FemtoCraft {
             canReceive = false;
             canQueue = false;
             writer.Write( OpCode.Kick );
-            writer.WriteMCString( message );
+            writer.Write( message );
         }
 
 
@@ -600,6 +592,7 @@ namespace FemtoCraft {
                     rawMessage = rawMessage.Substring( 1 );
                 } else {
                     Commands.Parse( this, rawMessage );
+                    return;
                 }
             }
 

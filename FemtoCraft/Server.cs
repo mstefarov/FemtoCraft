@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.15";
+        public const string VersionString = "FemtoCraft 0.16";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -194,8 +194,10 @@ namespace FemtoCraft {
             if( !player.HasRegistered ) return;
             lock( PlayerListLock ) {
                 Logger.Log( "Player {0} left the server.", player.Name );
-                // todo: announce leaving
+                Players.Message( player, "Player {0} left the server.", player.Name );
+
                 // todo: release player
+
                 PlayerIndex.Remove( player );
                 UpdatePlayerList();
             }
