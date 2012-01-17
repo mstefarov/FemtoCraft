@@ -85,12 +85,18 @@ namespace FemtoCraft {
         static TcpListener listener;
         static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 100 );
         static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
+        static readonly TimeSpan PingInterval = TimeSpan.FromSeconds( 5 );
 
 
         static void MainLoop() {
-            DateTime physicsTick = DateTime.UtcNow;
-            DateTime mapTick = DateTime.UtcNow;
+            DateTime now = DateTime.UtcNow;
+            DateTime physicsTick = now;
+            DateTime mapTick = now;
+            DateTime pingTick = now;
+
             while( true ) {
+                now = DateTime.UtcNow;
+
                 if( listener.Pending() ) {
                     try {
                         listener.BeginAcceptTcpClient( AcceptCallback, null );
@@ -99,15 +105,21 @@ namespace FemtoCraft {
                     }
                 }
 
-                if( DateTime.UtcNow.Subtract( mapTick ) > MapSaveInterval ) {
+                if( now.Subtract( mapTick ) > MapSaveInterval ) {
                     ThreadPool.QueueUserWorkItem( MapSaveCallback );
-                    mapTick = DateTime.UtcNow;
+                    mapTick = now;
+                }
+                if( now.Subtract( pingTick ) > PingInterval ) {
+                    Players.Send( null, new Packet( OpCode.Ping ) );
+                    pingTick = now;
                 }
 
-                while( DateTime.UtcNow.Subtract( physicsTick ) > PhysicsInterval ) {
+                while( now.Subtract( physicsTick ) > PhysicsInterval ) {
                     // todo: tick physics
                     physicsTick += PhysicsInterval;
                 }
+
+                Players.Send( null, new Packet( OpCode.Ping ) );
 
                 Thread.Sleep( 10 );
             }

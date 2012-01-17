@@ -69,8 +69,6 @@ namespace FemtoCraft {
                 if( !LoginSequence() ) return;
 
                 while( canSend ) {
-                    // todo: poll / ping
-
                     // todo: position updates
 
                     while( canSend && sendQueue.Count > 0 ) {
@@ -110,6 +108,8 @@ namespace FemtoCraft {
                                 return;
                         }
                     }
+
+                    Thread.Sleep( 5 );
                 }
 
 

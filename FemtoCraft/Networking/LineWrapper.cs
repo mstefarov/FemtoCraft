@@ -16,14 +16,13 @@ namespace FemtoCraft {
         }
 
         const int LineSize = 64;
-        const int MaxPrefixSize = 32;
         const int PacketSize = 66; // opcode + id + 64
+
         const byte NoColor = (byte)'f';
-
-        public Packet Current { get; private set; }
-
+        bool expectingColor;
         byte color, lastColor;
         bool hadColor;
+
         int spaceCount, wordLength;
 
         readonly byte[] input;
@@ -34,18 +33,14 @@ namespace FemtoCraft {
 
         readonly byte[] prefix;
 
+        int wrapIndex,
+            wrapOutputIndex;
+        byte wrapColor;
+
 
         public LineWrapper( [NotNull] string message ) {
             input = Encoding.ASCII.GetBytes( message );
             prefix = DefaultPrefix;
-            Reset();
-        }
-
-
-        public LineWrapper( [NotNull] string prefixString, [NotNull] string message ) {
-            prefix = Encoding.ASCII.GetBytes( prefixString );
-            if( prefix.Length > MaxPrefixSize ) throw new ArgumentException( "Prefix too long", "prefixString" );
-            input = Encoding.ASCII.GetBytes( message );
             Reset();
         }
 
@@ -55,6 +50,9 @@ namespace FemtoCraft {
             wordLength = 0;
             inputIndex = 0;
         }
+
+
+        public Packet Current { get; private set; }
 
 
         public bool MoveNext() {
@@ -110,11 +108,6 @@ namespace FemtoCraft {
             PrepareOutput();
             return true;
         }
-
-        int wrapIndex,
-            wrapOutputIndex;
-        byte wrapColor;
-        bool expectingColor;
 
         bool ProcessChar( byte ch ) {
             switch( ch ) {
