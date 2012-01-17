@@ -37,6 +37,18 @@ namespace FemtoCraft {
                     UnbanHandler( player, param );
                     break;
 
+                case "solid":
+                    SolidHandler( player );
+                    break;
+
+                case "water":
+                    WaterHandler( player );
+                    break;
+
+                case "lava":
+                    LavaHandler( player );
+                    break;
+
                 default:
                     player.Message( "Unknown command \"{0}\"", command );
                     break;
@@ -70,6 +82,9 @@ namespace FemtoCraft {
                 if( target != null ) {
                     targetName = target.Name;
                     target.IsOp = false;
+                    target.PlaceSolid = false;
+                    target.PlaceWater = false;
+                    target.PlaceLava = false;
                     target.Message( "You are no longer op." );
                 }
                 Server.Players.Message( null, "Player {0} was demoted by {1}",
@@ -105,6 +120,7 @@ namespace FemtoCraft {
             }
         }
 
+
         static void UnbanHandler( Player player, string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
 
@@ -113,6 +129,42 @@ namespace FemtoCraft {
                                         targetName, player.Name );
             } else {
                 player.Message( "Player {0} is not banned.", targetName );
+            }
+        }
+
+
+        static void SolidHandler( Player player ) {
+            if( player.CheckIfOp() ) {
+                if( player.PlaceSolid ) {
+                    player.Message( "Solid: Off" );
+                } else {
+                    player.Message( "Solid: On" );
+                }
+                player.PlaceSolid = !player.PlaceSolid;
+            }
+        }
+
+
+        static void WaterHandler( Player player ) {
+            if( player.CheckIfOp() ) {
+                if( player.PlaceWater ) {
+                    player.Message( "Water: Off" );
+                } else {
+                    player.Message( "Water: On" );
+                }
+                player.PlaceWater = !player.PlaceWater;
+            }
+        }
+
+
+        static void LavaHandler( Player player ) {
+            if( player.CheckIfOp() ) {
+                if( player.PlaceLava ) {
+                    player.Message( "Lava: Off" );
+                } else {
+                    player.Message( "Lava: On" );
+                }
+                player.PlaceLava = !player.PlaceLava;
             }
         }
     }

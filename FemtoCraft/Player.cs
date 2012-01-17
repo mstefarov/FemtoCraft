@@ -429,7 +429,7 @@ namespace FemtoCraft {
 
         #region Block Placement
 
-        bool PlaceWater, PlaceLava, PlaceSolid;
+        public bool PlaceWater, PlaceLava, PlaceSolid;
 
         readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
         const int AntiGriefBlocks = 47;
@@ -504,7 +504,9 @@ namespace FemtoCraft {
             // todo: queue for physics processing
             Server.Map.SetBlock( x, y, z, block );
             if( (byte)block != rawType ) {
-                writer.WriteSetBlock( x, y, z, block );
+                Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, block ) );
+            } else {
+                Server.Players.Send( this, Packet.MakeSetBlock( x, y, z, block ) );
             }
             return true;
         }

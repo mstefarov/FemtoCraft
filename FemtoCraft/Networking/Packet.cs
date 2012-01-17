@@ -42,5 +42,20 @@ namespace FemtoCraft {
         static int GetPacketSize( OpCode opCode ) {
             return PacketSizes[(int)opCode];
         }
+
+
+        static void ToNetOrder( int number, byte[] arr, int offset ) {
+            arr[offset] = (byte)( ( number & 0xff00 ) >> 8 );
+            arr[offset + 1] = (byte)( number & 0x00ff );
+        }
+
+        public static Packet MakeSetBlock( int x, int y, int z, Block type ) {
+            Packet packet = new Packet( OpCode.SetBlockServer );
+            ToNetOrder( x, packet.Bytes, 1 );
+            ToNetOrder( z, packet.Bytes, 3 );
+            ToNetOrder( y, packet.Bytes, 5 );
+            packet.Bytes[7] = (byte)type;
+            return packet;
+        }
     }
 }
