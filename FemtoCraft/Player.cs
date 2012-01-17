@@ -479,7 +479,7 @@ namespace FemtoCraft {
             if( block == Block.Blue && PlaceWater ) {
                 block = Block.Water;
             } else if( block == Block.Red && PlaceLava ) {
-                block = Block.Water;
+                block = Block.Lava;
             } else if( block == Block.Stone && PlaceSolid ) {
                 block = Block.Admincrete;
             }
