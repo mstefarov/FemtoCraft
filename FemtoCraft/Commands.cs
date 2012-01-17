@@ -36,6 +36,10 @@ namespace FemtoCraft {
                 case "unban":
                     UnbanHandler( player, param );
                     break;
+
+                default:
+                    player.Message( "Unknown command \"{0}\"", command );
+                    break;
             }
         }
 

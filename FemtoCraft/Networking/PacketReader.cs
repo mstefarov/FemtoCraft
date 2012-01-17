@@ -12,15 +12,11 @@ namespace FemtoCraft {
             return (OpCode)ReadByte();
         }
 
-        public short ReadInt16BE() {
-            return IPAddress.NetworkToHostOrder( ReadInt16() );
+        public override short ReadInt16() {
+            return IPAddress.NetworkToHostOrder( base.ReadInt16() );
         }
 
-        public int ReadInt32BE() {
-            return IPAddress.NetworkToHostOrder( ReadInt32() );
-        }
-
-        public string ReadMCString() {
+        public override string ReadString() {
             return Encoding.ASCII.GetString( ReadBytes( 64 ) ).Trim();
         }
     }

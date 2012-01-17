@@ -261,7 +261,7 @@ namespace FemtoCraft {
             if( formatArgs.Length > 0 ) {
                 message = String.Format( message, formatArgs );
             }
-            Packet[] packets = new LineWrapper( message ).ToArray();
+            Packet[] packets = new LineWrapper( "&E" + message ).ToArray();
             foreach( Player player in source ) {
                 if( player == except ) continue;
                 for( int i = 0; i < packets.Length; i++ ) {

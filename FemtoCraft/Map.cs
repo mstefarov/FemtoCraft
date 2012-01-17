@@ -81,22 +81,22 @@ namespace FemtoCraft {
 
                     // Read in the spawn location
                     map.Spawn = new Position {
-                        X = (short)( bs.ReadInt16() * 32 ),
-                        Z = (short)( bs.ReadInt16() * 32 ),
-                        Y = (short)( bs.ReadInt16() * 32 ),
+                        X = (short)( bs.ReadInt16() * 32 + 16 ),
+                        Z = (short)( bs.ReadInt16() * 32 + 16 ),
+                        Y = (short)( bs.ReadInt16() * 32 + 16 ),
                         R = bs.ReadByte(),
                         L = bs.ReadByte(),
                     };
 
                     // Write the VistPermission and BuildPermission bytes
-                    gs.ReadByte();
-                    gs.ReadByte();
+                    bs.ReadByte();
+                    bs.ReadByte();
 
                     // Read map data
                     int bytesRead = 0;
                     int bytesLeft = map.Blocks.Length;
                     while( bytesLeft > 0 ) {
-                        int readPass = gs.Read( map.Blocks, bytesRead, bytesLeft );
+                        int readPass = bs.Read( map.Blocks, bytesRead, bytesLeft );
                         if( readPass == 0 ) throw new EndOfStreamException();
                         bytesRead += readPass;
                         bytesLeft -= readPass;

@@ -165,7 +165,7 @@ namespace FemtoCraft {
             }
 
             // check if name is valid
-            string name = reader.ReadMCString();
+            string name = reader.ReadString();
             if( !IsValidName( name ) ) {
                 KickNow( "Unacceptible player name." );
                 Logger.LogWarning( "Player from {0}: Unacceptible player name ({1})",
@@ -174,7 +174,7 @@ namespace FemtoCraft {
             }
 
             // check if name is verified
-            string mppass = reader.ReadMCString();
+            string mppass = reader.ReadString();
             reader.ReadByte();
             while( mppass.Length < 32 ) {
                 mppass = "0" + mppass;
@@ -347,23 +347,23 @@ namespace FemtoCraft {
         void ProcessMovementPacket() {
             reader.ReadByte();
             Position newPos = new Position {
-                                               X = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
-                                               Z = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
-                                               Y = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
-                                               R = reader.ReadByte(),
-                                               L = reader.ReadByte()
-                                           };
+                X = reader.ReadInt16(),
+                Z = reader.ReadInt16(),
+                Y = reader.ReadInt16(),
+                R = reader.ReadByte(),
+                L = reader.ReadByte()
+            };
 
             Position oldPos = Position;
 
             // calculate difference between old and new positions
             Position delta = new Position {
-                                              X = (short)( newPos.X - oldPos.X ),
-                                              Y = (short)( newPos.Y - oldPos.Y ),
-                                              Z = (short)( newPos.Z - oldPos.Z ),
-                                              R = (byte)Math.Abs( newPos.R - oldPos.R ),
-                                              L = (byte)Math.Abs( newPos.L - oldPos.L )
-                                          };
+                X = (short)( newPos.X - oldPos.X ),
+                Y = (short)( newPos.Y - oldPos.Y ),
+                Z = (short)( newPos.Z - oldPos.Z ),
+                R = (byte)Math.Abs( newPos.R - oldPos.R ),
+                L = (byte)Math.Abs( newPos.L - oldPos.L )
+            };
 
             // skip everything if player hasn't moved
             if( delta == Position.Zero ) return;
@@ -441,9 +441,9 @@ namespace FemtoCraft {
 
         bool ProcessSetBlockPacket() {
             ResetIdleTimer();
-            short x = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
-            short z = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
-            short y = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
+            short x = reader.ReadInt16();
+            short z = reader.ReadInt16();
+            short y = reader.ReadInt16();
             bool isDeleting = ( reader.ReadByte() == 0 );
             byte rawType = reader.ReadByte();
 
@@ -538,7 +538,7 @@ namespace FemtoCraft {
         bool ProcessMessagePacket() {
             ResetIdleTimer();
             reader.ReadByte();
-            string message = reader.ReadMCString();
+            string message = reader.ReadString();
 
             if( message.StartsWith( "/womid " ) ) {
                 return true;
@@ -586,7 +586,7 @@ namespace FemtoCraft {
             // handle commands
             if( rawMessage[0] == '/' ) {
                 if( rawMessage.Length < 2 ) {
-                    Message( "Cannot parse message.", partialMessage );
+                    Message( "Cannot parse message." );
                     return;
                 } else if( rawMessage[1] == '/' ) {
                     rawMessage = rawMessage.Substring( 1 );
@@ -599,7 +599,7 @@ namespace FemtoCraft {
             // handle normal chat
             if( DetectChatSpam() ) return;
 
-            Server.Players.Message( null, "{0}: {1}", Name, rawMessage );
+            Server.Players.Message( null, "&F{0}: {1}", Name, rawMessage );
         }
 
 
@@ -632,7 +632,7 @@ namespace FemtoCraft {
             if( givenName == null ) {
                 Message( "This command requires a player name." );
                 return false;
-            }else if( !IsValidName( givenName ) ) {
+            } else if( !IsValidName( givenName ) ) {
                 Message( "\"{0}\" is not a valid player name.", givenName );
                 return false;
             } else {
