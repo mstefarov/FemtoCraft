@@ -1,10 +1,13 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     unsafe static class Util {
+        [NotNull]
         public static string GenerateSalt() {
             RandomNumberGenerator prng = RandomNumberGenerator.Create();
             StringBuilder sb = new StringBuilder();
@@ -21,8 +24,7 @@ namespace FemtoCraft {
         }
 
 
-        public static void MemSet( this byte[] array, byte value, int startIndex, int length ) {
-            if( array == null ) throw new ArgumentNullException( "array" );
+        public static void MemSet( [NotNull] this byte[] array, byte value, int startIndex, int length ) {
             if( length < 0 || length > array.Length ) {
                 throw new ArgumentOutOfRangeException( "length" );
             }
@@ -46,6 +48,20 @@ namespace FemtoCraft {
                     bDest++;
                 }
             }
+        }
+
+
+        [NotNull]
+        public static string JoinToString<T>( [NotNull] this IEnumerable<T> items, [NotNull] string separator,
+                                              [NotNull] Func<T, string> stringConversionFunction ) {
+            StringBuilder sb = new StringBuilder();
+            bool first = true;
+            foreach( T item in items ) {
+                if( !first ) sb.Append( separator );
+                sb.Append( stringConversionFunction( item ) );
+                first = false;
+            }
+            return sb.ToString();
         }
     }
 }

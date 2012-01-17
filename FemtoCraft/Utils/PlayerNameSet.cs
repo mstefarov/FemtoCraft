@@ -1,18 +1,23 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class PlayerNameSet {
         readonly HashSet<string> names = new HashSet<string>();
+        public readonly object SyncRoot = new object();
+        public readonly string FileName;
 
-        public PlayerNameSet( string fileName ) {
+
+        public PlayerNameSet( [NotNull] string fileName ) {
             FileName = fileName;
-            SyncRoot = new object();
             if( !File.Exists( fileName ) ) return;
 
-            foreach( string name in File.ReadLines( fileName ) ) {
+            foreach( string name in File.ReadAllLines( fileName ) ) {
                 if( Player.IsValidName( name ) ) {
                     names.Add( name.ToLower() );
                 } else {
@@ -23,28 +28,22 @@ namespace FemtoCraft {
         }
 
 
-        public readonly object SyncRoot;
-
-
-        public readonly string FileName;
-
-
         public int Count {
             get { return names.Count; }
         }
 
 
-        public bool Contains( string name ) {
+        public bool Contains( [NotNull] string name ) {
             return names.Contains( name.ToLower() );
         }
 
 
-        public bool Add( string name ) {
+        public bool Add( [NotNull] string name ) {
             return names.Add( name.ToLower() );
         }
 
 
-        public bool Remove( string name ) {
+        public bool Remove( [NotNull] string name ) {
             return names.Remove( name.ToLower() );
         }
 

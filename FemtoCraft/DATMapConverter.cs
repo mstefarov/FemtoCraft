@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     unsafe static class DatMapConverter {
@@ -56,8 +57,7 @@ namespace FemtoCraft {
         }
 
 
-        public static Map Load( string fileName ) {
-            if( fileName == null ) throw new ArgumentNullException( "fileName" );
+        public static Map Load( [NotNull] string fileName ) {
             using( FileStream mapStream = File.OpenRead( fileName ) ) {
                 byte[] temp = new byte[8];
                 Map map = null;
@@ -166,9 +166,7 @@ namespace FemtoCraft {
         }
 
 
-        static bool MemCmp( byte[] data, int offset, string value ) {
-            if( data == null ) throw new ArgumentNullException( "data" );
-            if( value == null ) throw new ArgumentNullException( "value" );
+        static bool MemCmp( [NotNull] byte[] data, int offset, [NotNull] string value ) {
             if( offset < 0 || offset > data.Length ) throw new ArgumentOutOfRangeException( "offset" );
             for( int i = 0; i < value.Length; i++ ) {
                 if( offset + i >= data.Length || data[offset + i] != value[i] ) return false;

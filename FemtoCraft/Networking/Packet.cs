@@ -7,6 +7,10 @@ namespace FemtoCraft {
             Bytes[0] = (byte)opCode;
         }
 
+        public Packet( byte[] bytes ) {
+            Bytes = bytes;
+        }
+
         public readonly byte[] Bytes;
 
         public OpCode OpCode {

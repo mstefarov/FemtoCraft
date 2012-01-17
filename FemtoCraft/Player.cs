@@ -10,32 +10,44 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class Player {
+        public static readonly Player Console = new Player( "(console)" );
+
+        public IPAddress IP { get; private set; }
+        public string Name { get; private set; }
+        public Position Position { get; private set; }
+
+        public bool IsOp { get; set; }
+        public bool IsOnline { get; set; }
+        public bool HasRegistered { get; set; }
+
+        const int Timeout = 10000;
         readonly TcpClient client;
         NetworkStream stream;
         PacketReader reader;
         PacketWriter writer;
         readonly Thread thread;
 
-        public IPAddress IP { get; private set; }
-        public string Name { get; private set; }
-        public bool IsOp { get; private set; }
-        public Position Position { get; private set; }
-
-        public bool IsRegistered { get; set; }
-        public bool IsOnline { get; set; }
-
-        const int Timeout = 10000;
+        bool canReceive = true,
+             canSend = true,
+             canQueue = true;
 
 
-        public Player( TcpClient newClient ) {
+        Player( string name ) {
+            Name = name;
+            IsOp = true;
+        }
+
+
+        public Player( [NotNull] TcpClient newClient ) {
             try {
                 client = newClient;
                 thread = new Thread( IoThread ) {
-                    IsBackground = true
-                };
+                                                    IsBackground = true
+                                                };
                 thread.Start();
 
             } catch( Exception ex ) {
@@ -43,10 +55,6 @@ namespace FemtoCraft {
                 Disconnect();
             }
         }
-
-        bool canReceive = true,
-             canSend = true,
-             canQueue = true;
 
 
         void IoThread() {
@@ -105,8 +113,7 @@ namespace FemtoCraft {
                 }
 
 
-            } catch( IOException ) {
-            } catch( SocketException ) {
+            } catch( IOException ) {} catch( SocketException ) {
 #if !DEBUG
             } catch( Exception ex ) {
                 Logger.LogError( "Player: Session crashed: {0}", ex );
@@ -276,11 +283,15 @@ namespace FemtoCraft {
 
         #region Send / Kick
 
-        readonly object queueLock = new object();
+        readonly object sendQueueLock = new object();
         readonly Queue<Packet> sendQueue = new Queue<Packet>();
 
+        bool useSyncKick;
+        readonly AutoResetEvent kickWaiter = new AutoResetEvent( false );
+
+
         public void Send( Packet packet ) {
-            lock( queueLock ) {
+            lock( sendQueueLock ) {
                 if( canQueue ) {
                     sendQueue.Enqueue( packet );
                 }
@@ -293,9 +304,9 @@ namespace FemtoCraft {
         }
 
 
-        public void Kick( string message ) {
-            Packet packet = PacketWriter.MakeDisconnect(message);
-            lock( queueLock ) {
+        public void Kick( [NotNull] string message ) {
+            Packet packet = PacketWriter.MakeDisconnect( message );
+            lock( sendQueueLock ) {
                 canReceive = false;
                 canQueue = false;
                 sendQueue.Enqueue( packet );
@@ -303,7 +314,7 @@ namespace FemtoCraft {
         }
 
 
-        void KickNow( string message ) {
+        void KickNow( [NotNull] string message ) {
             canReceive = false;
             canQueue = false;
             writer.Write( OpCode.Kick );
@@ -311,9 +322,7 @@ namespace FemtoCraft {
         }
 
 
-        bool useSyncKick;
-        readonly AutoResetEvent kickWaiter = new AutoResetEvent( false );
-        public void KickSynchronously( string message ) {
+        public void KickSynchronously( [NotNull] string message ) {
             lock( kickWaiter ) {
                 useSyncKick = true;
                 Kick( message );
@@ -329,37 +338,40 @@ namespace FemtoCraft {
 
         // anti-speedhack vars
         int speedHackDetectionCounter;
-        const int AntiSpeedMaxJumpDelta = 25, // 16 for normal client, 25 for WoM
-                  AntiSpeedMaxDistanceSquared = 1024, // 32 * 32
+
+        const int AntiSpeedMaxJumpDelta = 25,
+                  // 16 for normal client, 25 for WoM
+                  AntiSpeedMaxDistanceSquared = 1024,
+                  // 32 * 32
                   AntiSpeedMaxPacketCount = 200,
                   AntiSpeedMaxPacketInterval = 5;
 
         // anti-speedhack vars: packet spam
         readonly Queue<DateTime> antiSpeedPacketLog = new Queue<DateTime>();
         DateTime antiSpeedLastNotification = DateTime.UtcNow;
-        Position lastValidPosition; // used in speedhack detection
+        Position lastValidPosition;
 
 
         void ProcessMovementPacket() {
             reader.ReadByte();
             Position newPos = new Position {
-                X = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
-                Z = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
-                Y = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
-                R = reader.ReadByte(),
-                L = reader.ReadByte()
-            };
+                                               X = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
+                                               Z = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
+                                               Y = IPAddress.NetworkToHostOrder( reader.ReadInt16() ),
+                                               R = reader.ReadByte(),
+                                               L = reader.ReadByte()
+                                           };
 
             Position oldPos = Position;
 
             // calculate difference between old and new positions
             Position delta = new Position {
-                X = (short)( newPos.X - oldPos.X ),
-                Y = (short)( newPos.Y - oldPos.Y ),
-                Z = (short)( newPos.Z - oldPos.Z ),
-                R = (byte)Math.Abs( newPos.R - oldPos.R ),
-                L = (byte)Math.Abs( newPos.L - oldPos.L )
-            };
+                                              X = (short)( newPos.X - oldPos.X ),
+                                              Y = (short)( newPos.Y - oldPos.Y ),
+                                              Z = (short)( newPos.Z - oldPos.Z ),
+                                              R = (byte)Math.Abs( newPos.R - oldPos.R ),
+                                              L = (byte)Math.Abs( newPos.L - oldPos.L )
+                                          };
 
             // skip everything if player hasn't moved
             if( delta == Position.Zero ) return;
@@ -376,7 +388,8 @@ namespace FemtoCraft {
                 if( DetectMovementPacketSpam() ) {
                     return;
 
-                } else if( ( distSquared - delta.Z * delta.Z > AntiSpeedMaxDistanceSquared || delta.Z > AntiSpeedMaxJumpDelta ) &&
+                } else if( ( distSquared - delta.Z * delta.Z > AntiSpeedMaxDistanceSquared ||
+                             delta.Z > AntiSpeedMaxJumpDelta ) &&
                            speedHackDetectionCounter >= 0 ) {
 
                     if( speedHackDetectionCounter == 0 ) {
@@ -427,11 +440,10 @@ namespace FemtoCraft {
         bool PlaceWater, PlaceLava, PlaceSolid;
 
         readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
-
         const int AntiGriefBlocks = 47;
         const int AntiGriefSeconds = 6;
-        const int MaxLegalBlockType = 49;
 
+        const int MaxLegalBlockType = 49;
         const int MaxBlockPlacementRange = 7 * 32;
 
 
@@ -440,7 +452,7 @@ namespace FemtoCraft {
             short x = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
             short z = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
             short y = IPAddress.NetworkToHostOrder( reader.ReadInt16() );
-            ClickAction action = ( reader.ReadByte() == 1 ) ? ClickAction.Build : ClickAction.Delete;
+            bool isDeleting = ( reader.ReadByte() == 0 );
             byte rawType = reader.ReadByte();
 
             // check if block type is valid
@@ -450,7 +462,7 @@ namespace FemtoCraft {
                 return false;
             }
             Block block = (Block)rawType;
-            if( action == ClickAction.Delete ) block = Block.Air;
+            if( isDeleting ) block = Block.Air;
 
             // check if coordinates are within map boundaries (dont kick)
             if( !Server.Map.InBounds( x, y, z ) ) return true;
@@ -523,6 +535,14 @@ namespace FemtoCraft {
 
         #region Messaging
 
+        [CanBeNull] string partialMessage;
+
+        const int AntispamMessageCount = 3,
+                  AntispamInterval = 4;
+
+        readonly Queue<DateTime> spamChatLog = new Queue<DateTime>( AntispamMessageCount );
+
+
         bool ProcessMessagePacket() {
             ResetIdleTimer();
             reader.ReadByte();
@@ -532,15 +552,110 @@ namespace FemtoCraft {
                 return true;
             }
 
-            if( MessageHandler.ContainsInvalidChars( message ) ) {
+            if( ContainsInvalidChars( message ) ) {
                 KickNow( "Hacking detected." );
                 Logger.Log( "Player {0} attempted to write illegal characters in chat and was kicked.",
                             Name );
                 return false;
             }
 
-            MessageHandler.Parse( this, message );
+            ProcessMessage( message );
             return true;
+        }
+
+
+        void ProcessMessage( string rawMessage ) {
+            // cancel partial message
+            if( rawMessage.StartsWith( "/nvm", StringComparison.OrdinalIgnoreCase ) ||
+                rawMessage.StartsWith( "/cancel", StringComparison.OrdinalIgnoreCase ) ) {
+                if( partialMessage != null ) {
+                    Message( "Partial message cancelled." );
+                    partialMessage = null;
+                } else {
+                    Message( "No partial message to cancel." );
+                }
+                return;
+            }
+
+            // handle partial messages
+            if( partialMessage != null ) {
+                rawMessage = partialMessage + rawMessage;
+                partialMessage = null;
+            }
+            if( rawMessage.EndsWith( " /" ) ) {
+                partialMessage = rawMessage.Substring( 0, rawMessage.Length - 1 );
+                Message( "Partial: &F{0}", partialMessage );
+                return;
+            }
+            if( rawMessage.EndsWith( " //" ) ) {
+                rawMessage = rawMessage.Substring( 0, rawMessage.Length - 1 );
+            }
+
+            // handle commands
+            if( rawMessage[0] == '/' ) {
+                if( rawMessage.Length < 2 ) {
+                    Message( "Cannot parse message.", partialMessage );
+                    return;
+                } else if( rawMessage[1] == '/' ) {
+                    rawMessage = rawMessage.Substring( 1 );
+                } else {
+                    Commands.Parse( this, rawMessage );
+                }
+            }
+
+            // handle normal chat
+            if( DetectChatSpam() ) return;
+
+            Server.Players.Message( null, "{0}: {1}", Name, rawMessage );
+        }
+
+
+        [StringFormatMethod( "message" )]
+        public void Message( [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            if( formatArgs.Length > 0 ) {
+                message = String.Format( message, formatArgs );
+            }
+            if( this == Console ) {
+                System.Console.WriteLine( message );
+            } else {
+                foreach( Packet p in new LineWrapper( "&E" + message ) ) {
+                    Send( p );
+                }
+            }
+        }
+
+
+        public bool CheckIfOp() {
+            if( !IsOp ) {
+                Message( "You must be op to do this." );
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+
+        public bool CheckPlayerName( string givenName ) {
+            if( !IsValidName( givenName ) ) {
+                Message( "\"{0}\" is not a valid player name.", givenName );
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+
+        bool DetectChatSpam() {
+            if( this == Console ) return false;
+            if( spamChatLog.Count >= AntispamMessageCount ) {
+                DateTime oldestTime = spamChatLog.Dequeue();
+                if( DateTime.UtcNow.Subtract( oldestTime ).TotalSeconds < AntispamInterval ) {
+                    KickNow( "Kicked for chat spam!" );
+                    return true;
+                }
+            }
+            spamChatLog.Enqueue( DateTime.UtcNow );
+            return false;
         }
 
         #endregion
@@ -549,19 +664,24 @@ namespace FemtoCraft {
         // todo: use for admin-slot kicks
         public DateTime LastActiveTime { get; private set; }
 
+
         void ResetIdleTimer() {
             LastActiveTime = DateTime.UtcNow;
         }
 
 
-        public static bool IsValidName( string name ) {
-            if( name == null ) throw new ArgumentNullException( "name" );
+        public static bool IsValidName( [NotNull] string name ) {
             if( name.Length < 2 || name.Length > 16 ) return false;
             return name.All( ch => ( ch >= '0' || ch == '.' ) &&
                                    ( ch <= '9' || ch >= 'A' ) &&
                                    ( ch <= 'Z' || ch >= '_' ) &&
                                    ( ch <= '_' || ch >= 'a' ) &&
                                    ch <= 'z' );
+        }
+
+
+        public static bool ContainsInvalidChars( [NotNull] string message ) {
+            return message.Any( t => t < ' ' || t == '&' || t > '~' );
         }
     }
 }

@@ -6,10 +6,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.13";
+        public const string VersionString = "FemtoCraft 0.15";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -53,6 +54,7 @@ namespace FemtoCraft {
                 } else {
                     Map = Map.CreateFlatgrass( 256, 256, 64 );
                 }
+                UpdatePlayerList();
 
                 Map.Save( MapFileName );
 
@@ -76,6 +78,13 @@ namespace FemtoCraft {
             }
 #endif
         }
+
+
+        #region Scheduler
+
+        static TcpListener listener;
+        static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 100 );
+        static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
 
 
         static void MainLoop() {
@@ -105,39 +114,36 @@ namespace FemtoCraft {
         }
 
 
+        static void AcceptCallback( [NotNull] IAsyncResult e ) {
+            TcpClient client = listener.EndAcceptTcpClient( e );
+            new Player( client );
+        }
+
+
         static void MapSaveCallback( object unused ) {
             Map.Save( MapFileName );
             Logger.Log( "Map saved to {0}", MapFileName );
         }
 
-
-        static TcpListener listener;
-        static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 100 );
-        static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
+        #endregion
 
 
-        static void AcceptCallback( IAsyncResult e ) {
-            TcpClient client = listener.EndAcceptTcpClient( e );
-            new Player( client );
-        }
+        #region Player List
 
-        // list of registered players
-        static readonly List<Player> PlayerIndex = new List<Player>();
-
-        /// <summary> List of currently registered players. </summary>
+        [NotNull]
         public static Player[] Players { get; private set; }
+
+        static readonly List<Player> PlayerIndex = new List<Player>();
 
         static readonly object PlayerListLock = new object();
 
-        // Registers a player and checks if the server is full.
-        // Also kicks any existing connections for this player account.
-        // Returns true if player was registered succesfully.
-        // Returns false if the server was full.
-        internal static bool RegisterPlayer( Player player ) {
+
+        public static bool RegisterPlayer( [NotNull] Player player ) {
             lock( PlayerListLock ) {
 
                 // Kick other sessions with same player name
-                Player ghost = PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name, StringComparison.OrdinalIgnoreCase ) );
+                Player ghost =
+                    PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name, StringComparison.OrdinalIgnoreCase ) );
                 if( ghost != null ) {
                     // Wait for other session to exit/unregister
                     Logger.Log( "Kicked a duplicate connection from {0} for player {1}.",
@@ -147,22 +153,19 @@ namespace FemtoCraft {
 
                 // check the number of connections from this IP.
                 if( !player.IP.Equals( IPAddress.Loopback ) && Config.MaxConnections > 0 ) {
-                    int sessionCount = 0;
-                    foreach( Player p in PlayerIndex ) {
-                        if( p.IP.Equals( player.IP ) ) {
-                            sessionCount++;
-                            if( sessionCount >= Config.MaxConnections ) {
-                                return false;
-                            }
-                        }
+                    int connections = PlayerIndex.Count( p => p.IP.Equals( player.IP ) );
+                    if( connections >= Config.MaxConnections ) {
+                        player.Kick( "Too many connections from your IP address!" );
+                        return false;
                     }
                 }
 
-                // Add player to the list
+                // check if server is full
                 if( PlayerIndex.Count >= Config.MaxPlayers ) {
                     if( Config.AdminSlot && player.IsOp ) {
+                        // if player has a reserved slot, kick someone to make room
                         Player playerToKick = Players.OrderBy( p => p.LastActiveTime )
-                                                     .FirstOrDefault( p => p.IsOp );
+                            .FirstOrDefault( p => p.IsOp );
                         if( playerToKick != null ) {
                             playerToKick.KickSynchronously( "Making room for an op." );
                         } else {
@@ -174,8 +177,11 @@ namespace FemtoCraft {
                         return false;
                     }
                 }
+
+                // Add player to the list
                 PlayerIndex.Add( player );
-                player.IsRegistered = true;
+                player.HasRegistered = true;
+                UpdatePlayerList();
             }
 
             // todo: accept player
@@ -184,8 +190,8 @@ namespace FemtoCraft {
 
 
         // Removes player from the list or registered players, and announces them leaving
-        public static void UnregisterPlayer( Player player ) {
-            if( !player.IsRegistered ) return;
+        public static void UnregisterPlayer( [NotNull] Player player ) {
+            if( !player.HasRegistered ) return;
             lock( PlayerListLock ) {
                 Logger.Log( "Player {0} left the server.", player.Name );
                 // todo: announce leaving
@@ -198,9 +204,64 @@ namespace FemtoCraft {
 
         static void UpdatePlayerList() {
             lock( PlayerListLock ) {
-                Players = PlayerIndex.Where( p => p.IsOnline )
-                                     .OrderBy( player => player.Name )
+                Players = PlayerIndex.OrderBy( player => player.Name, StringComparer.OrdinalIgnoreCase )
                                      .ToArray();
+            }
+        }
+
+
+        [CanBeNull]
+        public static Player FindPlayerExact( [NotNull] string fullName ) {
+            return Players.FirstOrDefault( p => p.Name.Equals( fullName, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+
+        [CanBeNull]
+        public static Player FindPlayer( [NotNull] Player player, [NotNull] string partialName ) {
+            List<Player> matches = new List<Player>();
+            foreach( Player otherPlayer in Players ) {
+                if( otherPlayer.Name.Equals( partialName, StringComparison.OrdinalIgnoreCase ) ) {
+                    return player;
+                }
+                if( otherPlayer.Name.StartsWith( partialName, StringComparison.OrdinalIgnoreCase ) ) {
+                    matches.Add( otherPlayer );
+                }
+            }
+            if( matches.Count == 0 ) {
+                player.Message( "No players found matching \"{0}\"", partialName );
+            } else if( matches.Count == 1 ) {
+                return matches[0];
+            } else {
+                player.Message( "More than one player matched \"{0}\": {1}",
+                                partialName, matches.JoinToString( ", ", p => p.Name ) );
+            }
+            return null;
+        }
+
+        #endregion
+
+
+        [StringFormatMethod( "message" )]
+        public static void Message( [NotNull] this IEnumerable<Player> source, [CanBeNull] Player except,
+                                    [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            if( formatArgs.Length > 0 ) {
+                message = String.Format( message, formatArgs );
+            }
+            Packet[] packets = new LineWrapper( message ).ToArray();
+            foreach( Player player in source ) {
+                if( player == except ) continue;
+                for( int i = 0; i < packets.Length; i++ ) {
+                    player.Send( packets[i] );
+                }
+            }
+        }
+
+
+        public static void Send( [NotNull] this IEnumerable<Player> source, [CanBeNull] Player except,
+                                 Packet packet ) {
+            foreach( Player player in source ) {
+                if( player == except ) continue;
+                player.Send( packet );
             }
         }
     }

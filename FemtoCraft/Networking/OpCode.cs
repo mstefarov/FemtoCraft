@@ -44,24 +44,5 @@ namespace FemtoCraft {
         public static int GetPacketSize( this OpCode opCode ) {
             return PacketSizes[(int)opCode];
         }
-
-        public static bool IsValidClientCode( this OpCode opCode ) {
-            switch( opCode ) {
-                case OpCode.Handshake:
-                case OpCode.Ping:
-                case OpCode.SetBlockClient:
-                case OpCode.MoveRotate:
-                case OpCode.Message:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        public static bool IsValidServerOpCode( this OpCode opCode ) {
-            return ( opCode >= OpCode.Handshake &&
-                    opCode <= OpCode.SetPermission &&
-                    opCode != OpCode.SetBlockClient );
-        }
     }
 }

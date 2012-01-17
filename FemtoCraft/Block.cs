@@ -2,7 +2,7 @@
 // Based on fCraft.Block - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 
 namespace FemtoCraft {
-    public enum Block : byte {
+    enum Block : byte {
         Undefined = 255, // for error checking
 
         Air = 0,

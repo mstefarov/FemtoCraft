@@ -7,14 +7,15 @@ using System.Net;
 namespace FemtoCraft {
     sealed class IPAddressSet {
         readonly HashSet<IPAddress> addresses = new HashSet<IPAddress>();
+        public readonly object SyncRoot = new object();
+        public readonly string FileName;
 
 
         public IPAddressSet( string fileName ) {
             FileName = fileName;
-            SyncRoot = new object();
             if( !File.Exists( fileName ) ) return;
 
-            foreach( string name in File.ReadLines( fileName ) ) {
+            foreach( string name in File.ReadAllLines( fileName ) ) {
                 IPAddress address;
                 if( IPAddress.TryParse( name, out address ) ) {
                     addresses.Add( address );
@@ -24,12 +25,6 @@ namespace FemtoCraft {
                 }
             }
         }
-
-
-        public readonly object SyncRoot;
-
-
-        public readonly string FileName;
 
 
         public int Count {

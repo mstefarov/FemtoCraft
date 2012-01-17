@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.IO;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Logger {
@@ -8,17 +9,20 @@ namespace FemtoCraft {
         static readonly object LogLock = new object();
 
 
-        public static void LogError( string message, params object[] formatArgs ) {
+        [StringFormatMethod("message")]
+        public static void LogError( [NotNull] string message, [NotNull] params object[] formatArgs ) {
             LogInternal( message, formatArgs, "ERROR " );
         }
 
 
-        public static void LogWarning( string message, params object[] formatArgs ) {
+        [StringFormatMethod( "message" )]
+        public static void LogWarning( [NotNull] string message, [NotNull] params object[] formatArgs ) {
             LogInternal( message, formatArgs, "Warning " );
         }
 
 
-        public static void Log( string message, params object[] formatArgs ) {
+        [StringFormatMethod( "message" )]
+        public static void Log( [NotNull] string message, [NotNull] params object[] formatArgs ) {
             LogInternal( message, formatArgs, "" );
         }
 

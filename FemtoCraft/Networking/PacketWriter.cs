@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class PacketWriter : BinaryWriter {
@@ -27,8 +28,7 @@ namespace FemtoCraft {
             Write( IPAddress.HostToNetworkOrder( value ) );
         }
 
-        public void WriteMCString( string value ) {
-            if( value == null ) throw new ArgumentNullException( "value" );
+        public void WriteMCString( [NotNull] string value ) {
             Write( Encoding.ASCII.GetBytes( value.PadRight( 64 ).Substring( 0, 64 ) ) );
         }
 

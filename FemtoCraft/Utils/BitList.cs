@@ -1,12 +1,13 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 
 namespace FemtoCraft {
-    class BitMap {
+    class BitList {
         readonly int[] array;
 
-        public BitMap( int size ) {
+        public BitList( int size ) {
             array = new int[( size - 1 ) / 32 + 1];
         }
+
 
         public bool this[ int index ] {
             get {
@@ -19,6 +20,11 @@ namespace FemtoCraft {
                     array[index >> 5] &= ~( 1 << ( index & 31 ) );
                 }
             }
+        }
+
+
+        public int Count {
+            get { return array.Length; }
         }
     }
 }
