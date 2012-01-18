@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.26";
+        public const string VersionString = "FemtoCraft 0.27";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -66,7 +66,7 @@ namespace FemtoCraft {
             }
 
             // start listening for incoming connections
-            for( byte i = 0; i <= sbyte.MaxValue; i++ ) {
+            for( byte i = 1; i <= sbyte.MaxValue; i++ ) {
                 FreePlayerIDs.Push( i );
             }
             UpdatePlayerList();
@@ -211,6 +211,10 @@ namespace FemtoCraft {
                 Players.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
                 player.HasRegistered = true;
 
+                foreach(Player other in PlayerIndex) {
+                    player.Send( Packet.MakeAddEntity( other.ID, other.Name, other.Position ) );
+                }
+
                 // Add player to index
                 PlayerIndex.Add( player );
                 UpdatePlayerList();
@@ -273,6 +277,7 @@ namespace FemtoCraft {
         }
 
         #endregion
+
 
         [StringFormatMethod( "message" )]
         public static void Message( [NotNull] this IEnumerable<Player> source,

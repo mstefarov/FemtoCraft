@@ -215,6 +215,7 @@ namespace FemtoCraft {
 
         static void SayHandler( Player player, string message ) {
             if( player.CheckIfOp() ) {
+                if( message == null ) message = "";
                 Server.Players.Message( message );
             }
         }
