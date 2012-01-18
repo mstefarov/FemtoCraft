@@ -23,7 +23,6 @@ namespace FemtoCraft {
 
         public byte ID { get; set; }
         public bool IsOp { get; set; }
-        public bool IsOnline { get; set; }
         public bool HasRegistered { get; set; }
 
         const int Timeout = 10000;
@@ -129,8 +128,6 @@ namespace FemtoCraft {
 
 
         void Disconnect() {
-            IsOnline = false;
-
             if( useSyncKick ) {
                 kickWaiter.Set();
             } else {
@@ -226,7 +223,6 @@ namespace FemtoCraft {
 
             SendMap();
 
-            IsOnline = true;
             Logger.Log( "Player {0} connected from {1}", Name, IP );
             Server.Players.Message( this, false,
                                     "Player {0} connected.", Name );
@@ -328,12 +324,10 @@ namespace FemtoCraft {
 
 
         public void KickSynchronously( [NotNull] string message ) {
-            lock( kickWaiter ) {
-                useSyncKick = true;
-                Kick( message );
-                kickWaiter.WaitOne();
-                Server.UnregisterPlayer( this );
-            }
+            useSyncKick = true;
+            Kick( message );
+            kickWaiter.WaitOne();
+            Server.UnregisterPlayer( this );
         }
 
         #endregion

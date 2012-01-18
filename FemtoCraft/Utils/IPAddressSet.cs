@@ -61,20 +61,6 @@ namespace FemtoCraft {
         }
 
 
-        public bool Remove( [NotNull] IPAddress address ) {
-            if( address == null ) throw new ArgumentNullException( "address" );
-            lock( syncRoot ) {
-                IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
-                if( existingAddress == null ) {
-                    return false;
-                } else {
-                    addresses.Remove( existingAddress );
-                    return false;
-                }
-            }
-        }
-
-
         public void Save() {
             lock( syncRoot ) {
                 File.WriteAllLines( fileName, addresses.Select( a => a.ToString() ).ToArray() );

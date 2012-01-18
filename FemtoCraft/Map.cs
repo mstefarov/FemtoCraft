@@ -36,7 +36,7 @@ namespace FemtoCraft {
         }
 
 
-        public int Index( int x, int y, int z ) {
+        int Index( int x, int y, int z ) {
             return ( z * Length + y ) * Width + x;
         }
 
