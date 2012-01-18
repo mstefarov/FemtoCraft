@@ -7,13 +7,16 @@ using System.Net;
 namespace FemtoCraft {
     sealed class IPAddressSet {
         readonly HashSet<IPAddress> addresses = new HashSet<IPAddress>();
-        public readonly object SyncRoot = new object();
-        public readonly string FileName;
+        readonly object syncRoot = new object();
+        readonly string fileName;
 
 
         public IPAddressSet( string fileName ) {
-            FileName = fileName;
-            if( !File.Exists( fileName ) ) return;
+            this.fileName = fileName;
+            if( !File.Exists( fileName ) ) {
+                File.Create( fileName );
+                return;
+            }
 
             foreach( string name in File.ReadAllLines( fileName ) ) {
                 IPAddress address;
@@ -33,34 +36,42 @@ namespace FemtoCraft {
 
 
         public bool Contains( IPAddress address ) {
-            return addresses.Any( address.Equals );
+            lock( syncRoot ) {
+                return addresses.Any( address.Equals );
+            }
         }
 
 
         public bool Add( IPAddress address ) {
-            IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
-            if( existingAddress == null ) {
-                addresses.Add( address );
-                return true;
-            } else {
-                return false;
+            lock( syncRoot ) {
+                IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
+                if( existingAddress == null ) {
+                    addresses.Add( address );
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
 
 
         public bool Remove( IPAddress address ) {
-            IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
-            if( existingAddress == null ) {
-                return false;
-            } else {
-                addresses.Remove( existingAddress );
-                return false;
+            lock( syncRoot ) {
+                IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
+                if( existingAddress == null ) {
+                    return false;
+                } else {
+                    addresses.Remove( existingAddress );
+                    return false;
+                }
             }
         }
 
 
         public void Save() {
-            File.WriteAllLines( FileName, addresses.Select( a => a.ToString() ).ToArray() );
+            lock( syncRoot ) {
+                File.WriteAllLines( fileName, addresses.Select( a => a.ToString() ).ToArray() );
+            }
         }
     }
 }

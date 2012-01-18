@@ -20,6 +20,7 @@ namespace FemtoCraft {
         public string Name { get; private set; }
         public Position Position { get; private set; }
 
+        public byte ID { get; set; }
         public bool IsOp { get; set; }
         public bool IsOnline { get; set; }
         public bool HasRegistered { get; set; }
@@ -70,8 +71,6 @@ namespace FemtoCraft {
                 if( !LoginSequence() ) return;
 
                 while( canSend ) {
-                    // todo: position updates
-
                     while( canSend && sendQueue.Count > 0 ) {
                         Packet packet;
                         lock( sendQueue ) {
@@ -177,20 +176,22 @@ namespace FemtoCraft {
             // check if name is verified
             string mppass = reader.ReadString();
             reader.ReadByte();
-            while( mppass.Length < 32 ) {
-                mppass = "0" + mppass;
-            }
-            MD5 hasher = MD5.Create();
-            StringBuilder sb = new StringBuilder( 32 );
-            foreach( byte b in hasher.ComputeHash( Encoding.ASCII.GetBytes( Server.Salt + name ) ) ) {
-                sb.AppendFormat( "{0:x2}", b );
-            }
-            bool verified = sb.ToString().Equals( mppass, StringComparison.OrdinalIgnoreCase );
-            if( !verified ) {
-                KickNow( "Could not verify player name." );
-                Logger.LogWarning( "Player {0} from {1}: Could not verify name.",
-                                   name, IP );
-                return false;
+            if( Config.VerifyNames ) {
+                while( mppass.Length < 32 ) {
+                    mppass = "0" + mppass;
+                }
+                MD5 hasher = MD5.Create();
+                StringBuilder sb = new StringBuilder( 32 );
+                foreach( byte b in hasher.ComputeHash( Encoding.ASCII.GetBytes( Server.Salt + name ) ) ) {
+                    sb.AppendFormat( "{0:x2}", b );
+                }
+                bool verified = sb.ToString().Equals( mppass, StringComparison.OrdinalIgnoreCase );
+                if( !verified ) {
+                    KickNow( "Could not verify player name." );
+                    Logger.LogWarning( "Player {0} from {1}: Could not verify name.",
+                                       name, IP );
+                    return false;
+                }
             }
             Name = name;
 
@@ -208,6 +209,14 @@ namespace FemtoCraft {
                 return false;
             }
 
+            // check whitelist
+            if( Config.UseWhitelist && !Server.Whitelist.Contains( Name ) ) {
+                KickNow( "You are not on the whitelist!" );
+                Logger.Log( "Player {0} tried to log in from ({1}), but was not on the whitelist.",
+                            Name, IP );
+                return false;
+            }
+
             // check if player is op
             IsOp = Server.Ops.Contains( Name );
 
@@ -217,7 +226,8 @@ namespace FemtoCraft {
 
             IsOnline = true;
             Logger.Log( "Player {0} connected from {1}", Name, IP );
-            Server.Players.Message( this, "Player {0} connected.", Name );
+            Server.Players.Message( this, false,
+                                    "Player {0} connected.", Name );
             return true;
         }
 
@@ -272,8 +282,8 @@ namespace FemtoCraft {
             writer.Write( (short)map.Length );
 
             // write spawn point
-            writer.WriteAddEntity( 255, Name, map.Spawn );
-            writer.WriteTeleport( 255, map.Spawn );
+            writer.Write( Packet.MakeAddEntity( 255, Name, map.Spawn ).Bytes );
+            writer.Write( Packet.MakeTeleport( 255, map.Spawn ).Bytes );
 
             lastValidPosition = map.Spawn;
         }
@@ -330,14 +340,14 @@ namespace FemtoCraft {
         #region Movement
 
         // anti-speedhack vars
-        int speedHackDetectionCounter;
+        int speedHackDetectionCounter,
+            positionSyncCounter;
 
-        const int AntiSpeedMaxJumpDelta = 25,
-                  // 16 for normal client, 25 for WoM
-                  AntiSpeedMaxDistanceSquared = 1024,
-                  // 32 * 32
+        const int AntiSpeedMaxJumpDelta = 25, // 16 for normal client, 25 for WoM
+                  AntiSpeedMaxDistanceSquared = 1024, // 32 * 32
                   AntiSpeedMaxPacketCount = 200,
-                  AntiSpeedMaxPacketInterval = 5;
+                  AntiSpeedMaxPacketInterval = 5,
+                  PositionSyncInterval = 20;
 
         // anti-speedhack vars: packet spam
         readonly Queue<DateTime> antiSpeedPacketLog = new Queue<DateTime>();
@@ -399,7 +409,62 @@ namespace FemtoCraft {
                 }
             }
 
+            BroadcastMovementChange(newPos);
+        }
+
+
+        void BroadcastMovementChange( Position newPos ) {
+            Position oldPos = Position;
             Position = newPos;
+
+
+            // calculate difference between old and new positions
+            Position delta = new Position {
+                X = (short)( newPos.X - oldPos.X ),
+                Y = (short)( newPos.Y - oldPos.Y ),
+                Z = (short)( newPos.Z - oldPos.Z ),
+                R = (byte)Math.Abs( newPos.R - oldPos.R ),
+                L = (byte)Math.Abs( newPos.L - oldPos.L )
+            };
+
+            bool posChanged = ( delta.X != 0 ) || ( delta.Y != 0 ) || ( delta.Z != 0 );
+            bool rotChanged = ( delta.R != 0 ) || ( delta.L != 0 );
+
+            Packet packet;
+            // create the movement packet
+            if( delta.FitsIntoMoveRotatePacket && positionSyncCounter < PositionSyncInterval ) {
+                if( posChanged && rotChanged ) {
+                    // incremental position + rotation update
+                    packet = Packet.MakeMoveRotate( ID, new Position {
+                        X = delta.X,
+                        Y = delta.Y,
+                        Z = delta.Z,
+                        R = newPos.R,
+                        L = newPos.L
+                    } );
+
+                } else if( posChanged ) {
+                    // incremental position update
+                    packet = Packet.MakeMove( ID, delta );
+
+                } else if( rotChanged ) {
+                    // absolute rotation update
+                    packet = Packet.MakeRotate( ID, newPos );
+                } else {
+                    return;
+                }
+
+            } else {
+                // full (absolute position + rotation) update
+                packet = Packet.MakeTeleport( ID, newPos );
+            }
+
+            positionSyncCounter++;
+            if( positionSyncCounter >= PositionSyncInterval ) {
+                positionSyncCounter = 0;
+            }
+
+            writer.Write( packet.Bytes );
         }
 
 
@@ -418,9 +483,9 @@ namespace FemtoCraft {
 
 
         void DenyMovement() {
-            writer.WriteTeleport( 255, lastValidPosition );
+            writer.Write( Packet.MakeTeleport( 255, lastValidPosition ).Bytes );
             if( DateTime.UtcNow.Subtract( antiSpeedLastNotification ).Seconds > 1 ) {
-                //todo Message( "&WYou are not allowed to speedhack." );
+                Message( "You are not allowed to speedhack." );
                 antiSpeedLastNotification = DateTime.UtcNow;
             }
         }
@@ -430,14 +495,15 @@ namespace FemtoCraft {
 
         #region Block Placement
 
-        public bool PlaceWater, PlaceLava, PlaceSolid;
+        public bool PlaceWater,
+                    PlaceLava,
+                    PlaceSolid;
 
         readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
-        const int AntiGriefBlocks = 47;
-        const int AntiGriefSeconds = 6;
-
-        const int MaxLegalBlockType = 49;
-        const int MaxBlockPlacementRange = 7 * 32;
+        const int AntiGriefBlocks = 47,
+                  AntiGriefSeconds = 6,
+                  MaxLegalBlockType = 49,
+                  MaxBlockPlacementRange = 7 * 32;
 
 
         bool ProcessSetBlockPacket() {
@@ -602,7 +668,7 @@ namespace FemtoCraft {
             // handle normal chat
             if( DetectChatSpam() ) return;
 
-            Server.Players.Message( null, "&F{0}: {1}", Name, rawMessage );
+            Server.Players.Message( "&F{0}: {1}", Name, rawMessage );
         }
 
 
@@ -660,10 +726,7 @@ namespace FemtoCraft {
         #endregion
 
 
-        // todo: use for admin-slot kicks
         public DateTime LastActiveTime { get; private set; }
-
-
         void ResetIdleTimer() {
             LastActiveTime = DateTime.UtcNow;
         }

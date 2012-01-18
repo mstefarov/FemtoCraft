@@ -28,31 +28,12 @@ namespace JetBrains.Annotations {
     }
 
 
-    [AttributeUsage( AttributeTargets.Parameter, AllowMultiple = false, Inherited = true )]
-    sealed class InvokerParameterNameAttribute : Attribute { }
-
-
-    [AttributeUsage( AttributeTargets.Method, AllowMultiple = false, Inherited = true )]
-    sealed class TerminatesProgramAttribute : Attribute { }
-
-
     [AttributeUsage( AttributeTargets.Method | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Delegate | AttributeTargets.Field, AllowMultiple = false, Inherited = true )]
     sealed class CanBeNullAttribute : Attribute { }
 
 
     [AttributeUsage( AttributeTargets.Method | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Delegate | AttributeTargets.Field, AllowMultiple = false, Inherited = true )]
     sealed class NotNullAttribute : Attribute { }
-
-
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    [BaseTypeRequired( typeof( Attribute ) )]
-    sealed class BaseTypeRequiredAttribute : Attribute {
-        public BaseTypeRequiredAttribute( Type baseType ) {
-            BaseTypes = new[] { baseType };
-        }
-
-        public Type[] BaseTypes { get; private set; }
-    }
 
 
     [AttributeUsage( AttributeTargets.All, AllowMultiple = false, Inherited = true )]
@@ -69,30 +50,6 @@ namespace JetBrains.Annotations {
 
         [UsedImplicitly]
         public UsedImplicitlyAttribute( ImplicitUseTargetFlags targetFlags )
-            : this( ImplicitUseKindFlags.Default, targetFlags ) { }
-
-        [UsedImplicitly]
-        public ImplicitUseKindFlags UseKindFlags { get; private set; }
-
-        [UsedImplicitly]
-        public ImplicitUseTargetFlags TargetFlags { get; private set; }
-    }
-
-
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false, Inherited = true )]
-    sealed class MeansImplicitUseAttribute : Attribute {
-        [UsedImplicitly]
-        public MeansImplicitUseAttribute()
-            : this( ImplicitUseKindFlags.Default ) { }
-
-        [UsedImplicitly]
-        public MeansImplicitUseAttribute( ImplicitUseKindFlags useKindFlags, ImplicitUseTargetFlags targetFlags = ImplicitUseTargetFlags.Default ) {
-            UseKindFlags = useKindFlags;
-            TargetFlags = targetFlags;
-        }
-
-        [UsedImplicitly]
-        public MeansImplicitUseAttribute( ImplicitUseTargetFlags targetFlags )
             : this( ImplicitUseKindFlags.Default, targetFlags ) { }
 
         [UsedImplicitly]
@@ -120,8 +77,4 @@ namespace JetBrains.Annotations {
         Members = 2,
         WithMembers = Itself | Members
     }
-
-
-    [AttributeUsage( AttributeTargets.Method, Inherited = true )]
-    sealed class PureAttribute : Attribute {}
 }

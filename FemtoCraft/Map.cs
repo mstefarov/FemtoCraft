@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Compression;
 
 namespace FemtoCraft {
-    unsafe class Map {
+    sealed unsafe class Map {
         public static Map CreateFlatgrass( int width, int length, int height ) {
             Map map = new Map( width, length, height );
             map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );

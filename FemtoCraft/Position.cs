@@ -9,14 +9,6 @@ namespace FemtoCraft {
         public short X, Y, Z;
         public byte R, L;
 
-        public Position( short x, short y, short z, byte r, byte l ) {
-            X = x;
-            Y = y;
-            Z = z;
-            R = r;
-            L = l;
-        }
-
         public Position( int x, int y, int z ) {
             X = (short)x;
             Y = (short)y;
@@ -63,6 +55,14 @@ namespace FemtoCraft {
                 R = R,
                 L = L
             };
+        }
+
+        public bool FitsIntoMoveRotatePacket {
+            get {
+                return X >= SByte.MinValue && X <= SByte.MaxValue &&
+                       Y >= SByte.MinValue && Y <= SByte.MaxValue &&
+                       Z >= SByte.MinValue && Z <= SByte.MaxValue;
+            }
         }
     }
 }

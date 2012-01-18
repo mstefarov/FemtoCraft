@@ -63,5 +63,18 @@ namespace FemtoCraft {
             }
             return sb.ToString();
         }
+
+
+        [NotNull]
+        public static string JoinToString<T>( [NotNull] this IEnumerable<T> items, [NotNull] string separator ) {
+            StringBuilder sb = new StringBuilder();
+            bool first = true;
+            foreach( T item in items ) {
+                if( !first ) sb.Append( separator );
+                sb.Append( item );
+                first = false;
+            }
+            return sb.ToString();
+        }
     }
 }

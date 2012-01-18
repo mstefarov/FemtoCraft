@@ -1,6 +1,4 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
-
-using System;
 using System.Text;
 using JetBrains.Annotations;
 
@@ -24,34 +22,8 @@ namespace FemtoCraft {
             get { return (OpCode)Bytes[0]; }
         }
 
-        static readonly int[] PacketSizes = {
-            131,    // Handshake
-            1,      // Ping
-            1,      // MapBegin
-            1028,   // MapChunk
-            7,      // MapEnd
-            9,      // SetBlockClient
-            8,      // SetBlockServer
-            74,     // AddEntity
-            10,     // Teleport
-            7,      // MoveRotate
-            5,      // Move
-            4,      // Rotate
-            2,      // RemoveEntity
-            66,     // Message
-            65,     // Kick
-            2       // SetPermission
-        };
 
-        static int GetPacketSize( OpCode opCode ) {
-            return PacketSizes[(int)opCode];
-        }
-
-
-        static void ToNetOrder( int number, byte[] arr, int offset ) {
-            arr[offset] = (byte)( ( number & 0xff00 ) >> 8 );
-            arr[offset + 1] = (byte)( number & 0x00ff );
-        }
+        #region Packet-Making
 
         public static Packet MakeSetBlock( int x, int y, int z, Block type ) {
             Packet packet = new Packet( OpCode.SetBlockServer );
@@ -68,9 +40,9 @@ namespace FemtoCraft {
         }
 
 
-        public static Packet MakeTeleport( int id, Position pos ) {
+        public static Packet MakeTeleport( byte id, Position pos ) {
             Packet packet = new Packet( OpCode.Teleport );
-            packet.Bytes[1] = (byte)id;
+            packet.Bytes[1] = id;
             ToNetOrder( pos.X, packet.Bytes, 2 );
             ToNetOrder( pos.Z, packet.Bytes, 4 );
             ToNetOrder( pos.Y, packet.Bytes, 6 );
@@ -98,5 +70,76 @@ namespace FemtoCraft {
             packet.Bytes[73] = pos.L;
             return packet;
         }
+
+
+        public static Packet MakeMoveRotate( int id, Position pos ) {
+            Packet packet = new Packet( OpCode.MoveRotate );
+            packet.Bytes[1] = (byte)id;
+            packet.Bytes[2] = (byte)( pos.X & 0xFF );
+            packet.Bytes[3] = (byte)( pos.Z & 0xFF );
+            packet.Bytes[4] = (byte)( pos.Y & 0xFF );
+            packet.Bytes[5] = pos.R;
+            packet.Bytes[6] = pos.L;
+            return packet;
+        }
+
+
+        public static Packet MakeMove( int id, Position pos ) {
+            Packet packet = new Packet( OpCode.Move );
+            packet.Bytes[1] = (byte)id;
+            packet.Bytes[2] = (byte)pos.X;
+            packet.Bytes[3] = (byte)pos.Z;
+            packet.Bytes[4] = (byte)pos.Y;
+            return packet;
+        }
+
+
+        public static Packet MakeRotate( int id, Position pos ) {
+            Packet packet = new Packet( OpCode.Rotate );
+            packet.Bytes[1] = (byte)id;
+            packet.Bytes[2] = pos.R;
+            packet.Bytes[3] = pos.L;
+            return packet;
+        }
+
+
+        public static Packet MakeRemoveEntity( int id ) {
+            Packet packet = new Packet( OpCode.RemoveEntity );
+            packet.Bytes[1] = (byte)id;
+            return packet;
+        }
+
+        #endregion
+
+
+        static void ToNetOrder( int number, byte[] arr, int offset ) {
+            arr[offset] = (byte)( ( number & 0xff00 ) >> 8 );
+            arr[offset + 1] = (byte)( number & 0x00ff );
+        }
+
+
+        static int GetPacketSize( OpCode opCode ) {
+            return PacketSizes[(int)opCode];
+        }
+
+
+        static readonly int[] PacketSizes = {
+            131,    // Handshake
+            1,      // Ping
+            1,      // MapBegin
+            1028,   // MapChunk
+            7,      // MapEnd
+            9,      // SetBlockClient
+            8,      // SetBlockServer
+            74,     // AddEntity
+            10,     // Teleport
+            7,      // MoveRotate
+            5,      // Move
+            4,      // Rotate
+            2,      // RemoveEntity
+            66,     // Message
+            65,     // Kick
+            2       // SetPermission
+        };
     }
 }

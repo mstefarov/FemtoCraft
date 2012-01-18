@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.25";
+        public const string VersionString = "FemtoCraft 0.26";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -30,6 +30,10 @@ namespace FemtoCraft {
         public static IPAddressSet IPBans { get; private set; }
 
 
+        const string WhitelistFileName = "whitelist.txt";
+        public static PlayerNameSet Whitelist { get; private set; }
+
+
         static void Main() {
 #if !DEBUG
             try {
@@ -42,23 +46,31 @@ namespace FemtoCraft {
             Console.Title = Config.ServerName + " - " + VersionString;
             Heartbeat.Start();
 
-            // load lists of bans/ops/IP-bans
+            // load player and IP lists
             Bans = new PlayerNameSet( BansFileName );
             Ops = new PlayerNameSet( OpsFileName );
             IPBans = new IPAddressSet( IPBanFileName );
             Logger.Log( "Server: Tracking {0} bans and {1} ops.",
                         Bans.Count, Ops.Count );
+            if( Config.UseWhitelist ) {
+                Whitelist = new PlayerNameSet( WhitelistFileName );
+                Logger.Log( "Using a whitelist ({0} players).", Whitelist.Count );
+            }
 
             // load or create map
             if( File.Exists( MapFileName ) ) {
                 Map = Map.Load( MapFileName );
             } else {
                 Map = Map.CreateFlatgrass( 256, 256, 64 );
+                Map.Save( MapFileName );
             }
-            Map.Save( MapFileName );
 
             // start listening for incoming connections
+            for( byte i = 0; i <= sbyte.MaxValue; i++ ) {
+                FreePlayerIDs.Push( i );
+            }
             UpdatePlayerList();
+
             listener = new TcpListener( IPAddress.Any, Config.Port );
             listener.Start();
 
@@ -148,6 +160,7 @@ namespace FemtoCraft {
         [NotNull]
         public static Player[] Players { get; private set; }
 
+        static readonly Stack<byte> FreePlayerIDs = new Stack<byte>( 127 );
         static readonly List<Player> PlayerIndex = new List<Player>();
 
         static readonly object PlayerListLock = new object();
@@ -157,8 +170,8 @@ namespace FemtoCraft {
             lock( PlayerListLock ) {
 
                 // Kick other sessions with same player name
-                Player ghost =
-                    PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name, StringComparison.OrdinalIgnoreCase ) );
+                Player ghost = PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name,
+                                                                               StringComparison.OrdinalIgnoreCase ) );
                 if( ghost != null ) {
                     // Wait for other session to exit/unregister
                     Logger.Log( "Kicked a duplicate connection from {0} for player {1}.",
@@ -180,7 +193,7 @@ namespace FemtoCraft {
                     if( Config.AdminSlot && player.IsOp ) {
                         // if player has a reserved slot, kick someone to make room
                         Player playerToKick = Players.OrderBy( p => p.LastActiveTime )
-                            .FirstOrDefault( p => p.IsOp );
+                                                     .FirstOrDefault( p => p.IsOp );
                         if( playerToKick != null ) {
                             playerToKick.KickSynchronously( "Making room for an op." );
                         } else {
@@ -193,37 +206,41 @@ namespace FemtoCraft {
                     }
                 }
 
-                // Add player to the list
-                PlayerIndex.Add( player );
+                // Assign index and spawn player entity
+                player.ID = FreePlayerIDs.Pop();
+                Players.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
                 player.HasRegistered = true;
+
+                // Add player to index
+                PlayerIndex.Add( player );
                 UpdatePlayerList();
             }
-
-            // todo: accept player
             return true;
         }
 
 
-        // Removes player from the list or registered players, and announces them leaving
         public static void UnregisterPlayer( [NotNull] Player player ) {
             if( !player.HasRegistered ) return;
             lock( PlayerListLock ) {
-                Logger.Log( "Player {0} left the server.", player.Name );
-                Players.Message( player, "Player {0} left the server.", player.Name );
+                // Despawn player entity
+                Players.Send( player, Packet.MakeRemoveEntity( player.ID ) );
+                FreePlayerIDs.Push( player.ID );
 
-                // todo: release player
-
+                // Remove player from index
                 PlayerIndex.Remove( player );
                 UpdatePlayerList();
+
+                // Announce departure
+                Logger.Log( "Player {0} left the server.", player.Name );
+                Players.Message( null, false,
+                                 "Player {0} left the server.", player.Name );
             }
         }
 
 
         static void UpdatePlayerList() {
-            lock( PlayerListLock ) {
-                Players = PlayerIndex.OrderBy( player => player.Name, StringComparer.OrdinalIgnoreCase )
-                    .ToArray();
-            }
+            Players = PlayerIndex.OrderBy( player => player.Name, StringComparer.OrdinalIgnoreCase )
+                                 .ToArray();
         }
 
 
@@ -257,9 +274,25 @@ namespace FemtoCraft {
 
         #endregion
 
+        [StringFormatMethod( "message" )]
+        public static void Message( [NotNull] this IEnumerable<Player> source,
+                                    [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            if( formatArgs.Length > 0 ) {
+                message = String.Format( message, formatArgs );
+            }
+            Packet[] packets = new LineWrapper( "&E" + message ).ToArray();
+            foreach( Player player in source ) {
+                for( int i = 0; i < packets.Length; i++ ) {
+                    player.Send( packets[i] );
+                }
+            }
+            Logger.Log( message );
+        }
+
 
         [StringFormatMethod( "message" )]
-        public static void Message( [NotNull] this IEnumerable<Player> source, [CanBeNull] Player except,
+        public static void Message( [NotNull] this IEnumerable<Player> source,
+                                    [CanBeNull] Player except, bool sentToConsole,
                                     [NotNull] string message, [NotNull] params object[] formatArgs ) {
             if( formatArgs.Length > 0 ) {
                 message = String.Format( message, formatArgs );
@@ -271,7 +304,7 @@ namespace FemtoCraft {
                     player.Send( packets[i] );
                 }
             }
-            if( except != Player.Console ) {
+            if( except != Player.Console && sentToConsole ) {
                 Logger.Log( message );
             }
         }
