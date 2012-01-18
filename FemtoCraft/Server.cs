@@ -168,7 +168,6 @@ namespace FemtoCraft {
 
         public static bool RegisterPlayer( [NotNull] Player player ) {
             lock( PlayerListLock ) {
-
                 // Kick other sessions with same player name
                 Player ghost = PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name,
                                                                                StringComparison.OrdinalIgnoreCase ) );
@@ -206,12 +205,13 @@ namespace FemtoCraft {
                     }
                 }
 
-                // Assign index and spawn player entity
+                // Assign index and spawn player
                 player.ID = FreePlayerIDs.Pop();
                 Players.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
                 player.HasRegistered = true;
 
-                foreach(Player other in PlayerIndex) {
+                // Spawn existing players
+                foreach( Player other in PlayerIndex ) {
                     player.Send( Packet.MakeAddEntity( other.ID, other.Name, other.Position ) );
                 }
 

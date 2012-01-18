@@ -252,7 +252,7 @@ namespace FemtoCraft {
                 return;
             }
             Server.Map.Spawn = player.Position;
-            player.Send( Packet.MakeAddEntity( 255, player.Name, Server.Map.Spawn ) );
+            player.Send( Packet.MakeAddEntity( 255, player.Name, Server.Map.Spawn.GetFixed() ) );
             Server.Players.Message( "Player {0} set a new spawn point.", player.Name );
         }
 

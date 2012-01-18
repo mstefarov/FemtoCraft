@@ -417,7 +417,6 @@ namespace FemtoCraft {
             Position oldPos = Position;
             Position = newPos;
 
-
             // calculate difference between old and new positions
             Position delta = new Position {
                 X = (short)( newPos.X - oldPos.X ),
@@ -464,7 +463,7 @@ namespace FemtoCraft {
                 positionSyncCounter = 0;
             }
 
-            writer.Write( packet.Bytes );
+            Server.Players.Send( this, packet );
         }
 
 
@@ -483,7 +482,7 @@ namespace FemtoCraft {
 
 
         void DenyMovement() {
-            writer.Write( Packet.MakeTeleport( 255, lastValidPosition ).Bytes );
+            writer.Write( Packet.MakeSelfTeleport( lastValidPosition ).Bytes );
             if( DateTime.UtcNow.Subtract( antiSpeedLastNotification ).Seconds > 1 ) {
                 Message( "You are not allowed to speedhack." );
                 antiSpeedLastNotification = DateTime.UtcNow;
@@ -626,6 +625,9 @@ namespace FemtoCraft {
 
 
         void ProcessMessage( string rawMessage ) {
+            // handle normal chat
+            if( DetectChatSpam() ) return;
+
             // cancel partial message
             if( rawMessage.StartsWith( "/nvm", StringComparison.OrdinalIgnoreCase ) ||
                 rawMessage.StartsWith( "/cancel", StringComparison.OrdinalIgnoreCase ) ) {
@@ -665,10 +667,10 @@ namespace FemtoCraft {
                 }
             }
 
-            // handle normal chat
-            if( DetectChatSpam() ) return;
-
-            Server.Players.Message( "&F{0}: {1}", Name, rawMessage );
+            // broadcast chat
+            Logger.LogChat( "{0}: {1}", Name, rawMessage );
+            Server.Players.Message( null, false,
+                                    "&F{0}: {1}", Name, rawMessage );
         }
 
 
