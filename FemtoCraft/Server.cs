@@ -34,43 +34,43 @@ namespace FemtoCraft {
 #if !DEBUG
             try {
 #endif
-                Console.Title = VersionString;
-                Logger.Log( "Starting {0}", VersionString );
+            Console.Title = VersionString;
+            Logger.Log( "Starting {0}", VersionString );
 
-                Config.Load();
+            Config.Load();
 
-                Console.Title = Config.ServerName + " - " + VersionString;
+            Console.Title = Config.ServerName + " - " + VersionString;
 
-                Bans = new PlayerNameSet( BansFileName );
-                Ops = new PlayerNameSet( OpsFileName );
-                IPBans = new IPAddressSet( IPBanFileName );
+            Bans = new PlayerNameSet( BansFileName );
+            Ops = new PlayerNameSet( OpsFileName );
+            IPBans = new IPAddressSet( IPBanFileName );
 
-                Logger.Log( "Server: Tracking {0} bans and {1} ops.",
-                            Bans.Count, Ops.Count );
+            Logger.Log( "Server: Tracking {0} bans and {1} ops.",
+                        Bans.Count, Ops.Count );
 
-                Heartbeat.Start();
-                if( File.Exists( MapFileName ) ) {
-                    Map = Map.Load( MapFileName );
-                } else {
-                    Map = Map.CreateFlatgrass( 256, 256, 64 );
-                }
-                UpdatePlayerList();
+            Heartbeat.Start();
+            if( File.Exists( MapFileName ) ) {
+                Map = Map.Load( MapFileName );
+            } else {
+                Map = Map.CreateFlatgrass( 256, 256, 64 );
+            }
+            UpdatePlayerList();
 
-                Map.Save( MapFileName );
+            Map.Save( MapFileName );
 
-                listener = new TcpListener( IPAddress.Any, Config.Port );
-                listener.Start();
+            listener = new TcpListener( IPAddress.Any, Config.Port );
+            listener.Start();
 
-                Thread mainThread = new Thread( MainLoop ) {
-                                                               IsBackground = true
-                                                           };
-                mainThread.Start();
+            Thread mainThread = new Thread( MainLoop ) {
+                                                           IsBackground = true
+                                                       };
+            mainThread.Start();
 
-                while( true ) {
-                    string input = Console.ReadLine();
-                    if( input == null ) return;
-                    // todo: parse console command
-                }
+            while( true ) {
+                string input = Console.ReadLine();
+                if( input == null ) return;
+                Commands.Parse( Player.Console, input );
+            }
 
 #if !DEBUG
             } catch( Exception ex ) {
@@ -219,7 +219,7 @@ namespace FemtoCraft {
         static void UpdatePlayerList() {
             lock( PlayerListLock ) {
                 Players = PlayerIndex.OrderBy( player => player.Name, StringComparer.OrdinalIgnoreCase )
-                                     .ToArray();
+                    .ToArray();
             }
         }
 
@@ -267,6 +267,9 @@ namespace FemtoCraft {
                 for( int i = 0; i < packets.Length; i++ ) {
                     player.Send( packets[i] );
                 }
+            }
+            if( except != Player.Console ) {
+                Logger.Log( message );
             }
         }
 
