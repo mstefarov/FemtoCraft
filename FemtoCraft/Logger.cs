@@ -33,7 +33,10 @@ namespace FemtoCraft {
         }
 
 
-        static void LogInternal( string message, object[] formatArgs, string prefix, bool error ) {
+        static void LogInternal( [NotNull] string message, [NotNull] object[] formatArgs, [NotNull] string prefix, bool error ) {
+            if( message == null ) throw new ArgumentNullException( "message" );
+            if( formatArgs == null ) throw new ArgumentNullException( "formatArgs" );
+            if( prefix == null ) throw new ArgumentNullException( "prefix" );
             lock( LogLock ) {
                 string formattedMsg = String.Format( "{0} {1}> {2}",
                                                      Timestamp(),
@@ -51,6 +54,7 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         static string Timestamp() {
             return DateTime.Now.ToString( "yyyy'-'MM'-'dd' 'HH':'mm':'ss" );
         }

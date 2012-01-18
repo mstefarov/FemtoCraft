@@ -1,8 +1,11 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class IPAddressSet {
@@ -11,7 +14,8 @@ namespace FemtoCraft {
         readonly string fileName;
 
 
-        public IPAddressSet( string fileName ) {
+        public IPAddressSet( [NotNull] string fileName ) {
+            if( fileName == null ) throw new ArgumentNullException( "fileName" );
             this.fileName = fileName;
             if( !File.Exists( fileName ) ) {
                 File.Create( fileName );
@@ -35,14 +39,16 @@ namespace FemtoCraft {
         }
 
 
-        public bool Contains( IPAddress address ) {
+        public bool Contains( [NotNull] IPAddress address ) {
+            if( address == null ) throw new ArgumentNullException( "address" );
             lock( syncRoot ) {
                 return addresses.Any( address.Equals );
             }
         }
 
 
-        public bool Add( IPAddress address ) {
+        public bool Add( [NotNull] IPAddress address ) {
+            if( address == null ) throw new ArgumentNullException( "address" );
             lock( syncRoot ) {
                 IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
                 if( existingAddress == null ) {
@@ -55,7 +61,8 @@ namespace FemtoCraft {
         }
 
 
-        public bool Remove( IPAddress address ) {
+        public bool Remove( [NotNull] IPAddress address ) {
+            if( address == null ) throw new ArgumentNullException( "address" );
             lock( syncRoot ) {
                 IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
                 if( existingAddress == null ) {

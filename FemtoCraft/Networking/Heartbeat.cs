@@ -12,10 +12,12 @@ namespace FemtoCraft {
         static readonly TimeSpan Delay = TimeSpan.FromSeconds( 25 );
         const string UrlFileName = "externalurl.txt";
 
+
         public static void Start() {
             Thread heartbeatThread = new Thread( Beat ) { IsBackground = true };
             heartbeatThread.Start();
         }
+
 
         static void Beat() {
             while( true ) {

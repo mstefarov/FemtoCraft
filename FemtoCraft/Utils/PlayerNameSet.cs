@@ -1,6 +1,5 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
-
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +13,7 @@ namespace FemtoCraft {
 
 
         public PlayerNameSet( [NotNull] string fileName ) {
+            if( fileName == null ) throw new ArgumentNullException( "fileName" );
             this.fileName = fileName;
             if( !File.Exists( fileName ) ) return;
 
@@ -34,6 +34,7 @@ namespace FemtoCraft {
 
 
         public bool Contains( [NotNull] string name ) {
+            if( name == null ) throw new ArgumentNullException( "name" );
             lock( syncRoot ) {
                 return names.Contains( name.ToLower() );
             }
@@ -41,6 +42,7 @@ namespace FemtoCraft {
 
 
         public bool Add( [NotNull] string name ) {
+            if( name == null ) throw new ArgumentNullException( "name" );
             lock( syncRoot ) {
                 return names.Add( name.ToLower() );
             }
@@ -48,6 +50,7 @@ namespace FemtoCraft {
 
 
         public bool Remove( [NotNull] string name ) {
+            if( name == null ) throw new ArgumentNullException( "name" );
             lock( syncRoot ) {
                 return names.Remove( name.ToLower() );
             }
@@ -61,6 +64,7 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         public string[] GetCopy() {
             lock( syncRoot ) {
                 return names.ToArray();

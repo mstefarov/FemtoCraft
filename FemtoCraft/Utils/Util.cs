@@ -25,6 +25,7 @@ namespace FemtoCraft {
 
 
         public static void MemSet( [NotNull] this byte[] array, byte value, int startIndex, int length ) {
+            if( array == null ) throw new ArgumentNullException( "array" );
             if( length < 0 || length > array.Length ) {
                 throw new ArgumentOutOfRangeException( "length" );
             }
@@ -54,6 +55,9 @@ namespace FemtoCraft {
         [NotNull]
         public static string JoinToString<T>( [NotNull] this IEnumerable<T> items, [NotNull] string separator,
                                               [NotNull] Func<T, string> stringConversionFunction ) {
+            if( items == null ) throw new ArgumentNullException( "items" );
+            if( separator == null ) throw new ArgumentNullException( "separator" );
+            if( stringConversionFunction == null ) throw new ArgumentNullException( "stringConversionFunction" );
             StringBuilder sb = new StringBuilder();
             bool first = true;
             foreach( T item in items ) {
@@ -67,6 +71,8 @@ namespace FemtoCraft {
 
         [NotNull]
         public static string JoinToString<T>( [NotNull] this IEnumerable<T> items, [NotNull] string separator ) {
+            if( items == null ) throw new ArgumentNullException( "items" );
+            if( separator == null ) throw new ArgumentNullException( "separator" );
             StringBuilder sb = new StringBuilder();
             bool first = true;
             foreach( T item in items ) {

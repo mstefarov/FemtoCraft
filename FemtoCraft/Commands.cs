@@ -7,6 +7,8 @@ using JetBrains.Annotations;
 namespace FemtoCraft {
     static class Commands {
         public static void Parse( [NotNull] Player player, [NotNull] string message ) {
+            if( player == null ) throw new ArgumentNullException( "player" );
+            if( message == null ) throw new ArgumentNullException( "message" );
             string command, param;
             int spaceIndex = message.IndexOf( ' ' );
             if( spaceIndex == -1 ) {
@@ -52,6 +54,9 @@ namespace FemtoCraft {
                 case "lava":
                     LavaHandler( player );
                     break;
+                case "grass":
+                    GrassHandler( player );
+                    break;
 
                 case "say":
                 case "broadcast":
@@ -87,7 +92,7 @@ namespace FemtoCraft {
         }
 
 
-        static void OpsHandler( Player player ) {
+        static void OpsHandler( [NotNull] Player player ) {
             if( Server.Ops.Count > 0 ) {
                 player.Message( "Ops: {0}", Server.Ops.GetCopy().JoinToString( ", " ) );
             } else {
@@ -96,7 +101,7 @@ namespace FemtoCraft {
         }
 
 
-        static void OpHandler( Player player, string targetName ) {
+        static void OpHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Ops.Add( targetName ) ) {
                 Server.Ops.Save();
@@ -115,7 +120,7 @@ namespace FemtoCraft {
         }
 
 
-        static void DeopHandler( Player player, string targetName ) {
+        static void DeopHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Ops.Remove( targetName ) ) {
                 Server.Ops.Save();
@@ -137,7 +142,7 @@ namespace FemtoCraft {
         }
 
 
-        static void KickHandler( Player player, string targetName ) {
+        static void KickHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             Player target = Server.FindPlayer( player, targetName );
             if( target == null ) return;
@@ -145,7 +150,7 @@ namespace FemtoCraft {
         }
 
 
-        static void BanHandler( Player player, string targetName ) {
+        static void BanHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Bans.Add( targetName ) ) {
                 Server.Bans.Save();
@@ -162,7 +167,7 @@ namespace FemtoCraft {
         }
 
 
-        static void UnbanHandler( Player player, string targetName ) {
+        static void UnbanHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Bans.Remove( targetName ) ) {
                 Server.Bans.Save();
@@ -174,7 +179,7 @@ namespace FemtoCraft {
         }
 
 
-        static void BanIPHandler( Player player, string targetName ) {
+        static void BanIPHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             Player target = Server.FindPlayer( player, targetName );
             if( target == null ) return;
@@ -192,28 +197,35 @@ namespace FemtoCraft {
         }
 
 
-        static void SolidHandler( Player player ) {
+        static void SolidHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
             player.Message( player.PlaceSolid ? "Solid: Off" : "Solid: On" );
             player.PlaceSolid = !player.PlaceSolid;
         }
 
 
-        static void WaterHandler( Player player ) {
+        static void WaterHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
             player.Message( player.PlaceWater ? "Water: Off" : "Water: On" );
             player.PlaceWater = !player.PlaceWater;
         }
 
 
-        static void LavaHandler( Player player ) {
+        static void LavaHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
             player.Message( player.PlaceLava ? "Lava: Off" : "Lava: On" );
             player.PlaceLava = !player.PlaceLava;
         }
 
 
-        static void SayHandler( Player player, string message ) {
+        static void GrassHandler( [NotNull] Player player ) {
+            if( !player.CheckIfOp() ) return;
+            player.Message( player.PlaceGrass ? "Grass: Off" : "Grass: On" );
+            player.PlaceGrass = !player.PlaceGrass;
+        }
+
+
+        static void SayHandler( [NotNull] Player player, [CanBeNull] string message ) {
             if( player.CheckIfOp() ) {
                 if( message == null ) message = "";
                 Server.Players.Message( message );
@@ -221,7 +233,7 @@ namespace FemtoCraft {
         }
 
 
-        static void TeleportHandler( Player player, string targetName ) {
+        static void TeleportHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( player == Player.Console ) {
                 player.Message( "Can't teleport from console!" );
@@ -233,7 +245,7 @@ namespace FemtoCraft {
         }
 
 
-        static void BringHandler( Player player, string targetName ) {
+        static void BringHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( player == Player.Console ) {
                 player.Message( "Can't bring from console!" );
@@ -245,7 +257,7 @@ namespace FemtoCraft {
         }
 
 
-        static void SetSpawnHandler( Player player ) {
+        static void SetSpawnHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
             if( player == Player.Console ) {
                 player.Message( "Can't set spawn from console!" );
@@ -257,7 +269,7 @@ namespace FemtoCraft {
         }
 
 
-        static void WhitelistHandler( Player player ) {
+        static void WhitelistHandler( [NotNull] Player player ) {
             if( Config.UseWhitelist ) {
                 player.Message( "Whitelist: {0}", Server.Whitelist.GetCopy().JoinToString( ", " ) );
             } else {
@@ -266,7 +278,7 @@ namespace FemtoCraft {
         }
 
 
-        static void WhitelistAddHandler( Player player, string targetName ) {
+        static void WhitelistAddHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( !Config.UseWhitelist ) {
                 player.Message( "Whitelist is disabled." );
@@ -282,7 +294,7 @@ namespace FemtoCraft {
         }
 
 
-        static void WhitelistRemoveHandler( Player player, string targetName ) {
+        static void WhitelistRemoveHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( !Config.UseWhitelist ) {
                 player.Message( "Whitelist is disabled." );

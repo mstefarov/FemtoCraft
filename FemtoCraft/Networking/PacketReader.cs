@@ -2,10 +2,11 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class PacketReader : BinaryReader {
-        public PacketReader( Stream stream ) :
+        public PacketReader( [NotNull] Stream stream ) :
             base( stream ) { }
 
         public OpCode ReadOpCode() {

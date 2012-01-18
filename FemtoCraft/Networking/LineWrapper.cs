@@ -39,6 +39,7 @@ namespace FemtoCraft {
 
 
         public LineWrapper( [NotNull] string message ) {
+            if( message == null ) throw new ArgumentNullException( "message" );
             input = Encoding.ASCII.GetBytes( message );
             prefix = DefaultPrefix;
             Reset();
@@ -108,6 +109,7 @@ namespace FemtoCraft {
             PrepareOutput();
             return true;
         }
+
 
         bool ProcessChar( byte ch ) {
             switch( ch ) {
@@ -260,9 +262,11 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         object IEnumerator.Current {
             get { return Current; }
         }
+
 
         public IEnumerator<Packet> GetEnumerator() {
             return this;

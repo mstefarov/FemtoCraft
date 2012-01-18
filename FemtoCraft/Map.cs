@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed unsafe class Map {
@@ -61,8 +62,9 @@ namespace FemtoCraft {
         }
 
 
-
-        public static Map Load( string fileName ) {
+        [NotNull]
+        public static Map Load( [NotNull] string fileName ) {
+            if( fileName == null ) throw new ArgumentNullException( "fileName" );
             using( FileStream mapStream = File.OpenRead( fileName ) ) {
                 using( GZipStream gs = new GZipStream( mapStream, CompressionMode.Decompress ) ) {
                     BinaryReader bs = new BinaryReader( gs );
@@ -115,7 +117,9 @@ namespace FemtoCraft {
             }
         }
 
-        public void Save( string fileName ) {
+
+        public void Save( [NotNull] string fileName ) {
+            if( fileName == null ) throw new ArgumentNullException( "fileName" );
             using( FileStream mapStream = File.Create( fileName ) ) {
                 using( GZipStream gs = new GZipStream( mapStream, CompressionMode.Compress ) ) {
                     BinaryWriter bs = new BinaryWriter( gs );
@@ -150,7 +154,6 @@ namespace FemtoCraft {
         }
 
 
-        
         static readonly byte[] Mapping = new byte[256];
 
         static Map() {

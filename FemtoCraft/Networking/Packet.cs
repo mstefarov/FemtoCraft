@@ -1,4 +1,6 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+
+using System;
 using System.Text;
 using JetBrains.Annotations;
 
@@ -7,19 +9,19 @@ namespace FemtoCraft {
         public readonly byte[] Bytes;
 
 
+        public OpCode OpCode {
+            get { return (OpCode)Bytes[0]; }
+        }
+
+
         public Packet( OpCode opCode ) {
             Bytes = new byte[GetPacketSize( opCode )];
             Bytes[0] = (byte)opCode;
         }
 
 
-        public Packet( byte[] bytes ) {
+        public Packet( [NotNull] byte[] bytes ) {
             Bytes = bytes;
-        }
-
-
-        public OpCode OpCode {
-            get { return (OpCode)Bytes[0]; }
         }
 
 
@@ -60,6 +62,7 @@ namespace FemtoCraft {
 
 
         public static Packet MakeAddEntity( byte id, [NotNull] string name, Position pos ) {
+            if( name == null ) throw new ArgumentNullException( "name" );
             Packet packet = new Packet( OpCode.AddEntity );
             packet.Bytes[1] = id;
             Encoding.ASCII.GetBytes( name.PadRight( 64 ), 0, 64, packet.Bytes, 2 );
@@ -112,7 +115,8 @@ namespace FemtoCraft {
         #endregion
 
 
-        static void ToNetOrder( int number, byte[] arr, int offset ) {
+        static void ToNetOrder( int number, [NotNull] byte[] arr, int offset ) {
+            if( arr == null ) throw new ArgumentNullException( "arr" );
             arr[offset] = (byte)( ( number & 0xff00 ) >> 8 );
             arr[offset + 1] = (byte)( number & 0x00ff );
         }

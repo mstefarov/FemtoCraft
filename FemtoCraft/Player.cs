@@ -16,8 +16,9 @@ namespace FemtoCraft {
     sealed class Player {
         public static readonly Player Console = new Player( "(console)" );
 
-        public IPAddress IP { get; private set; }
+        [NotNull]
         public string Name { get; private set; }
+        public IPAddress IP { get; private set; }
         public Position Position { get; private set; }
 
         public byte ID { get; set; }
@@ -38,13 +39,14 @@ namespace FemtoCraft {
              canQueue = true;
 
 
-        Player( string name ) {
+        Player( [NotNull] string name ) {
             Name = name;
             IsOp = true;
         }
 
 
         public Player( [NotNull] TcpClient newClient ) {
+            if( newClient == null ) throw new ArgumentNullException( "newClient" );
             try {
                 client = newClient;
                 thread = new Thread( IoThread, StackSize ) {
@@ -496,7 +498,8 @@ namespace FemtoCraft {
 
         public bool PlaceWater,
                     PlaceLava,
-                    PlaceSolid;
+                    PlaceSolid,
+                    PlaceGrass;
 
         readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
         const int AntiGriefBlocks = 47,
@@ -624,7 +627,7 @@ namespace FemtoCraft {
         }
 
 
-        void ProcessMessage( string rawMessage ) {
+        public void ProcessMessage( [NotNull] string rawMessage ) {
             // handle normal chat
             if( DetectChatSpam() ) return;
 
@@ -699,7 +702,7 @@ namespace FemtoCraft {
         }
 
 
-        public bool CheckPlayerName( string givenName ) {
+        public bool CheckPlayerName( [CanBeNull] string givenName ) {
             if( givenName == null ) {
                 Message( "This command requires a player name." );
                 return false;
@@ -744,7 +747,7 @@ namespace FemtoCraft {
         }
 
 
-        public static bool ContainsInvalidChars( [NotNull] string message ) {
+        static bool ContainsInvalidChars( [NotNull] string message ) {
             return message.Any( t => t < ' ' || t == '&' || t > '~' );
         }
     }

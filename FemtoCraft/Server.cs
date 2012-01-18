@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.27";
+        public const string VersionString = "FemtoCraft 0.29";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -84,7 +84,7 @@ namespace FemtoCraft {
             while( true ) {
                 string input = Console.ReadLine();
                 if( input == null ) return;
-                Commands.Parse( Player.Console, input );
+                Player.Console.ProcessMessage( input );
             }
 
 #if !DEBUG
@@ -142,6 +142,7 @@ namespace FemtoCraft {
 
 
         static void AcceptCallback( [NotNull] IAsyncResult e ) {
+            if( e == null ) throw new ArgumentNullException( "e" );
             TcpClient client = listener.EndAcceptTcpClient( e );
             new Player( client );
         }
@@ -167,6 +168,7 @@ namespace FemtoCraft {
 
 
         public static bool RegisterPlayer( [NotNull] Player player ) {
+            if( player == null ) throw new ArgumentNullException( "player" );
             lock( PlayerListLock ) {
                 // Kick other sessions with same player name
                 Player ghost = PlayerIndex.FirstOrDefault( p => p.Name.Equals( player.Name,
@@ -224,6 +226,7 @@ namespace FemtoCraft {
 
 
         public static void UnregisterPlayer( [NotNull] Player player ) {
+            if( player == null ) throw new ArgumentNullException( "player" );
             if( !player.HasRegistered ) return;
             lock( PlayerListLock ) {
                 // Despawn player entity
@@ -250,12 +253,15 @@ namespace FemtoCraft {
 
         [CanBeNull]
         public static Player FindPlayerExact( [NotNull] string fullName ) {
+            if( fullName == null ) throw new ArgumentNullException( "fullName" );
             return Players.FirstOrDefault( p => p.Name.Equals( fullName, StringComparison.OrdinalIgnoreCase ) );
         }
 
 
         [CanBeNull]
         public static Player FindPlayer( [NotNull] Player player, [NotNull] string partialName ) {
+            if( player == null ) throw new ArgumentNullException( "player" );
+            if( partialName == null ) throw new ArgumentNullException( "partialName" );
             List<Player> matches = new List<Player>();
             foreach( Player otherPlayer in Players ) {
                 if( otherPlayer.Name.Equals( partialName, StringComparison.OrdinalIgnoreCase ) ) {
@@ -265,15 +271,17 @@ namespace FemtoCraft {
                     matches.Add( otherPlayer );
                 }
             }
-            if( matches.Count == 0 ) {
-                player.Message( "No players found matching \"{0}\"", partialName );
-            } else if( matches.Count == 1 ) {
-                return matches[0];
-            } else {
-                player.Message( "More than one player matched \"{0}\": {1}",
-                                partialName, matches.JoinToString( ", ", p => p.Name ) );
+            switch( matches.Count ) {
+                case 0:
+                    player.Message( "No players found matching \"{0}\"", partialName );
+                    return null;
+                case 1:
+                    return matches[0];
+                default:
+                    player.Message( "More than one player matched \"{0}\": {1}",
+                                    partialName, matches.JoinToString( ", ", p => p.Name ) );
+                    return null;
             }
-            return null;
         }
 
         #endregion
@@ -282,6 +290,9 @@ namespace FemtoCraft {
         [StringFormatMethod( "message" )]
         public static void Message( [NotNull] this IEnumerable<Player> source,
                                     [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            if( source == null ) throw new ArgumentNullException( "source" );
+            if( message == null ) throw new ArgumentNullException( "message" );
+            if( formatArgs == null ) throw new ArgumentNullException( "formatArgs" );
             if( formatArgs.Length > 0 ) {
                 message = String.Format( message, formatArgs );
             }
@@ -299,6 +310,9 @@ namespace FemtoCraft {
         public static void Message( [NotNull] this IEnumerable<Player> source,
                                     [CanBeNull] Player except, bool sentToConsole,
                                     [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            if( source == null ) throw new ArgumentNullException( "source" );
+            if( message == null ) throw new ArgumentNullException( "message" );
+            if( formatArgs == null ) throw new ArgumentNullException( "formatArgs" );
             if( formatArgs.Length > 0 ) {
                 message = String.Format( message, formatArgs );
             }
@@ -317,6 +331,7 @@ namespace FemtoCraft {
 
         public static void Send( [NotNull] this IEnumerable<Player> source, [CanBeNull] Player except,
                                  Packet packet ) {
+            if( source == null ) throw new ArgumentNullException( "source" );
             foreach( Player player in source ) {
                 if( player == except ) continue;
                 player.Send( packet );
