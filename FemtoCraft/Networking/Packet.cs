@@ -1,5 +1,9 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 
+using System;
+using System.Text;
+using JetBrains.Annotations;
+
 namespace FemtoCraft {
     struct Packet {
         public readonly byte[] Bytes;
@@ -63,6 +67,7 @@ namespace FemtoCraft {
             return MakeTeleport( 255, pos.GetFixed() );
         }
 
+
         public static Packet MakeTeleport( int id, Position pos ) {
             Packet packet = new Packet( OpCode.Teleport );
             packet.Bytes[1] = (byte)id;
@@ -71,6 +76,26 @@ namespace FemtoCraft {
             ToNetOrder( pos.Y, packet.Bytes, 6 );
             packet.Bytes[8] = pos.R;
             packet.Bytes[9] = pos.L;
+            return packet;
+        }
+
+
+        public static Packet MakeSetPermission( bool isOp ) {
+            Packet packet = new Packet( OpCode.SetPermission );
+            if( isOp ) packet.Bytes[1] = 100;
+            return packet;
+        }
+
+
+        public static Packet MakeAddEntity( byte id, [NotNull] string name, Position pos ) {
+            Packet packet = new Packet( OpCode.AddEntity );
+            packet.Bytes[1] = id;
+            Encoding.ASCII.GetBytes( name.PadRight( 64 ), 0, 64, packet.Bytes, 2 );
+            ToNetOrder( pos.X, packet.Bytes, 66 );
+            ToNetOrder( pos.Z, packet.Bytes, 68 );
+            ToNetOrder( pos.Y, packet.Bytes, 70 );
+            packet.Bytes[72] = pos.R;
+            packet.Bytes[73] = pos.L;
             return packet;
         }
     }

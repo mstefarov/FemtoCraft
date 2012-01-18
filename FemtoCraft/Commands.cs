@@ -58,6 +58,10 @@ namespace FemtoCraft {
                     TeleportHandler( player, param );
                     break;
 
+                case "setspawn":
+                    SetSpawnHandler( player );
+                    break;
+
                 default:
                     player.Message( "Unknown command \"{0}\"", command );
                     break;
@@ -73,6 +77,7 @@ namespace FemtoCraft {
                 if( target != null ) {
                     targetName = target.Name;
                     target.IsOp = true;
+                    target.Send( Packet.MakeSetPermission( target.IsOp ) );
                     target.Message( "You are now op!" );
                 }
                 Server.Players.Message( null, "Player {0} was promoted by {1}",
@@ -94,6 +99,7 @@ namespace FemtoCraft {
                     target.PlaceSolid = false;
                     target.PlaceWater = false;
                     target.PlaceLava = false;
+                    target.Send( Packet.MakeSetPermission( target.IsOp ) );
                     target.Message( "You are no longer op." );
                 }
                 Server.Players.Message( null, "Player {0} was demoted by {1}",
@@ -143,38 +149,35 @@ namespace FemtoCraft {
 
 
         static void SolidHandler( Player player ) {
-            if( player.CheckIfOp() ) {
-                if( player.PlaceSolid ) {
-                    player.Message( "Solid: Off" );
-                } else {
-                    player.Message( "Solid: On" );
-                }
-                player.PlaceSolid = !player.PlaceSolid;
+            if( !player.CheckIfOp() ) return;
+            if( player.PlaceSolid ) {
+                player.Message( "Solid: Off" );
+            } else {
+                player.Message( "Solid: On" );
             }
+            player.PlaceSolid = !player.PlaceSolid;
         }
 
 
         static void WaterHandler( Player player ) {
-            if( player.CheckIfOp() ) {
-                if( player.PlaceWater ) {
-                    player.Message( "Water: Off" );
-                } else {
-                    player.Message( "Water: On" );
-                }
-                player.PlaceWater = !player.PlaceWater;
+            if( !player.CheckIfOp() ) return;
+            if( player.PlaceWater ) {
+                player.Message( "Water: Off" );
+            } else {
+                player.Message( "Water: On" );
             }
+            player.PlaceWater = !player.PlaceWater;
         }
 
 
         static void LavaHandler( Player player ) {
-            if( player.CheckIfOp() ) {
-                if( player.PlaceLava ) {
-                    player.Message( "Lava: Off" );
-                } else {
-                    player.Message( "Lava: On" );
-                }
-                player.PlaceLava = !player.PlaceLava;
+            if( !player.CheckIfOp() ) return;
+            if( player.PlaceLava ) {
+                player.Message( "Lava: Off" );
+            } else {
+                player.Message( "Lava: On" );
             }
+            player.PlaceLava = !player.PlaceLava;
         }
 
 
@@ -187,10 +190,25 @@ namespace FemtoCraft {
 
         static void TeleportHandler( Player player, string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
-
+            if( player == Player.Console ) {
+                player.Message( "Can't teleport from console!" );
+                return;
+            }
             Player target = Server.FindPlayer( player, targetName );
             if( target == null ) return;
             player.Send( Packet.MakeSelfTeleport( target.Position ) );
+        }
+
+
+        static void SetSpawnHandler( Player player ) {
+            if( !player.CheckIfOp() ) return;
+            if( player == Player.Console ) {
+                player.Message( "Can't set spawn from console!" );
+                return;
+            }
+            Server.Map.Spawn = player.Position;
+            player.Send( Packet.MakeAddEntity( 255, player.Name, Server.Map.Spawn ) );
+            Server.Players.Message( null, "Player {0} set a new spawn point.", player.Name );
         }
     }
 }

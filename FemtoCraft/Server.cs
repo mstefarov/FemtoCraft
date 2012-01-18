@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.20";
+        public const string VersionString = "FemtoCraft 0.25";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -37,35 +37,38 @@ namespace FemtoCraft {
             Console.Title = VersionString;
             Logger.Log( "Starting {0}", VersionString );
 
+            // load config and fire up the heartbeat
             Config.Load();
-
             Console.Title = Config.ServerName + " - " + VersionString;
+            Heartbeat.Start();
 
+            // load lists of bans/ops/IP-bans
             Bans = new PlayerNameSet( BansFileName );
             Ops = new PlayerNameSet( OpsFileName );
             IPBans = new IPAddressSet( IPBanFileName );
-
             Logger.Log( "Server: Tracking {0} bans and {1} ops.",
                         Bans.Count, Ops.Count );
 
-            Heartbeat.Start();
+            // load or create map
             if( File.Exists( MapFileName ) ) {
                 Map = Map.Load( MapFileName );
             } else {
                 Map = Map.CreateFlatgrass( 256, 256, 64 );
             }
-            UpdatePlayerList();
-
             Map.Save( MapFileName );
 
+            // start listening for incoming connections
+            UpdatePlayerList();
             listener = new TcpListener( IPAddress.Any, Config.Port );
             listener.Start();
 
-            Thread mainThread = new Thread( MainLoop ) {
-                                                           IsBackground = true
-                                                       };
-            mainThread.Start();
+            // start the scheduler thread
+            Thread schedulerThread = new Thread( MainLoop ) {
+                IsBackground = true
+            };
+            schedulerThread.Start();
 
+            // listen for console input
             while( true ) {
                 string input = Console.ReadLine();
                 if( input == null ) return;
