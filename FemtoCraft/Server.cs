@@ -287,11 +287,14 @@ namespace FemtoCraft {
         #endregion
 
 
-        public static void ChangeMap( Map newMap ) {
-            ThreadPool.QueueUserWorkItem( ChangeMapCallback );
+        public static void ChangeMap( [NotNull] Map newMap ) {
+            if( newMap == null ) throw new ArgumentNullException( "newMap" );
+            ThreadPool.QueueUserWorkItem( ChangeMapCallback, newMap );
         }
 
-        static void ChangeMapCallback( object mapObj ) {
+
+        static void ChangeMapCallback( [NotNull] object mapObj ) {
+            if( mapObj == null ) throw new ArgumentNullException( "mapObj" );
             Map newMap = (Map)mapObj;
             lock( PlayerListLock ) {
                 foreach( Player player in PlayerIndex ) {

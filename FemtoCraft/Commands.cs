@@ -324,7 +324,7 @@ namespace FemtoCraft {
         }
 
 
-        static void LoadHandler( Player player, string fileName ) {
+        static void LoadHandler( [NotNull] Player player, [CanBeNull] string fileName ) {
             if( !player.CheckIfOp() ) return;
             if( fileName == null ) {
                 player.Message( "Load: Filename required." );
@@ -348,7 +348,7 @@ namespace FemtoCraft {
         }
 
 
-        static void SaveHandler( Player player, string fileName ) {
+        static void SaveHandler( [NotNull] Player player, [CanBeNull] string fileName ) {
             if( !player.CheckIfOp() ) return;
             if( fileName == null || !fileName.EndsWith(".lvl") ) {
                 player.Message( "Load: Filename that ends with .lvl is required." );
