@@ -28,6 +28,12 @@ namespace FemtoCraft {
 
 
         [StringFormatMethod( "message" )]
+        public static void LogCommand( [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            LogInternal( message, formatArgs, "Command ", false );
+        }
+
+
+        [StringFormatMethod( "message" )]
         public static void Log( [NotNull] string message, [NotNull] params object[] formatArgs ) {
             LogInternal( message, formatArgs, "", false );
         }

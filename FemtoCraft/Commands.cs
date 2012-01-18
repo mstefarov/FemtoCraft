@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 
 using System;
+using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -18,6 +19,7 @@ namespace FemtoCraft {
                 command = message.Substring( 1, spaceIndex - 1 ).ToLower();
                 param = message.Substring( spaceIndex + 1 ).Trim();
             }
+            Logger.LogCommand( "{0}: {1}", player.Name, message );
 
             switch( command ) {
                 case "ops":
@@ -83,6 +85,13 @@ namespace FemtoCraft {
                     break;
                 case "whitelistremove":
                     WhitelistRemoveHandler( player, param );
+                    break;
+
+                case "load":
+                    LoadHandler( player, param );
+                    break;
+                case "save":
+                    SaveHandler( player, param );
                     break;
 
                 default:
@@ -311,6 +320,44 @@ namespace FemtoCraft {
                                         targetName, player.Name );
             } else {
                 player.Message( "Player {0} is not whitelisted.", targetName );
+            }
+        }
+
+
+        static void LoadHandler( Player player, string fileName ) {
+            if( !player.CheckIfOp() ) return;
+            if( fileName == null ) {
+                player.Message( "Load: Filename required." );
+                return;
+            }
+            try {
+                Map map;
+                if( fileName.EndsWith( ".dat", StringComparison.OrdinalIgnoreCase ) ) {
+                    map = DatMapConverter.Load( fileName );
+                } else if( fileName.EndsWith( ".lvl", StringComparison.OrdinalIgnoreCase ) ) {
+                    map = Map.Load( fileName );
+                }else {
+                    player.Message( "Load: Unsupported map format." );
+                    return;
+                }
+                Server.Players.Message( "Player {0} changed map to {1}", player.Name, fileName );
+                Server.ChangeMap( map );
+            } catch( Exception ex ) {
+                player.Message( "Could not load map: {0}: {1}", ex.GetType().Name, ex.Message );
+            }
+        }
+
+
+        static void SaveHandler( Player player, string fileName ) {
+            if( !player.CheckIfOp() ) return;
+            if( fileName == null || !fileName.EndsWith(".lvl") ) {
+                player.Message( "Load: Filename that ends with .lvl is required." );
+                return;
+            }
+            try {
+                Server.Map.Save( fileName );
+            } catch( Exception ex ) {
+                player.Message( "Could not save map: {0}: {1}", ex.GetType().Name, ex.Message );
             }
         }
     }
