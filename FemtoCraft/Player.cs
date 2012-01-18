@@ -25,6 +25,7 @@ namespace FemtoCraft {
         public bool HasRegistered { get; set; }
 
         const int Timeout = 10000;
+        const int StackSize = 262144; // 256 KB, minimum on Vista/7
         readonly TcpClient client;
         NetworkStream stream;
         PacketReader reader;
@@ -45,9 +46,9 @@ namespace FemtoCraft {
         public Player( [NotNull] TcpClient newClient ) {
             try {
                 client = newClient;
-                thread = new Thread( IoThread ) {
-                                                    IsBackground = true
-                                                };
+                thread = new Thread( IoThread, StackSize ) {
+                    IsBackground = true
+                };
                 thread.Start();
 
             } catch( Exception ex ) {
