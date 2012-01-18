@@ -53,5 +53,16 @@ namespace FemtoCraft {
         }
 
         #endregion
+
+        // Adjust for bugs in position-reporting in Minecraft client by offsetting Z by -22 units.
+        public Position GetFixed() {
+            return new Position {
+                X = X,
+                Y = Y,
+                Z = (short)( Z - 22 ),
+                R = R,
+                L = L
+            };
+        }
     }
 }

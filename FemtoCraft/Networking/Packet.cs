@@ -57,5 +57,21 @@ namespace FemtoCraft {
             packet.Bytes[7] = (byte)type;
             return packet;
         }
+
+
+        public static Packet MakeSelfTeleport( Position pos ) {
+            return MakeTeleport( 255, pos.GetFixed() );
+        }
+
+        public static Packet MakeTeleport( int id, Position pos ) {
+            Packet packet = new Packet( OpCode.Teleport );
+            packet.Bytes[1] = (byte)id;
+            ToNetOrder( pos.X, packet.Bytes, 2 );
+            ToNetOrder( pos.Z, packet.Bytes, 4 );
+            ToNetOrder( pos.Y, packet.Bytes, 6 );
+            packet.Bytes[8] = pos.R;
+            packet.Bytes[9] = pos.L;
+            return packet;
+        }
     }
 }

@@ -26,6 +26,7 @@ namespace FemtoCraft {
                     break;
 
                 case "kick":
+                case "k":
                     KickHandler( player, param );
                     break;
 
@@ -47,6 +48,16 @@ namespace FemtoCraft {
 
                 case "lava":
                     LavaHandler( player );
+                    break;
+
+                case "say":
+                case "broadcast":
+                    SayHandler( player, param );
+                    break;
+
+                case "tp":
+                case "teleport":
+                    TeleportHandler( player, param );
                     break;
 
                 default:
@@ -166,6 +177,22 @@ namespace FemtoCraft {
                 }
                 player.PlaceLava = !player.PlaceLava;
             }
+        }
+
+
+        static void SayHandler( Player player, string message ) {
+            if( player.CheckIfOp() ) {
+                Server.Players.Message( null, message );
+            }
+        }
+
+
+        static void TeleportHandler( Player player, string targetName ) {
+            if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
+
+            Player target = Server.FindPlayer( player, targetName );
+            if( target == null ) return;
+            player.Send( Packet.MakeSelfTeleport( target.Position ) );
         }
     }
 }
