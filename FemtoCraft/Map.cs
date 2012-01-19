@@ -34,13 +34,8 @@ namespace FemtoCraft {
             Spawn = new Position( Width * 16, Length * 16,
                                   Math.Min( Height * 32, short.MaxValue ) );
             sandPhysics= new SandPhysics( this );
-        }
-
-
-        readonly SandPhysics sandPhysics;
-        public void TriggerPhysics( Player player, int x, int y, int z, Block type ) {
-            SetBlock( x, y, z, type );
-            sandPhysics.Trigger( player, x, y, z, type );
+            shadows = new short[Width, Length];
+            CalculateShadows();
         }
 
 
@@ -51,6 +46,7 @@ namespace FemtoCraft {
 
         public void SetBlock( int x, int y, int z, Block type ) {
             if( x < Width && y < Length && z < Height && x >= 0 && y >= 0 && z >= 0 ) {
+                UpdateShadow( x, y, z );
                 Blocks[Index( x, y, z )] = (byte)type;
             }
         }
@@ -69,6 +65,45 @@ namespace FemtoCraft {
             return x < Width && y < Length && z < Height && x >= 0 && y >= 0 && z >= 0;
         }
 
+
+        #region Physics
+
+        readonly short[,] shadows;
+        readonly SandPhysics sandPhysics;
+
+        public void TriggerPhysics( Player player, int x, int y, int z, Block type ) {
+            SetBlock( x, y, z, type );
+            sandPhysics.Trigger( player, x, y, z, type );
+        }
+
+
+        public void PhysicsTick() {
+            // todo
+        }
+
+
+        void CalculateShadows() {
+            for( int x = 0; x < Width; x++ ) {
+                for( int y = 0; y < Length; y++ ) {
+                    UpdateShadow( x, y, Height - 1 );
+                }
+            }
+        }
+
+
+        void UpdateShadow( int x, int y, int topZ ) {
+            for( int z = topZ; z >= 0; z-- ) {
+                if( GetBlock( x, y, z ).CastsShadow() ) {
+                    shadows[x, y] = (short)z;
+                    break;
+                }
+            }
+        }
+
+        #endregion
+
+
+        #region Loading and Saving
 
         [NotNull]
         public static Map Load( [NotNull] string fileName ) {
@@ -290,5 +325,7 @@ namespace FemtoCraft {
             Mapping[248] = (byte)Block.Red;         // fishsalmon
             Mapping[249] = (byte)Block.Blue;        // fishbetta
         }
+
+        #endregion
     }
 }

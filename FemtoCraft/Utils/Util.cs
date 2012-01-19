@@ -82,5 +82,21 @@ namespace FemtoCraft {
             }
             return sb.ToString();
         }
+
+
+        public static bool CastsShadow( this Block block) {
+            switch( block ) {
+                case Block.Air:
+                case Block.BrownMushroom:
+                case Block.Glass:
+                case Block.Leaves:
+                case Block.RedFlower:
+                case Block.RedMushroom:
+                case Block.YellowFlower:
+                    return false;
+                default:
+                    return true;
+            }
+        }
     }
 }

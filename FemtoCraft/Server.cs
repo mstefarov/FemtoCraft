@@ -97,7 +97,7 @@ namespace FemtoCraft {
         #region Scheduler
 
         static TcpListener listener;
-        static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 100 );
+        static readonly TimeSpan PhysicsInterval = TimeSpan.FromSeconds( 1/12 );
         static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
         static readonly TimeSpan PingInterval = TimeSpan.FromSeconds( 5 );
 
@@ -129,7 +129,7 @@ namespace FemtoCraft {
                 }
 
                 while( now.Subtract( physicsTick ) > PhysicsInterval ) {
-                    // todo: tick physics
+                    Map.PhysicsTick();
                     physicsTick += PhysicsInterval;
                 }
 
