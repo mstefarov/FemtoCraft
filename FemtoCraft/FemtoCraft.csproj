@@ -46,6 +46,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Physics\SandPhysics.cs" />
     <Compile Include="Utils\BitList.cs" />
     <Compile Include="Block.cs" />
     <Compile Include="Config.cs" />

@@ -573,7 +573,7 @@ namespace FemtoCraft {
 
             // update map
             // todo: queue for physics processing
-            Server.Map.SetBlock( x, y, z, block );
+            Server.Map.TriggerPhysics( this, x, y, z, block );
             if( (byte)block != rawType ) {
                 Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, block ) );
             } else {

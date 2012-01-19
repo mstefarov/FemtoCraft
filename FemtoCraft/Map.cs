@@ -33,6 +33,14 @@ namespace FemtoCraft {
             Blocks = new byte[Volume];
             Spawn = new Position( Width * 16, Length * 16,
                                   Math.Min( Height * 32, short.MaxValue ) );
+            sandPhysics= new SandPhysics( this );
+        }
+
+
+        readonly SandPhysics sandPhysics;
+        public void TriggerPhysics( Player player, int x, int y, int z, Block type ) {
+            SetBlock( x, y, z, type );
+            sandPhysics.Trigger( player, x, y, z, type );
         }
 
 
