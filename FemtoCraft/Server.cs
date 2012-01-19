@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.34";
+        public const string VersionString = "FemtoCraft 0.35";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -70,11 +70,11 @@ namespace FemtoCraft {
             UpdatePlayerList();
 
             // start listening for incoming connections
-            listener = new TcpListener( IPAddress.Any, Config.Port );
+            listener = new TcpListener( Config.IP, Config.Port );
             listener.Start();
 
             // start the scheduler thread
-            Thread schedulerThread = new Thread( MainLoop ) {
+            Thread schedulerThread = new Thread( SchedulerLoop ) {
                 IsBackground = true
             };
             schedulerThread.Start();
@@ -102,7 +102,7 @@ namespace FemtoCraft {
         static readonly TimeSpan PingInterval = TimeSpan.FromSeconds( 5 );
 
 
-        static void MainLoop() {
+        static void SchedulerLoop() {
             DateTime now = DateTime.UtcNow;
             DateTime physicsTick = now;
             DateTime mapTick = now;
@@ -178,7 +178,8 @@ namespace FemtoCraft {
                 }
 
                 // check the number of connections from this IP.
-                if( !player.IP.Equals( IPAddress.Loopback ) && Config.MaxConnections > 0 ) {
+                if( !player.IP.Equals( IPAddress.Loopback ) &&
+                    ( !player.IsOp && Config.MaxConnections > 0 || player.IsOp && Config.OpMaxConnections > 0 ) ) {
                     int connections = PlayerIndex.Count( p => p.IP.Equals( player.IP ) );
                     if( connections >= Config.MaxConnections ) {
                         player.Kick( "Too many connections from your IP address!" );

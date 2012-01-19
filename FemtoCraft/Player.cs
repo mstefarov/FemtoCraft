@@ -383,7 +383,7 @@ namespace FemtoCraft {
             // if player is just pushed around, rotation does not change (and timer should not reset)
             if( rotChanged ) ResetIdleTimer();
 
-            if( !Config.AllowSpeedHack ) {
+            if( !IsOp && !Config.AllowSpeedHack || IsOp && !Config.OpAllowSpeedHack ) {
                 int distSquared = delta.X * delta.X + delta.Y * delta.Y + delta.Z * delta.Z;
                 // speedhack detection
                 if( DetectMovementPacketSpam() ) {
@@ -525,19 +525,23 @@ namespace FemtoCraft {
             if( !Server.Map.InBounds( x, y, z ) ) return true;
 
             // check if player is close enough to place
-            if( Math.Abs( x * 32 - Position.X ) > MaxBlockPlacementRange ||
-                Math.Abs( y * 32 - Position.Y ) > MaxBlockPlacementRange ||
-                Math.Abs( z * 32 - Position.Z ) > MaxBlockPlacementRange ) {
-                KickNow( "Hacking detected." );
-                Logger.LogWarning( "Player {0} tried to place a block too far away.", Name );
-                return false;
+            if( !IsOp && Config.LimitClickDistance || IsOp && Config.OpLimitClickDistance ) {
+                if( Math.Abs( x * 32 - Position.X ) > MaxBlockPlacementRange ||
+                    Math.Abs( y * 32 - Position.Y ) > MaxBlockPlacementRange ||
+                    Math.Abs( z * 32 - Position.Z ) > MaxBlockPlacementRange ) {
+                    KickNow( "Hacking detected." );
+                    Logger.LogWarning( "Player {0} tried to place a block too far away.", Name );
+                    return false;
+                }
             }
 
             // check click rate
-            if( Config.LimitClickRate && DetectBlockSpam() ) {
-                KickNow( "Hacking detected." );
-                Logger.LogWarning( "Player {0} tried to place blocks too quickly.", Name );
-                return false;
+            if( !IsOp && Config.LimitClickRate || IsOp && Config.OpLimitClickRate ) {
+                if( DetectBlockSpam() ) {
+                    KickNow( "Hacking detected." );
+                    Logger.LogWarning( "Player {0} tried to place blocks too quickly.", Name );
+                    return false;
+                }
             }
 
             // apply blocktype mapping
@@ -622,7 +626,9 @@ namespace FemtoCraft {
                 return false;
             }
 
-            if( DetectChatSpam() ) return false;
+            if( !IsOp && Config.LimitChatRate || IsOp && Config.OpLimitChatRate ) {
+                if( DetectChatSpam() ) return false;
+            }
 
             ProcessMessage( message );
             return true;

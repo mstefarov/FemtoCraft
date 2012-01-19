@@ -37,6 +37,7 @@ namespace FemtoCraft {
                     request.Timeout = (int)Timeout.TotalMilliseconds;
                     request.CachePolicy = new HttpRequestCachePolicy( HttpRequestCacheLevel.BypassCache );
                     request.UserAgent = Server.VersionString;
+                    request.ServicePoint.BindIPEndPointDelegate = new BindIPEndPoint( BindIPEndPointCallback );
 
                     using( HttpWebResponse response = (HttpWebResponse)request.GetResponse() ) {
                         using( StreamReader responseReader = new StreamReader( response.GetResponseStream() ) ) {
@@ -59,6 +60,11 @@ namespace FemtoCraft {
                     Logger.LogError( "Heartbeat: {0}: {1}", ex.GetType().Name, ex.Message );
                 }
             }
+        }
+
+
+        static IPEndPoint BindIPEndPointCallback( ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount ) {
+            return new IPEndPoint( Config.IP, 0 );
         }
     }
 }
