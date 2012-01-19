@@ -10,15 +10,13 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.30";
+        public const string VersionString = "FemtoCraft 0.33";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
 
-        public static int PlayerCount { get; set; }
-
         const string MapFileName = "map.lvl";
-        public static Map Map { get; set; }
+        public static Map Map { get; private set; }
 
         const string BansFileName = "banned.txt";
         public static PlayerNameSet Bans { get; private set; }
@@ -28,7 +26,6 @@ namespace FemtoCraft {
 
         const string IPBanFileName = "banned-ip.txt";
         public static IPAddressSet IPBans { get; private set; }
-
 
         const string WhitelistFileName = "whitelist.txt";
         public static PlayerNameSet Whitelist { get; private set; }
@@ -54,7 +51,8 @@ namespace FemtoCraft {
                         Bans.Count, Ops.Count );
             if( Config.UseWhitelist ) {
                 Whitelist = new PlayerNameSet( WhitelistFileName );
-                Logger.Log( "Using a whitelist ({0} players).", Whitelist.Count );
+                Logger.Log( "Using a whitelist ({0} players): {1}",
+                            Whitelist.Count, Whitelist.GetCopy().JoinToString( ", " ) );
             }
 
             // load or create map
@@ -65,12 +63,13 @@ namespace FemtoCraft {
                 Map.Save( MapFileName );
             }
 
-            // start listening for incoming connections
+            // prepare to accept players
             for( byte i = 1; i <= sbyte.MaxValue; i++ ) {
                 FreePlayerIDs.Push( i );
             }
             UpdatePlayerList();
 
+            // start listening for incoming connections
             listener = new TcpListener( IPAddress.Any, Config.Port );
             listener.Start();
 
@@ -160,10 +159,8 @@ namespace FemtoCraft {
 
         [NotNull]
         public static Player[] Players { get; private set; }
-
         static readonly Stack<byte> FreePlayerIDs = new Stack<byte>( 127 );
         static readonly List<Player> PlayerIndex = new List<Player>();
-
         static readonly object PlayerListLock = new object();
 
 

@@ -60,7 +60,6 @@ namespace FemtoCraft {
         }
 
 
-        [NotNull]
         static string Timestamp() {
             return DateTime.Now.ToString( "yyyy'-'MM'-'dd' 'HH':'mm':'ss" );
         }

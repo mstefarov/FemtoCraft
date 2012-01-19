@@ -27,7 +27,7 @@ namespace FemtoCraft {
                                        MinecraftUri,
                                        Config.Public,
                                        Config.MaxPlayers,
-                                       Server.PlayerCount,
+                                       Server.Players.Length,
                                        Config.Port,
                                        Uri.EscapeDataString( Server.Salt ),
                                        Uri.EscapeDataString( Config.ServerName ) );

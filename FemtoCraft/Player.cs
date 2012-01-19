@@ -545,11 +545,13 @@ namespace FemtoCraft {
                 block = Block.Lava;
             } else if( block == Block.Stone && PlaceSolid ) {
                 block = Block.Admincrete;
+            } else if( block == Block.Dirt && PlaceGrass ) {
+                block = Block.Grass;
             }
 
             // check if blocktype is permitted
             if( ( block == Block.Water || block == Block.Lava || block == Block.Admincrete ||
-                  block == Block.StillWater || block == Block.StillLava ) && !IsOp ) {
+                  block == Block.StillWater || block == Block.StillLava || block == Block.Grass ) && !IsOp ) {
                 KickNow( "Hacking detected." );
                 Logger.Log( "Player {0} tried to place a restricted block type.", Name );
                 return false;

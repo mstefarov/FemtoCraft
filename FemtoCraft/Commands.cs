@@ -138,6 +138,7 @@ namespace FemtoCraft {
                     target.PlaceSolid = false;
                     target.PlaceWater = false;
                     target.PlaceLava = false;
+                    target.PlaceGrass = false;
                     target.Send( Packet.MakeSetPermission( target.IsOp ) );
                     target.Message( "You are no longer op." );
                 }

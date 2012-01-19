@@ -54,13 +54,13 @@ namespace FemtoCraft {
                             VerifyNames = Boolean.Parse( value );
                             break;
                         case "port":
-                            Port = Int32.Parse( value );
+                            Port = UInt16.Parse( value );
                             break;
                         case "admin-slot":
                             AdminSlot = Boolean.Parse( value );
                             break;
                         case "max-players":
-                            MaxPlayers = Int32.Parse( value );
+                            MaxPlayers = Byte.Parse( value );
                             break;
                         case "max-connections":
                             MaxConnections = Int32.Parse( value );
