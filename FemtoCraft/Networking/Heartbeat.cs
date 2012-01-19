@@ -37,7 +37,7 @@ namespace FemtoCraft {
                     request.Timeout = (int)Timeout.TotalMilliseconds;
                     request.CachePolicy = new HttpRequestCachePolicy( HttpRequestCacheLevel.BypassCache );
                     request.UserAgent = Server.VersionString;
-                    request.ServicePoint.BindIPEndPointDelegate = new BindIPEndPoint( BindIPEndPointCallback );
+                    request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;
 
                     using( HttpWebResponse response = (HttpWebResponse)request.GetResponse() ) {
                         using( StreamReader responseReader = new StreamReader( response.GetResponseStream() ) ) {

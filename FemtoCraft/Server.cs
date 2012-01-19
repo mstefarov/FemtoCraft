@@ -38,9 +38,15 @@ namespace FemtoCraft {
             Console.Title = VersionString;
             Logger.Log( "Starting {0}", VersionString );
 
-            // load config and fire up the heartbeat
+            // load config
             Config.Load();
             Console.Title = Config.ServerName + " - " + VersionString;
+
+            // prepare to accept players and fire up the heartbeat
+            for( byte i = 1; i <= sbyte.MaxValue; i++ ) {
+                FreePlayerIDs.Push( i );
+            }
+            UpdatePlayerList();
             Heartbeat.Start();
 
             // load player and IP lists
@@ -62,12 +68,6 @@ namespace FemtoCraft {
                 Map = Map.CreateFlatgrass( 256, 256, 64 );
                 Map.Save( MapFileName );
             }
-
-            // prepare to accept players
-            for( byte i = 1; i <= sbyte.MaxValue; i++ ) {
-                FreePlayerIDs.Push( i );
-            }
-            UpdatePlayerList();
 
             // start listening for incoming connections
             listener = new TcpListener( Config.IP, Config.Port );
