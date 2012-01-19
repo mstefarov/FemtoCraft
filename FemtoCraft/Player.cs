@@ -197,22 +197,24 @@ namespace FemtoCraft {
             // check if player is banned
             if( Server.Bans.Contains( Name ) ) {
                 KickNow( "You are banned!" );
-                Logger.Log( "Banned player {0} tried to log in from {1}", Name, IP );
+                Logger.LogWarning( "Banned player {0} tried to log in from {1}",
+                                   Name, IP );
                 return false;
             }
 
             // check if player's IP is banned
             if( Server.IPBans.Contains( IP ) ) {
                 KickNow( "Your IP address is banned!" );
-                Logger.Log( "Player {0} tried to log in from a banned IP ({1})", Name, IP );
+                Logger.LogWarning( "Player {0} tried to log in from a banned IP ({1})",
+                                   Name, IP );
                 return false;
             }
 
             // check whitelist
             if( Config.UseWhitelist && !Server.Whitelist.Contains( Name ) ) {
                 KickNow( "You are not on the whitelist!" );
-                Logger.Log( "Player {0} tried to log in from ({1}), but was not on the whitelist.",
-                            Name, IP );
+                Logger.LogWarning( "Player {0} tried to log in from ({1}), but was not on the whitelist.",
+                                   Name, IP );
                 return false;
             }
 
@@ -498,7 +500,7 @@ namespace FemtoCraft {
         readonly Queue<DateTime> spamBlockLog = new Queue<DateTime>();
         const int AntiGriefBlocks = 47,
                   AntiGriefSeconds = 6,
-                  MaxLegalBlockType = 49,
+                  MaxLegalBlockType = (int)Block.Obsidian,
                   MaxBlockPlacementRange = 7 * 32;
 
 
@@ -513,7 +515,7 @@ namespace FemtoCraft {
             // check if block type is valid
             if( rawType > MaxLegalBlockType ) {
                 KickNow( "Hacking detected." );
-                Logger.Log( "Player {0} tried to place an invalid block type.", Name );
+                Logger.LogWarning( "Player {0} tried to place an invalid block type.", Name );
                 return false;
             }
             Block block = (Block)rawType;
@@ -527,14 +529,14 @@ namespace FemtoCraft {
                 Math.Abs( y * 32 - Position.Y ) > MaxBlockPlacementRange ||
                 Math.Abs( z * 32 - Position.Z ) > MaxBlockPlacementRange ) {
                 KickNow( "Hacking detected." );
-                Logger.Log( "Player {0} tried to place a block too far away.", Name );
+                Logger.LogWarning( "Player {0} tried to place a block too far away.", Name );
                 return false;
             }
 
             // check click rate
             if( Config.LimitClickRate && DetectBlockSpam() ) {
                 KickNow( "Hacking detected." );
-                Logger.Log( "Player {0} tried to place blocks too quickly.", Name );
+                Logger.LogWarning( "Player {0} tried to place blocks too quickly.", Name );
                 return false;
             }
 
@@ -553,7 +555,7 @@ namespace FemtoCraft {
             if( ( block == Block.Water || block == Block.Lava || block == Block.Admincrete ||
                   block == Block.StillWater || block == Block.StillLava || block == Block.Grass ) && !IsOp ) {
                 KickNow( "Hacking detected." );
-                Logger.Log( "Player {0} tried to place a restricted block type.", Name );
+                Logger.LogWarning( "Player {0} tried to place a restricted block type.", Name );
                 return false;
             }
 
@@ -561,7 +563,7 @@ namespace FemtoCraft {
             Block oldBlock = Server.Map.GetBlock( x, y, z );
             if( oldBlock == Block.Admincrete && !IsOp ) {
                 KickNow( "Hacking detected." );
-                Logger.Log( "Player {0} tried to delete a restricted block type.", Name );
+                Logger.LogWarning( "Player {0} tried to delete a restricted block type.", Name );
                 return false;
             }
 
@@ -607,16 +609,20 @@ namespace FemtoCraft {
             reader.ReadByte();
             string message = reader.ReadString();
 
+            // special handler for WoM id packets
+            // (which are erroneously padded with zeroes instead of spaces).
             if( message.StartsWith( "/womid " ) ) {
                 return true;
             }
 
             if( ContainsInvalidChars( message ) ) {
                 KickNow( "Hacking detected." );
-                Logger.Log( "Player {0} attempted to write illegal characters in chat and was kicked.",
-                            Name );
+                Logger.LogWarning( "Player {0} attempted to write illegal characters in chat.",
+                                   Name );
                 return false;
             }
+
+            if( DetectChatSpam() ) return false;
 
             ProcessMessage( message );
             return true;
@@ -624,9 +630,6 @@ namespace FemtoCraft {
 
 
         public void ProcessMessage( [NotNull] string rawMessage ) {
-            // handle normal chat
-            if( DetectChatSpam() ) return;
-
             // cancel partial message
             if( rawMessage.StartsWith( "/nvm", StringComparison.OrdinalIgnoreCase ) ||
                 rawMessage.StartsWith( "/cancel", StringComparison.OrdinalIgnoreCase ) ) {
