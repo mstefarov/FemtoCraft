@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.44";
+        public const string VersionString = "FemtoCraft 0.45";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -98,9 +98,9 @@ namespace FemtoCraft {
         #region Scheduler
 
         static TcpListener listener;
-        static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 50 );
         static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
         static readonly TimeSpan PingInterval = TimeSpan.FromSeconds( 5 );
+        static TimeSpan physicsInterval;
 
 
         static void SchedulerLoop() {
@@ -108,6 +108,7 @@ namespace FemtoCraft {
             DateTime mapTick = DateTime.UtcNow;
             DateTime pingTick = DateTime.UtcNow;
             Logger.Log( "{0} is ready to go!", VersionString );
+            physicsInterval = TimeSpan.FromMilliseconds( Config.PhysicsTick );
 
             while( true ) {
                 if( listener.Pending() ) {
@@ -128,9 +129,9 @@ namespace FemtoCraft {
                     pingTick = DateTime.UtcNow;
                 }
 
-                while( DateTime.UtcNow.Subtract( physicsTick ) > PhysicsInterval ) {
+                while( DateTime.UtcNow.Subtract( physicsTick ) > physicsInterval ) {
                     Map.PhysicsOnTick();
-                    physicsTick += PhysicsInterval;
+                    physicsTick += physicsInterval;
                 }
 
                 Thread.Sleep( 5 );
