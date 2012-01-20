@@ -10,6 +10,7 @@ namespace FemtoCraft {
 
 
         public void Trigger( int x, int y, int z, Block oldBlock, Block type ) {
+            if( !Config.PhysicsSand ) return;
             if( type == Block.Sand || type == Block.Gravel ) {
                 int dropHeight = Drop( x, y, z );
                 if( dropHeight != z ) {

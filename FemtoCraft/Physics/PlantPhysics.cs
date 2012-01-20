@@ -42,6 +42,10 @@ namespace FemtoCraft {
                     case Block.RedMushroom:
                         TriggerMushroom( map.X( i ), map.Y( i ), map.Z( i ) );
                         break;
+
+                    case Block.Sapling:
+                        TriggerSapling( map.X( i ), map.Y( i ), map.Z( i ) );
+                        break;
                 }
 
             }
@@ -54,6 +58,7 @@ namespace FemtoCraft {
 
         // die if block is lit, or if block underneath is not stone/gravel/cobblestone
         void TriggerMushroom( int x, int y, int z ) {
+            if( !Config.PhysicsPlants ) return;
             Block blockUnder = map.GetBlock( x, y, z - 1 );
             if( blockUnder != Block.Stone && blockUnder != Block.Gravel && blockUnder != Block.Cobblestone
                     || map.IsLit( x, y, z ) ) {
@@ -64,15 +69,17 @@ namespace FemtoCraft {
 
         // die if block is not lit, or if block underneath is not grass/dirt
         void TriggerFlower( int x, int y, int z ) {
+            if( !Config.PhysicsPlants ) return;
             Block blockUnder = map.GetBlock( x, y, z - 1 );
-            if( blockUnder != Block.Grass && blockUnder != Block.Dirt
-                    || !map.IsLit( x, y, z ) ) {
+            if( blockUnder != Block.Grass && blockUnder != Block.Dirt || !map.IsLit( x, y, z ) ) {
                 map.SetBlock( null, x, y, z, Block.Air );
             }
         }
 
 
         void TriggerGrass( int x, int y, int z ) {
+            if( !Config.PhysicsGrass ) return;
+
             // only trigger 25% of the time
             if( random.Next( 4 ) != 0 ) return;
 
@@ -94,6 +101,27 @@ namespace FemtoCraft {
                     return;
                 }
             }
+        }
+
+
+        void TriggerSapling( int x, int y, int z ) {
+            if( !Config.PhysicsPlants ) return;
+            Block blockUnder = map.GetBlock( x, y, z - 1 );
+            if( blockUnder != Block.Grass && blockUnder != Block.Dirt || !map.IsLit( x, y, z ) ) {
+                map.SetBlock( null, x, y, z, Block.Air );
+            }
+            if( Config.PhysicsTrees && random.Next( 5 ) == 0 ) {
+                map.SetBlockNoUpdate( x, y, z, Block.Air );
+                if( GrowTree( x, y, z ) ) {
+                    map.SetBlockNoUpdate( x, y, z, Block.Sapling );
+                }
+            }
+        }
+
+
+        bool GrowTree( int x, int y, int z ) {
+            // TODO
+            return false;
         }
     }
 }

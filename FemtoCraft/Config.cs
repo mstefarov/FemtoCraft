@@ -27,6 +27,11 @@ namespace FemtoCraft {
         public static bool OpLimitChatRate = true;
         public static bool OpAllowSpeedHack = true;
 
+        public static bool PhysicsGrass = true;
+        public static bool PhysicsPlants = true;
+        public static bool PhysicsSand = true;
+        public static bool PhysicsTrees = false;
+
         const string ConfigFileName = "server.properties";
 
 
@@ -113,6 +118,19 @@ namespace FemtoCraft {
                             OpAllowSpeedHack = Boolean.Parse( value );
                             break;
 
+                        case "physics-grass":
+                            PhysicsGrass = Boolean.Parse( value );
+                            break;
+                        case "physics-plants":
+                            PhysicsPlants = Boolean.Parse( value );
+                            break;
+                        case "physics-sand":
+                            PhysicsSand = Boolean.Parse( value );
+                            break;
+                        case "physics-trees":
+                            PhysicsTrees = Boolean.Parse( value );
+                            break;
+
                         default:
                             Logger.LogWarning( "Config: Unknown key in {0} line {1}: {2}",
                                                ConfigFileName, lineNumber, line );
@@ -136,18 +154,23 @@ namespace FemtoCraft {
                 writer.WriteLine( "verify-names={0}", VerifyNames );
                 writer.WriteLine( "use-whitelist={0}", UseWhitelist );
                 writer.WriteLine( "admin-slot={0}", AdminSlot );
-
+                writer.WriteLine();
                 writer.WriteLine( "max-connections={0}", MaxConnections );
                 writer.WriteLine( "limit-click-rate={0}", LimitClickRate );
                 writer.WriteLine( "limit-click-distance={0}", LimitClickDistance );
                 writer.WriteLine( "limit-chat-rate={0}", LimitChatRate );
                 writer.WriteLine( "allow-speed-hack={0}", AllowSpeedHack );
-
+                writer.WriteLine();
                 writer.WriteLine( "op-max-connections={0}", OpMaxConnections );
                 writer.WriteLine( "op-limit-click-rate={0}", OpLimitClickRate );
                 writer.WriteLine( "op-limit-click-distance={0}", OpLimitClickDistance );
                 writer.WriteLine( "op-limit-chat-rate={0}", OpLimitChatRate );
                 writer.WriteLine( "op-allow-speed-hack={0}", OpAllowSpeedHack );
+                writer.WriteLine();
+                writer.WriteLine( "physics-grass={0}", PhysicsGrass );
+                writer.WriteLine( "physics-plants={0}", PhysicsPlants );
+                writer.WriteLine( "physics-sand={0}", PhysicsSand );
+                writer.WriteLine( "physics-trees={0}", PhysicsTrees );
             }
         }
     }

@@ -86,6 +86,17 @@ namespace FemtoCraft {
         }
 
 
+        public bool SetBlockNoUpdate( int x, int y, int z, Block newBlock ) {
+            Block oldBlock = GetBlock( x, y, z );
+            if( newBlock == oldBlock || oldBlock == Block.Undefined ) {
+                return false;
+            } else {
+                Blocks[Index( x, y, z )] = (byte)newBlock;
+                return true;
+            }
+        }
+
+
         public void SetBlockNoPhysics( int x, int y, int z, Block newBlock ) {
             if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
             Block oldBlock = GetBlock( x, y, z );
