@@ -18,7 +18,9 @@ namespace FemtoCraft {
         }
 
 
-        public readonly int Width, Length, Height, Volume;
+        public readonly int Width, Length, Height,
+                            Volume,
+                            WaterLevel;
         public readonly byte[] Blocks;
         public Position Spawn;
 
@@ -32,6 +34,7 @@ namespace FemtoCraft {
             Length = length;
             Height = height;
             Volume = width * length * height;
+            WaterLevel = Height / 2;
             Blocks = new byte[Volume];
             Spawn = new Position( Width * 16, Length * 16,
                                   Math.Min( Height * 32, short.MaxValue ) );
@@ -69,6 +72,13 @@ namespace FemtoCraft {
             if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
             Block oldBlock = GetBlock( x, y, z );
             if( newBlock == oldBlock ) return;
+
+            // place water at map edges
+            if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) &&
+                ( z >= WaterLevel - 2 && z < WaterLevel ) && ( newBlock == Block.Air ) ) {
+                newBlock = Block.Water;
+            }
+
             Blocks[Index( x, y, z )] = (byte)newBlock;
             UpdateShadow( x, y, z );
             PhysicsOnClick( x, y, z, oldBlock, newBlock );
@@ -80,6 +90,13 @@ namespace FemtoCraft {
             if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
             Block oldBlock = GetBlock( x, y, z );
             if( newBlock == oldBlock ) return;
+
+            // place water at map edges
+            if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) &&
+                ( z >= WaterLevel - 2 && z < WaterLevel ) && ( newBlock == Block.Air ) ) {
+                newBlock = Block.Water;
+            }
+
             Blocks[Index( x, y, z )] = (byte)newBlock;
             UpdateShadow( x, y, z );
             Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
@@ -108,7 +125,12 @@ namespace FemtoCraft {
 
 
         void PhysicsOnClick( int x, int y, int z, Block oldBlock, Block newBlock ) {
-            sandPhysics.Trigger( x, y, z, oldBlock, newBlock );
+            if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
+                SetBlock( null, x, y, z, Block.Air );
+                SetBlock( null, x, y, z - 1, Block.DoubleStair );
+            } else {
+                sandPhysics.Trigger( x, y, z, oldBlock, newBlock );
+            }
         }
 
 
