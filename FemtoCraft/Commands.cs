@@ -30,6 +30,10 @@ namespace FemtoCraft {
                     DeopHandler( player, param );
                     break;
 
+                case "poke":
+                    player.poke = !player.poke;
+                    break;
+
                 case "kick":
                 case "k":
                     KickHandler( player, param );

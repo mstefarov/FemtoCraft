@@ -156,6 +156,7 @@ namespace FemtoCraft {
                                 }
                             }
                         }
+                        map.CalculateShadows();
 
                     } else {
                         throw new Exception( "DatMapConverter: Could not locate block array." );

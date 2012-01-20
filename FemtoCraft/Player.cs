@@ -507,7 +507,7 @@ namespace FemtoCraft {
                   MaxLegalBlockType = (int)Block.Obsidian,
                   MaxBlockPlacementRange = 7 * 32;
 
-
+        public bool poke; //temp
         bool ProcessSetBlockPacket() {
             ResetIdleTimer();
             short x = reader.ReadInt16();
@@ -515,6 +515,14 @@ namespace FemtoCraft {
             short y = reader.ReadInt16();
             bool isDeleting = ( reader.ReadByte() == 0 );
             byte rawType = reader.ReadByte();
+            if( poke ) {
+                Message( "({0},{1},{2}) {3} ({4})",
+                         x, y, z,
+                         Server.Map.GetBlock( x, y, z ),
+                         Server.Map.IsLit( x, y, z ) ? "lit" : "" );
+                writer.Write( Packet.MakeSetBlock( x, y, z, Server.Map.GetBlock( x, y, z ) ).Bytes );
+                return true;
+            }
 
             // check if block type is valid
             if( rawType > MaxLegalBlockType ) {
@@ -576,13 +584,7 @@ namespace FemtoCraft {
             }
 
             // update map
-            // todo: queue for physics processing
-            Server.Map.TriggerPhysics( this, x, y, z, block );
-            if( (byte)block != rawType ) {
-                Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, block ) );
-            } else {
-                Server.Players.Send( this, Packet.MakeSetBlock( x, y, z, block ) );
-            }
+            Server.Map.SetBlock( x, y, z, block );
             return true;
         }
 

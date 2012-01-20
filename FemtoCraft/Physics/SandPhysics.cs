@@ -9,15 +9,18 @@ namespace FemtoCraft {
         }
 
 
-        public void Trigger( Player player, int x, int y, int z, Block type ) {
+        public bool Trigger( int x, int y, int z, Block oldBlock, Block type ) {
+            bool updated = false;
             if( type == Block.Sand || type == Block.Gravel ) {
                 int dropHeight = Drop( x, y, z );
                 if( dropHeight != z ) {
-                    Send( x, y, z, dropHeight, type, player );
+                    Send( x, y, z, oldBlock, dropHeight, type );
                     DropSpread( x, y, dropHeight );
+                    updated = true;
                 }
             }
             StartSpread( x, y, z );
+            return updated;
         }
 
 
@@ -29,7 +32,7 @@ namespace FemtoCraft {
             if( type == Block.Sand || type == Block.Gravel ) {
                 int dropHeight = Drop( x, y, z );
                 if( dropHeight != z ) {
-                    Send( x, y, z, dropHeight, type );
+                    Send( x, y, z, Block.Air, dropHeight, type );
                     DropSpread( x, y, dropHeight );
                     ChangeSpread( x, y, z, dx, dy, dz );
                 }
@@ -67,18 +70,9 @@ namespace FemtoCraft {
         }
 
 
-        void Send( int x, int y, int z, int fz, Block type ) {
-            map.SetBlock( x, y, z, Block.Air );
-            map.SetBlock( x, y, fz, type );
-        }
-
-
-        void Send( int x, int y, int z, int fz, Block type, Player player ) {
-            player.Send( Packet.MakeSetBlock( x, y, z, 0 ) );
-            player.Send( Packet.MakeSetBlock( x, y, fz, type ) );
-
-            map.SetBlock( x, y, z, Block.Air );
-            map.SetBlock( x, y, fz, type );
+        void Send( int x, int y, int z, Block oldType, int fz, Block newType ) {
+            map.SetBlockNoPhysics( x, y, z, oldType );
+            map.SetBlockNoPhysics( x, y, fz, newType );
         }
 
 

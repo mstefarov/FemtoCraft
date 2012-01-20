@@ -1,8 +1,11 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 // Based on fCraft.MapConversion.MapMCSharp - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
@@ -12,6 +15,7 @@ namespace FemtoCraft {
             map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
             map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
             map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
+            map.CalculateShadows();
             return map;
         }
 
@@ -34,21 +38,54 @@ namespace FemtoCraft {
             Spawn = new Position( Width * 16, Length * 16,
                                   Math.Min( Height * 32, short.MaxValue ) );
             sandPhysics= new SandPhysics( this );
+            plantPhysics = new PlantPhysics( this );
             shadows = new short[Width, Length];
-            CalculateShadows();
         }
 
 
-        int Index( int x, int y, int z ) {
+        [DebuggerStepThrough]
+        public int Index( int x, int y, int z ) {
             return ( z * Length + y ) * Width + x;
         }
 
 
-        public void SetBlock( int x, int y, int z, Block type ) {
-            if( x < Width && y < Length && z < Height && x >= 0 && y >= 0 && z >= 0 ) {
+        [DebuggerStepThrough]
+        public int X( int i) {
+            return i % Width;
+        }
+
+
+        [DebuggerStepThrough]
+        public int Y( int i ) {
+            return ( i / Width ) % Length;
+        }
+
+
+        [DebuggerStepThrough]
+        public int Z( int i ) {
+            return i / ( Length * Width );
+        }
+
+
+        public void SetBlock( int x, int y, int z, Block newBlock ) {
+            if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
+            Block oldBlock = GetBlock( x, y, z );
+            if( newBlock == oldBlock ) return;
+            if( PhysicsOnClick( x, y, z, oldBlock, newBlock ) ) {
+                Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
+                Blocks[Index( x, y, z )] = (byte)newBlock;
                 UpdateShadow( x, y, z );
-                Blocks[Index( x, y, z )] = (byte)type;
             }
+        }
+
+
+        public void SetBlockNoPhysics( int x, int y, int z, Block newBlock ) {
+            if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
+            Block oldBlock = GetBlock( x, y, z );
+            if( newBlock == oldBlock ) return;
+            Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
+            Blocks[Index( x, y, z )] = (byte)newBlock;
+            UpdateShadow( x, y, z );
         }
 
 
@@ -70,18 +107,27 @@ namespace FemtoCraft {
 
         readonly short[,] shadows;
         readonly SandPhysics sandPhysics;
+        readonly PlantPhysics plantPhysics;
 
-        public void TriggerPhysics( Player player, int x, int y, int z, Block type ) {
-            SetBlock( x, y, z, type );
-            sandPhysics.Trigger( player, x, y, z, type );
+
+        bool PhysicsOnClick( int x, int y, int z, Block oldBlock, Block newBlock ) {
+            if( sandPhysics.Trigger( x, y, z, oldBlock, newBlock ) ) return false;
+            return true;
         }
+
 
 
         public void PhysicsTick() {
+            plantPhysics.Tick();
         }
 
 
-        void CalculateShadows() {
+        public bool IsLit( int x, int y, int z ) {
+            return shadows[x, y] <= z;
+        }
+
+
+        public void CalculateShadows() {
             for( int x = 0; x < Width; x++ ) {
                 for( int y = 0; y < Length; y++ ) {
                     UpdateShadow( x, y, Height - 1 );
@@ -91,12 +137,14 @@ namespace FemtoCraft {
 
 
         void UpdateShadow( int x, int y, int topZ ) {
+            if( topZ < shadows[x, y] ) return;
             for( int z = topZ; z >= 0; z-- ) {
                 if( GetBlock( x, y, z ).CastsShadow() ) {
                     shadows[x, y] = (short)z;
-                    break;
+                    return;
                 }
             }
+            shadows[x, y] = 0;
         }
 
         #endregion
@@ -154,6 +202,7 @@ namespace FemtoCraft {
                         }
                     }
 
+                    map.CalculateShadows();
                     return map;
                 }
             }
