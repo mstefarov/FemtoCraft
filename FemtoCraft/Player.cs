@@ -648,6 +648,9 @@ namespace FemtoCraft {
 
 
         public void ProcessMessage( [NotNull] string rawMessage ) {
+            if( rawMessage == null ) throw new ArgumentNullException( "rawMessage" );
+            if( rawMessage.Length == 0 ) return;
+
             // cancel partial message
             if( rawMessage.StartsWith( "/nvm", StringComparison.OrdinalIgnoreCase ) ||
                 rawMessage.StartsWith( "/cancel", StringComparison.OrdinalIgnoreCase ) ) {

@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.45";
+        public const string VersionString = "FemtoCraft 0.46";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
