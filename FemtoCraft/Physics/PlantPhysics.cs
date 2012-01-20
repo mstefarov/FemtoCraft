@@ -8,7 +8,6 @@ namespace FemtoCraft {
         readonly Random random;
         const int TraverseStep = 200;
         readonly int[] traversePattern = new int[TraverseStep];
-        int tickNumber;
 
 
         public PlantPhysics( Map map ) {
@@ -24,7 +23,7 @@ namespace FemtoCraft {
         }
 
 
-        public void Tick() {
+        public void Tick( int tickNumber ) {
             int startIndex = traversePattern[tickNumber % TraverseStep];
             for( int i = startIndex; i < map.Volume; i += TraverseStep ) {
                 Block targetBlock = (Block)map.Blocks[i];
@@ -47,9 +46,7 @@ namespace FemtoCraft {
                         TriggerSapling( map.X( i ), map.Y( i ), map.Z( i ) );
                         break;
                 }
-
             }
-            tickNumber++;
             if( tickNumber % TraverseStep == 0 ) {
                 RandomizeTraversal();
             }

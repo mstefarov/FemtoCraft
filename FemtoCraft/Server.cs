@@ -221,6 +221,7 @@ namespace FemtoCraft {
                 // Add player to index
                 PlayerIndex.Add( player );
                 UpdatePlayerList();
+                player.Map = Map;
             }
             return true;
         }

@@ -275,8 +275,8 @@ namespace FemtoCraft {
                 player.Message( "Can't set spawn from console!" );
                 return;
             }
-            Server.Map.Spawn = player.Position;
-            player.Send( Packet.MakeAddEntity( 255, player.Name, Server.Map.Spawn.GetFixed() ) );
+            player.Map.Spawn = player.Position;
+            player.Send( Packet.MakeAddEntity( 255, player.Name, player.Map.Spawn.GetFixed() ) );
             Server.Players.Message( "Player {0} set a new spawn point.", player.Name );
         }
 
@@ -358,7 +358,7 @@ namespace FemtoCraft {
                 return;
             }
             try {
-                Server.Map.Save( fileName );
+                player.Map.Save( fileName );
             } catch( Exception ex ) {
                 player.Message( "Could not save map: {0}: {1}", ex.GetType().Name, ex.Message );
                 Logger.LogError( "Failed to save map: {0}", ex );

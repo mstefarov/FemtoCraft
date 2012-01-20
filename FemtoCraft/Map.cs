@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 // Based on fCraft.MapConversion.MapMCSharp - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -133,20 +134,58 @@ namespace FemtoCraft {
         readonly short[,] shadows;
         readonly SandPhysics sandPhysics;
         readonly PlantPhysics plantPhysics;
-
+        readonly Queue<PhysicsUpdate> tickQueue = new Queue<PhysicsUpdate>();
+        readonly object physicsLock = new object();
+        int tickNumber;
 
         void PhysicsOnClick( int x, int y, int z, Block oldBlock, Block newBlock ) {
             if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
                 SetBlock( null, x, y, z, Block.Air );
                 SetBlock( null, x, y, z - 1, Block.DoubleStair );
+
+            } else if( Config.PhysicsWater && newBlock == Block.Water ) {
+                QueuePhysicsUpdate( new PhysicsUpdate( x, y, z, Block.Water, WaterPhysics.TickDelay ) );
+
+            } else if( Config.PhysicsLava && newBlock == Block.Lava ) {
+                QueuePhysicsUpdate( new PhysicsUpdate( x, y, z, Block.Lava, LavaPhysics.TickDelay ) );
+
             } else {
                 sandPhysics.Trigger( x, y, z, oldBlock, newBlock );
             }
         }
 
 
+        void PhysicsOnNeighborUpdate( int x, int y, int z, Block newBlock ) {
+            // todo
+        }
+
+
         public void PhysicsOnTick() {
-            plantPhysics.Tick();
+            lock( physicsLock ) {
+                tickNumber++;
+                if( tickNumber % 5 == 0 ) {
+                    int oldLength = tickQueue.Count;
+                    for( int i = 0; i < oldLength; i++ ) {
+                        PhysicsUpdate update = tickQueue.Dequeue();
+                        if( update.Delay > 0 ) {
+                            update.Delay--;
+                            tickQueue.Enqueue( update );
+                        } else {
+                            if( update.OldBlock == GetBlock( update.X, update.Y, update.Z ) ) {
+                                PhysicsOnNeighborUpdate( update.X, update.Y, update.Z, update.OldBlock );
+                            }
+                        }
+                    }
+                }
+                plantPhysics.Tick( tickNumber );
+            }
+        }
+
+
+        public void QueuePhysicsUpdate( PhysicsUpdate update ) {
+            lock( physicsLock ) {
+                tickQueue.Enqueue( update );
+            }
         }
 
 

@@ -20,6 +20,7 @@ namespace FemtoCraft {
         public string Name { get; private set; }
         public IPAddress IP { get; private set; }
         public Position Position { get; private set; }
+        public Map Map { get; set; }
 
         public byte ID { get; set; }
         public bool IsOp { get; set; }
@@ -518,9 +519,9 @@ namespace FemtoCraft {
             if( poke ) {
                 Message( "({0},{1},{2}) {3} ({4})",
                          x, y, z,
-                         Server.Map.GetBlock( x, y, z ),
-                         Server.Map.IsLit( x, y, z ) ? "lit" : "" );
-                writer.Write( Packet.MakeSetBlock( x, y, z, Server.Map.GetBlock( x, y, z ) ).Bytes );
+                         Map.GetBlock( x, y, z ),
+                         Map.IsLit( x, y, z ) ? "lit" : "" );
+                writer.Write( Packet.MakeSetBlock( x, y, z, Map.GetBlock( x, y, z ) ).Bytes );
                 return true;
             }
 
@@ -534,7 +535,7 @@ namespace FemtoCraft {
             if( isDeleting ) block = Block.Air;
 
             // check if coordinates are within map boundaries (dont kick)
-            if( !Server.Map.InBounds( x, y, z ) ) return true;
+            if( !Map.InBounds( x, y, z ) ) return true;
 
             // check if player is close enough to place
             if( !IsOp && Config.LimitClickDistance || IsOp && Config.OpLimitClickDistance ) {
@@ -576,7 +577,7 @@ namespace FemtoCraft {
             }
 
             // check if deleting admincrete
-            Block oldBlock = Server.Map.GetBlock( x, y, z );
+            Block oldBlock = Map.GetBlock( x, y, z );
             if( oldBlock == Block.Admincrete && !IsOp ) {
                 KickNow( "Hacking detected." );
                 Logger.LogWarning( "Player {0} tried to delete a restricted block type.", Name );
@@ -584,10 +585,10 @@ namespace FemtoCraft {
             }
 
             // update map
-            Server.Map.SetBlock( this, x, y, z, block );
+            Map.SetBlock( this, x, y, z, block );
 
             // check if sending back an update is necessary
-            Block placedBlock = Server.Map.GetBlock(x,y,z);
+            Block placedBlock = Map.GetBlock(x,y,z);
             if( placedBlock != (Block)rawType ) {
                 writer.Write( Packet.MakeSetBlock( x, y, z, placedBlock ).Bytes );
             }
