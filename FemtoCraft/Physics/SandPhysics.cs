@@ -9,12 +9,12 @@ namespace FemtoCraft {
         }
 
 
-        public void Trigger( int x, int y, int z, Block oldBlock, Block type ) {
+        public void Trigger( int x, int y, int z, Block type ) {
             if( !Config.PhysicsSand ) return;
             if( type == Block.Sand || type == Block.Gravel ) {
                 int dropHeight = Drop( x, y, z );
                 if( dropHeight != z ) {
-                    Send( x, y, z, oldBlock, dropHeight, type );
+                    Send( x, y, z, dropHeight, type );
                     DropSpread( x, y, dropHeight );
                 }
             }
@@ -30,7 +30,7 @@ namespace FemtoCraft {
             if( type == Block.Sand || type == Block.Gravel ) {
                 int dropHeight = Drop( x, y, z );
                 if( dropHeight != z ) {
-                    Send( x, y, z, Block.Air, dropHeight, type );
+                    Send( x, y, z, dropHeight, type );
                     DropSpread( x, y, dropHeight );
                     ChangeSpread( x, y, z, dx, dy, dz );
                 }
@@ -68,9 +68,9 @@ namespace FemtoCraft {
         }
 
 
-        void Send( int x, int y, int z, Block oldType, int fz, Block newType ) {
-            map.SetBlockNoPhysics( x, y, z, oldType );
-            map.SetBlockNoPhysics( x, y, fz, newType );
+        void Send( int x, int y, int z, int fz, Block newType ) {
+            map.SetBlock( null, x, y, z, Block.Air );
+            map.SetBlock( null, x, y, fz, newType );
         }
 
 

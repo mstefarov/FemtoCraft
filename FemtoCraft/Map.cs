@@ -69,49 +69,46 @@ namespace FemtoCraft {
         }
 
 
-        public void SetBlock( Player except, int x, int y, int z, Block newBlock ) {
-            if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
-            Block oldBlock = GetBlock( x, y, z );
-            if( newBlock == oldBlock ) return;
+        public bool SetBlock( Player except, int x, int y, int z, Block newBlock ) {
+            if( SetBlockNoNeighborChange( except, x, y, z, newBlock ) ) {
+                PhysicsUpdateNeighbors( x, y, z, newBlock );
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-            // place water at map edges
+
+        public bool SetBlockNoNeighborChange( Player except, int x, int y, int z, Block newBlock ) {
+            if( !InBounds( x, y, z ) ) return false;
+            Block oldBlock = GetBlock( x, y, z );
+            if( oldBlock == newBlock ) return false;
+
+            // water at map edges
             if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) &&
                 ( z >= WaterLevel - 2 && z < WaterLevel ) && ( newBlock == Block.Air ) ) {
                 newBlock = Block.Water;
             }
 
             Blocks[Index( x, y, z )] = (byte)newBlock;
+
+            // do physics!
+            PhysicsOnRemoved( x, y, z, oldBlock );
+            PhysicsOnPlaced( x, y, z, newBlock );
             UpdateShadow( x, y, z );
-            PhysicsOnClick( x, y, z, oldBlock, newBlock );
+
             Server.Players.Send( except, Packet.MakeSetBlock( x, y, z, newBlock ) );
+            return true;
         }
 
 
         public bool SetBlockNoUpdate( int x, int y, int z, Block newBlock ) {
+            if( !InBounds( x, y, z ) ) return false;
             Block oldBlock = GetBlock( x, y, z );
-            if( newBlock == oldBlock || oldBlock == Block.Undefined ) {
-                return false;
-            } else {
-                Blocks[Index( x, y, z )] = (byte)newBlock;
-                return true;
-            }
-        }
-
-
-        public void SetBlockNoPhysics( int x, int y, int z, Block newBlock ) {
-            if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
-            Block oldBlock = GetBlock( x, y, z );
-            if( newBlock == oldBlock ) return;
-
-            // place water at map edges
-            if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) &&
-                ( z >= WaterLevel - 2 && z < WaterLevel ) && ( newBlock == Block.Air ) ) {
-                newBlock = Block.Water;
-            }
+            if( newBlock == oldBlock ) return false;
 
             Blocks[Index( x, y, z )] = (byte)newBlock;
-            UpdateShadow( x, y, z );
-            Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
+            return true;
         }
 
 
@@ -138,7 +135,22 @@ namespace FemtoCraft {
         readonly object physicsLock = new object();
         int tickNumber;
 
-        void PhysicsOnClick( int x, int y, int z, Block oldBlock, Block newBlock ) {
+
+        void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
+            PhysicsOnNeighborUpdate( x - 1, y, z, block );
+            PhysicsOnNeighborUpdate( x + 1, y, z, block );
+            PhysicsOnNeighborUpdate( x, y, z - 1, block );
+            PhysicsOnNeighborUpdate( x, y, z + 1, block );
+            PhysicsOnNeighborUpdate( x, y - 1, z, block );
+            PhysicsOnNeighborUpdate( x, y + 1, z, block );
+        }
+
+
+        void PhysicsOnRemoved( int x, int y, int z, Block newBlock ) {
+        }
+
+
+        void PhysicsOnPlaced( int x, int y, int z, Block newBlock ) {
             if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
                 SetBlock( null, x, y, z, Block.Air );
                 SetBlock( null, x, y, z - 1, Block.DoubleStair );
@@ -149,14 +161,20 @@ namespace FemtoCraft {
             } else if( Config.PhysicsLava && newBlock == Block.Lava ) {
                 QueuePhysicsUpdate( new PhysicsUpdate( x, y, z, Block.Lava, LavaPhysics.TickDelay ) );
 
-            } else {
-                sandPhysics.Trigger( x, y, z, oldBlock, newBlock );
             }
+            PhysicsOnNeighborUpdate( x, y, z, newBlock );
         }
 
 
         void PhysicsOnNeighborUpdate( int x, int y, int z, Block newBlock ) {
+            if( !InBounds( x, y, z ) ) return;
+            if( newBlock == GetBlock( x, y, z ) ) return;
             // todo
+            sandPhysics.Trigger( x, y, z, newBlock );
+        }
+
+
+        void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
         }
 
 
@@ -172,7 +190,7 @@ namespace FemtoCraft {
                             tickQueue.Enqueue( update );
                         } else {
                             if( update.OldBlock == GetBlock( update.X, update.Y, update.Z ) ) {
-                                PhysicsOnNeighborUpdate( update.X, update.Y, update.Z, update.OldBlock );
+                                PhysicsOnTick( update.X, update.Y, update.Z, update.OldBlock );
                             }
                         }
                     }
