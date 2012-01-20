@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System;
 using System.Linq;
-using System.Text;
 
 namespace FemtoCraft {
     sealed class PlantPhysics {

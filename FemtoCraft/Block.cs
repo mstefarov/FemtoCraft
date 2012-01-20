@@ -11,7 +11,7 @@ namespace FemtoCraft {
         Dirt = 3,
         Cobblestone = 4,
         Wood = 5,
-        Plant = 6,
+        Sapling = 6,
         Admincrete = 7,
         Water = 8,
         StillWater = 9,

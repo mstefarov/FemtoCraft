@@ -88,12 +88,13 @@ namespace FemtoCraft {
         public static bool CastsShadow( this Block block) {
             switch( block ) {
                 case Block.Air:
-                case Block.BrownMushroom:
                 case Block.Glass:
                 case Block.Leaves:
-                case Block.RedFlower:
-                case Block.RedMushroom:
                 case Block.YellowFlower:
+                case Block.RedFlower:
+                case Block.BrownMushroom:
+                case Block.RedMushroom:
+                case Block.Sapling:
                     return false;
                 default:
                     return true;

@@ -44,24 +44,34 @@ namespace FemtoCraft {
             if( formatArgs == null ) throw new ArgumentNullException( "formatArgs" );
             if( prefix == null ) throw new ArgumentNullException( "prefix" );
             lock( LogLock ) {
-                string formattedMsg = String.Format( "{0} {1}> {2}",
-                                                     Timestamp(),
-                                                     prefix,
-                                                     String.Format( message, formatArgs ) );
+                string consoleMessage = String.Format( "{0} {1}> {2}",
+                                                    ConsoleTimestamp(),
+                                                    prefix,
+                                                    String.Format( message, formatArgs ) );
                 if( error ) {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Error.WriteLine( formattedMsg );
+                    Console.Error.WriteLine( consoleMessage );
                     Console.ResetColor();
                 } else {
-                    Console.WriteLine( formattedMsg );
+                    Console.WriteLine( consoleMessage );
                 }
-                File.AppendAllText( LogFileName, formattedMsg + Environment.NewLine );
+                string fileMessage = String.Format( "{0} {1}> {2}{3}",
+                                                    FileTimestamp(),
+                                                    prefix,
+                                                    String.Format( message, formatArgs ),
+                                                    Environment.NewLine );
+                File.AppendAllText( LogFileName, fileMessage );
             }
         }
 
 
-        static string Timestamp() {
+        static string FileTimestamp() {
             return DateTime.Now.ToString( "yyyy'-'MM'-'dd' 'HH':'mm':'ss" );
+        }
+
+
+        static string ConsoleTimestamp() {
+            return DateTime.Now.ToString( "HH':'mm':'ss" );
         }
     }
 }
