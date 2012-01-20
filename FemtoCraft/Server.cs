@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.37";
+        public const string VersionString = "FemtoCraft 0.39";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -97,20 +97,17 @@ namespace FemtoCraft {
         #region Scheduler
 
         static TcpListener listener;
-        static readonly TimeSpan PhysicsInterval = TimeSpan.FromSeconds( 1/12 );
+        static readonly TimeSpan PhysicsInterval = TimeSpan.FromMilliseconds( 50 );
         static readonly TimeSpan MapSaveInterval = TimeSpan.FromSeconds( 60 );
         static readonly TimeSpan PingInterval = TimeSpan.FromSeconds( 5 );
 
 
         static void SchedulerLoop() {
-            DateTime now = DateTime.UtcNow;
-            DateTime physicsTick = now;
-            DateTime mapTick = now;
-            DateTime pingTick = now;
+            DateTime physicsTick = DateTime.UtcNow;
+            DateTime mapTick = DateTime.UtcNow;
+            DateTime pingTick = DateTime.UtcNow;
 
             while( true ) {
-                now = DateTime.UtcNow;
-
                 if( listener.Pending() ) {
                     try {
                         listener.BeginAcceptTcpClient( AcceptCallback, null );
@@ -119,23 +116,22 @@ namespace FemtoCraft {
                     }
                 }
 
-                if( now.Subtract( mapTick ) > MapSaveInterval ) {
+                if( DateTime.UtcNow.Subtract( mapTick ) > MapSaveInterval ) {
                     ThreadPool.QueueUserWorkItem( MapSaveCallback );
-                    mapTick = now;
-                }
-                if( now.Subtract( pingTick ) > PingInterval ) {
-                    Players.Send( null, new Packet( OpCode.Ping ) );
-                    pingTick = now;
+                    mapTick = DateTime.UtcNow;
                 }
 
-                while( now.Subtract( physicsTick ) > PhysicsInterval ) {
+                if( DateTime.UtcNow.Subtract( pingTick ) > PingInterval ) {
+                    Players.Send( null, new Packet( OpCode.Ping ) );
+                    pingTick = DateTime.UtcNow;
+                }
+
+                while( DateTime.UtcNow.Subtract( physicsTick ) > PhysicsInterval ) {
                     Map.PhysicsTick();
                     physicsTick += PhysicsInterval;
                 }
 
-                Players.Send( null, new Packet( OpCode.Ping ) );
-
-                Thread.Sleep( 10 );
+                Thread.Sleep( 5 );
             }
         }
 
@@ -148,8 +144,12 @@ namespace FemtoCraft {
 
 
         static void MapSaveCallback( object unused ) {
-            Map.Save( MapFileName );
-            Logger.Log( "Map saved to {0}", MapFileName );
+            try {
+                Map.Save( MapFileName );
+                Logger.Log( "Map saved to {0}", MapFileName );
+            } catch( Exception ex ) {
+                Logger.LogError( "Failed to save map: {0}", ex );
+            }
         }
 
         #endregion
@@ -295,7 +295,8 @@ namespace FemtoCraft {
             if( mapObj == null ) throw new ArgumentNullException( "mapObj" );
             Map newMap = (Map)mapObj;
             lock( PlayerListLock ) {
-                foreach( Player player in PlayerIndex ) {
+                Player[] playerListCache = PlayerIndex.ToArray();
+                foreach( Player player in playerListCache ) {
                     player.KickSynchronously( "Changing map, please rejoin." );
                 }
                 Map = newMap;

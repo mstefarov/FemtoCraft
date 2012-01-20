@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using JetBrains.Annotations;
@@ -96,6 +97,22 @@ namespace FemtoCraft {
                     return false;
                 default:
                     return true;
+            }
+        }
+
+
+        public static void MoveOrReplaceFile( [NotNull] string source, [NotNull] string destination ) {
+            if( source == null ) throw new ArgumentNullException( "source" );
+            if( destination == null ) throw new ArgumentNullException( "destination" );
+            if( File.Exists( destination ) ) {
+                if( Path.GetPathRoot( Path.GetFullPath( source ) ) == Path.GetPathRoot( Path.GetFullPath( destination ) ) ) {
+                    File.Replace( source, destination, null, true );
+                } else {
+                    File.Delete( destination );
+                    File.Move( source, destination );
+                }
+            } else {
+                File.Move( source, destination );
             }
         }
     }

@@ -78,7 +78,6 @@ namespace FemtoCraft {
 
 
         public void PhysicsTick() {
-            // todo
         }
 
 
@@ -163,7 +162,8 @@ namespace FemtoCraft {
 
         public void Save( [NotNull] string fileName ) {
             if( fileName == null ) throw new ArgumentNullException( "fileName" );
-            using( FileStream mapStream = File.Create( fileName ) ) {
+            string tempFileName = Path.GetTempFileName();
+            using( FileStream mapStream = File.Create( tempFileName ) ) {
                 using( GZipStream gs = new GZipStream( mapStream, CompressionMode.Compress ) ) {
                     BinaryWriter bs = new BinaryWriter( gs );
 
@@ -194,6 +194,7 @@ namespace FemtoCraft {
                     bs.Close();
                 }
             }
+            Util.MoveOrReplaceFile( tempFileName, fileName );
         }
 
 

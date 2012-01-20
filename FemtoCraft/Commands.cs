@@ -357,6 +357,7 @@ namespace FemtoCraft {
                 Server.Map.Save( fileName );
             } catch( Exception ex ) {
                 player.Message( "Could not save map: {0}: {1}", ex.GetType().Name, ex.Message );
+                Logger.LogError( "Failed to save map: {0}", ex );
             }
         }
     }

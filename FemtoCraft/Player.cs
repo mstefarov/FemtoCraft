@@ -74,7 +74,7 @@ namespace FemtoCraft {
                 while( canSend ) {
                     while( canSend && sendQueue.Count > 0 ) {
                         Packet packet;
-                        lock( sendQueue ) {
+                        lock( sendQueueLock ) {
                             packet = sendQueue.Dequeue();
                         }
                         writer.Write( packet.Bytes );
@@ -114,7 +114,8 @@ namespace FemtoCraft {
                 }
 
 
-            } catch( IOException ) {} catch( SocketException ) {
+            } catch( IOException ) {
+            } catch( SocketException ) {
 #if !DEBUG
             } catch( Exception ex ) {
                 Logger.LogError( "Player: Session crashed: {0}", ex );
@@ -308,6 +309,7 @@ namespace FemtoCraft {
 
 
         public void Kick( [NotNull] string message ) {
+            if( message == null ) throw new ArgumentNullException( "message" );
             Packet packet = PacketWriter.MakeDisconnect( message );
             lock( sendQueueLock ) {
                 canReceive = false;
@@ -318,6 +320,7 @@ namespace FemtoCraft {
 
 
         void KickNow( [NotNull] string message ) {
+            if( message == null ) throw new ArgumentNullException( "message" );
             canReceive = false;
             canQueue = false;
             writer.Write( OpCode.Kick );
@@ -326,6 +329,7 @@ namespace FemtoCraft {
 
 
         public void KickSynchronously( [NotNull] string message ) {
+            if( message == null ) throw new ArgumentNullException( "message" );
             useSyncKick = true;
             Kick( message );
             kickWaiter.WaitOne();
