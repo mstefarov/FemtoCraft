@@ -65,15 +65,14 @@ namespace FemtoCraft {
         }
 
 
-        public void SetBlock( int x, int y, int z, Block newBlock ) {
+        public void SetBlock( Player except, int x, int y, int z, Block newBlock ) {
             if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
             Block oldBlock = GetBlock( x, y, z );
             if( newBlock == oldBlock ) return;
-            if( PhysicsOnClick( x, y, z, oldBlock, newBlock ) ) {
-                Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
-                Blocks[Index( x, y, z )] = (byte)newBlock;
-                UpdateShadow( x, y, z );
-            }
+            Blocks[Index( x, y, z )] = (byte)newBlock;
+            UpdateShadow( x, y, z );
+            PhysicsOnClick( x, y, z, oldBlock, newBlock );
+            Server.Players.Send( except, Packet.MakeSetBlock( x, y, z, newBlock ) );
         }
 
 
@@ -81,9 +80,9 @@ namespace FemtoCraft {
             if( x >= Width || y >= Length || z >= Height || x < 0 || y < 0 || z < 0 ) return;
             Block oldBlock = GetBlock( x, y, z );
             if( newBlock == oldBlock ) return;
-            Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
             Blocks[Index( x, y, z )] = (byte)newBlock;
             UpdateShadow( x, y, z );
+            Server.Players.Send( null, Packet.MakeSetBlock( x, y, z, newBlock ) );
         }
 
 
@@ -108,14 +107,12 @@ namespace FemtoCraft {
         readonly PlantPhysics plantPhysics;
 
 
-        bool PhysicsOnClick( int x, int y, int z, Block oldBlock, Block newBlock ) {
-            if( sandPhysics.Trigger( x, y, z, oldBlock, newBlock ) ) return false;
-            return true;
+        void PhysicsOnClick( int x, int y, int z, Block oldBlock, Block newBlock ) {
+            sandPhysics.Trigger( x, y, z, oldBlock, newBlock );
         }
 
 
-
-        public void PhysicsTick() {
+        public void PhysicsOnTick() {
             plantPhysics.Tick();
         }
 

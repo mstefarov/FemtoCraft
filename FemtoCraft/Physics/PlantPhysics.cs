@@ -57,7 +57,7 @@ namespace FemtoCraft {
             Block blockUnder = map.GetBlock( x, y, z - 1 );
             if( blockUnder != Block.Stone && blockUnder != Block.Gravel && blockUnder != Block.Cobblestone
                     || map.IsLit( x, y, z ) ) {
-                map.SetBlock( x, y, z, Block.Air );
+                map.SetBlock( null, x, y, z, Block.Air );
             }
         }
 
@@ -67,7 +67,7 @@ namespace FemtoCraft {
             Block blockUnder = map.GetBlock( x, y, z - 1 );
             if( blockUnder != Block.Grass && blockUnder != Block.Dirt
                     || !map.IsLit( x, y, z ) ) {
-                map.SetBlock( x, y, z, Block.Air );
+                map.SetBlock( null, x, y, z, Block.Air );
             }
         }
 
@@ -78,7 +78,7 @@ namespace FemtoCraft {
 
             // die (turn to dirt) if not lit
             if( !map.IsLit( x, y, z ) ) {
-                map.SetBlock( x, y, z, Block.Dirt );
+                map.SetBlock( null, x, y, z, Block.Dirt );
                 return;
             }
 
@@ -90,7 +90,7 @@ namespace FemtoCraft {
                 if( map.InBounds( x2, y2, z2 ) &&
                         map.IsLit( x2, y2, z2 ) &&
                         map.GetBlock( x2, y2, z2 ) == Block.Dirt ) {
-                    map.SetBlock( x2, y2, z2, Block.Grass );
+                    map.SetBlock( null, x2, y2, z2, Block.Grass );
                     return;
                 }
             }

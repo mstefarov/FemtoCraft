@@ -584,7 +584,13 @@ namespace FemtoCraft {
             }
 
             // update map
-            Server.Map.SetBlock( x, y, z, block );
+            Server.Map.SetBlock( this, x, y, z, block );
+
+            // check if sending back an update is necessary
+            Block placedBlock = Server.Map.GetBlock(x,y,z);
+            if( placedBlock != (Block)rawType ) {
+                writer.Write( Packet.MakeSetBlock( x, y, z, placedBlock ).Bytes );
+            }
             return true;
         }
 

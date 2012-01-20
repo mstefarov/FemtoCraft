@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.41";
+        public const string VersionString = "FemtoCraft 0.42";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -64,6 +64,7 @@ namespace FemtoCraft {
             // load or create map
             if( File.Exists( MapFileName ) ) {
                 Map = Map.Load( MapFileName );
+                Logger.Log( "Loaded map from {0}", MapFileName );
             } else {
                 Map = Map.CreateFlatgrass( 256, 256, 64 );
                 Map.Save( MapFileName );
@@ -106,6 +107,7 @@ namespace FemtoCraft {
             DateTime physicsTick = DateTime.UtcNow;
             DateTime mapTick = DateTime.UtcNow;
             DateTime pingTick = DateTime.UtcNow;
+            Logger.Log( "{0} is ready to go!", VersionString );
 
             while( true ) {
                 if( listener.Pending() ) {
@@ -127,7 +129,7 @@ namespace FemtoCraft {
                 }
 
                 while( DateTime.UtcNow.Subtract( physicsTick ) > PhysicsInterval ) {
-                    Map.PhysicsTick();
+                    Map.PhysicsOnTick();
                     physicsTick += PhysicsInterval;
                 }
 

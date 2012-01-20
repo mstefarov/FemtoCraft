@@ -9,18 +9,15 @@ namespace FemtoCraft {
         }
 
 
-        public bool Trigger( int x, int y, int z, Block oldBlock, Block type ) {
-            bool updated = false;
+        public void Trigger( int x, int y, int z, Block oldBlock, Block type ) {
             if( type == Block.Sand || type == Block.Gravel ) {
                 int dropHeight = Drop( x, y, z );
                 if( dropHeight != z ) {
                     Send( x, y, z, oldBlock, dropHeight, type );
                     DropSpread( x, y, dropHeight );
-                    updated = true;
                 }
             }
             StartSpread( x, y, z );
-            return updated;
         }
 
 
