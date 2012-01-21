@@ -517,10 +517,11 @@ namespace FemtoCraft {
             bool isDeleting = ( reader.ReadByte() == 0 );
             byte rawType = reader.ReadByte();
             if( poke ) {
-                Message( "({0},{1},{2}) {3} ({4})",
+                Message( "({0},{1},{2}) {3} {4}{5}",
                          x, y, z,
                          Map.GetBlock( x, y, z ),
-                         Map.IsLit( x, y, z ) ? "lit" : "" );
+                         Map.IsLit( x, y, z ) ? "lit" : "",
+                         Map.IsSponged( x, y, z ) ? "sponged" : ""  );
                 writer.Write( Packet.MakeSetBlock( x, y, z, Map.GetBlock( x, y, z ) ).Bytes );
                 return true;
             }
