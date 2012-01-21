@@ -17,7 +17,7 @@ namespace FemtoCraft {
                 ( updatedNeighbor == Block.Water || updatedNeighbor == Block.StillWater ) ) {
                 map.SetBlock( null, x, y, z, Block.Stone );
 
-            } else if( thisBlock == Block.Lava && updatedNeighbor == Block.Air ) {
+            } else if( thisBlock == Block.Lava ) {
                 map.QueuePhysicsUpdate( x, y, z, updatedNeighbor );
 
             } else if( thisBlock == Block.StillLava ) {

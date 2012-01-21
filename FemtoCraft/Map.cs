@@ -269,7 +269,7 @@ namespace FemtoCraft {
             fixed( byte* ptr = Blocks ) {
                 for( int i = 0; i < Blocks.Length; i++ ) {
                     if( (Block)ptr[i] == Block.Sponge ) {
-                        waterPhysics.OnSpongePlaced( X( i ), Y( i ), Z( i ) );
+                        waterPhysics.SpongePlacedUpdateCoverage( X( i ), Y( i ), Z( i ) );
                     }
                 }
             }

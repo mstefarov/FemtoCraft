@@ -26,7 +26,7 @@ namespace FemtoCraft {
                 ( updatedNeighbor == Block.Lava || updatedNeighbor == Block.StillLava ) ) {
                 map.SetBlock( null, x, y, z, Block.Stone );
 
-            } else if( thisBlock == Block.Water && updatedNeighbor == Block.Air ) {
+            } else if( thisBlock == Block.Water ) {
                 map.QueuePhysicsUpdate( x, y, z, updatedNeighbor );
 
             } else if( thisBlock == Block.StillWater ) {
@@ -69,8 +69,10 @@ namespace FemtoCraft {
 
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
-            if( currentBlock == Block.Air && !IsSponged( x, y, z ) &&
-                    map.SetBlock( null, x, y, z, Block.Water ) ) {
+            if( currentBlock == Block.Air &&
+                !IsSponged( x, y, z ) &&
+                map.SetBlock( null, x, y, z, Block.Water ) ) {
+
                 map.QueuePhysicsUpdate( x, y, z, Block.Water );
                 return true;
             } else {
@@ -79,16 +81,8 @@ namespace FemtoCraft {
         }
 
 
-        public void OnSpongePlaced( int x, int y, int z ) {
-            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
-                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
-                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
-                        if( map.InBounds( x1, y1, z1 ) ) {
-                            spongeData[map.Index( x1, y1, z1 )] = true;
-                        }
-                    }
-                }
-            }
+        public void OnSpongePlaced( int x, int y, int z  ) {
+            SpongePlacedUpdateCoverage( x, y, z );
             for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
                 for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
                     for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
@@ -102,21 +96,12 @@ namespace FemtoCraft {
         }
 
 
-        public void OnSpongeRemoved( int x, int y, int z ) {
+        public void SpongePlacedUpdateCoverage( int x, int y, int z ) {
             for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
                 for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
                     for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
                         if( map.InBounds( x1, y1, z1 ) ) {
-                            OnSpongeRemovedInner( x1, y1, z1 );
-                        }
-                    }
-                }
-            }
-            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
-                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
-                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
-                        if( map.InBounds( x1, y1, z1 ) ) {
-                            OnSpongeRemovedInner( x1, y1, z1 );
+                            spongeData[map.Index( x1, y1, z1 )] = true;
                         }
                     }
                 }
@@ -124,7 +109,29 @@ namespace FemtoCraft {
         }
 
 
-        void OnSpongeRemovedInner( int x1, int y1, int z1 ) {
+        public void OnSpongeRemoved( int x, int y, int z ) {
+            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
+                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
+                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
+                        if( map.InBounds( x1, y1, z1 ) ) {
+                            SpongeRemovedUpdateCoverage( x1, y1, z1 );
+                        }
+                    }
+                }
+            }
+            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
+                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
+                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
+                        if( map.InBounds( x1, y1, z1 ) ) {
+                            map.PhysicsUpdateNeighbors( x1, y1, z1, map.GetBlock( x1, y1, z1 ) );
+                        }
+                    }
+                }
+            }
+        }
+
+
+        void SpongeRemovedUpdateCoverage( int x1, int y1, int z1 ) {
             for( int x2 = x1 - SpongeRange; x2 <= x1 + SpongeRange; x2++ ) {
                 for( int y2 = y1 - SpongeRange; y2 <= y1 + SpongeRange; y2++ ) {
                     for( int z2 = z1 - SpongeRange; z2 <= z1 + SpongeRange; z2++ ) {

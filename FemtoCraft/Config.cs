@@ -42,7 +42,7 @@ namespace FemtoCraft {
         public static void Load() {
             if( !File.Exists( ConfigFileName ) ) {
                 Logger.LogWarning( "Config.Load: server.properties missing, using defaults." );
-                WriteDefaults();
+                Save();
                 return;
             }
 
@@ -154,11 +154,12 @@ namespace FemtoCraft {
                     }
                 }
             }
+            Save();
             Logger.Log( "Config: Loaded configuration from {0}", ConfigFileName );
         }
 
 
-        static void WriteDefaults() {
+        static void Save() {
             using( var writer = new StreamWriter( ConfigFileName ) ) {
                 writer.WriteLine( "#{0} configuration file", Server.VersionString );
                 writer.WriteLine( "server-name={0}", ServerName );
