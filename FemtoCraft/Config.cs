@@ -33,7 +33,7 @@ namespace FemtoCraft {
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
         public static bool PhysicsLava = true;
-        public static bool PhysicsFloodProtection = true;
+        public static bool PhysicsFloodProtection = false;
         public static int PhysicsTick = 50;
 
         const string ConfigFileName = "server.properties";

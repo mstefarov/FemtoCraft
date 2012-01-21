@@ -12,7 +12,7 @@ namespace FemtoCraft {
 
 
         public void OnNeighborUpdated( int x, int y, int z, Block thisBlock, Block updatedNeighbor ) {
-            if( Config.PhysicsFloodProtection && z > map.WaterLevel ) return;
+            if( Config.PhysicsFloodProtection && z >= map.WaterLevel ) return;
             if( ( thisBlock == Block.Lava || thisBlock == Block.StillLava ) &&
                 ( updatedNeighbor == Block.Water || updatedNeighbor == Block.StillWater ) ) {
                 map.SetBlock( null, x, y, z, Block.Stone );
@@ -34,7 +34,7 @@ namespace FemtoCraft {
 
 
         public void OnTick( int x, int y, int z ) {
-            if( Config.PhysicsFloodProtection && z > map.WaterLevel ) return;
+            if( Config.PhysicsFloodProtection && z >= map.WaterLevel ) return;
             bool updated = false;
 
                 z--;
