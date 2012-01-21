@@ -69,8 +69,7 @@ namespace FemtoCraft {
 
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
-            if( currentBlock == Block.Air &&
-                    !IsSponged( x, y, z ) &&
+            if( currentBlock == Block.Air && !IsSponged( x, y, z ) &&
                     map.SetBlock( null, x, y, z, Block.Water ) ) {
                 map.QueuePhysicsUpdate( x, y, z, Block.Water );
                 return true;
@@ -86,10 +85,16 @@ namespace FemtoCraft {
                     for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
                         if( map.InBounds( x1, y1, z1 ) ) {
                             spongeData[map.Index( x1, y1, z1 )] = true;
-                            Block block = map.GetBlock( x1, y1, z1 );
-                            if( block == Block.Water || block == Block.StillWater ) {
-                                map.SetBlockNoNeighborChange( null, x1, y1, z1, Block.Air );
-                            }
+                        }
+                    }
+                }
+            }
+            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
+                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
+                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
+                        Block block = map.GetBlock( x1, y1, z1 );
+                        if( block == Block.Water || block == Block.StillWater ) {
+                            map.SetBlockNoNeighborChange( null, x1, y1, z1, Block.Air );
                         }
                     }
                 }
@@ -103,7 +108,15 @@ namespace FemtoCraft {
                     for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
                         if( map.InBounds( x1, y1, z1 ) ) {
                             OnSpongeRemovedInner( x1, y1, z1 );
-                            map.PhysicsUpdateNeighbors( x1, y1, z1, map.GetBlock( x1, y1, z1 ) );
+                        }
+                    }
+                }
+            }
+            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
+                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
+                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
+                        if( map.InBounds( x1, y1, z1 ) ) {
+                            OnSpongeRemovedInner( x1, y1, z1 );
                         }
                     }
                 }

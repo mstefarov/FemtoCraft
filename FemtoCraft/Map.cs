@@ -72,11 +72,13 @@ namespace FemtoCraft {
 
 
         public bool SetBlock( Player except, int x, int y, int z, Block newBlock ) {
-            if( SetBlockNoNeighborChange( except, x, y, z, newBlock ) ) {
-                PhysicsUpdateNeighbors( x, y, z, newBlock );
-                return true;
-            } else {
-                return false;
+            lock( physicsLock ) {
+                if( SetBlockNoNeighborChange( except, x, y, z, newBlock ) ) {
+                    PhysicsUpdateNeighbors( x, y, z, newBlock );
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
 
