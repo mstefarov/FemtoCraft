@@ -27,7 +27,6 @@ namespace FemtoCraft {
         public bool HasRegistered { get; set; }
 
         const int Timeout = 10000;
-        const int StackSize = 262144; // 256 KB, minimum on Vista/7
         readonly TcpClient client;
         NetworkStream stream;
         PacketReader reader;
@@ -49,7 +48,7 @@ namespace FemtoCraft {
             if( newClient == null ) throw new ArgumentNullException( "newClient" );
             try {
                 client = newClient;
-                thread = new Thread( IoThread, StackSize ) {
+                thread = new Thread( IoThread ) {
                     IsBackground = true
                 };
                 thread.Start();
@@ -109,6 +108,15 @@ namespace FemtoCraft {
                                 KickNow( "Unknown packet opcode " + opcode );
                                 return;
                         }
+                    }
+
+                    if( mapToJoin != Map ) {
+                        Map = mapToJoin;
+                        for( int i = 1; i < sbyte.MaxValue; i++ ) {
+                            writer.Write( Packet.MakeRemoveEntity( i ).Bytes );
+                        }
+                        SendMap();
+                        Server.SpawnPlayers( this );
                     }
 
                     Thread.Sleep( 5 );
@@ -288,6 +296,12 @@ namespace FemtoCraft {
             writer.Write( Packet.MakeTeleport( 255, map.Spawn ).Bytes );
 
             lastValidPosition = map.Spawn;
+        }
+
+
+        Map mapToJoin;
+        public void ChangeMap( Map newMap ) {
+            mapToJoin = newMap;
         }
 
 

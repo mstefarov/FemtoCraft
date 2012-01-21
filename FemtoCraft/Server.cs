@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.60";
+        public const string VersionString = "FemtoCraft 0.61";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -210,20 +210,28 @@ namespace FemtoCraft {
 
                 // Assign index and spawn player
                 player.ID = FreePlayerIDs.Pop();
-                Players.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
+                PlayerIndex.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
                 player.HasRegistered = true;
-
-                // Spawn existing players
-                foreach( Player other in PlayerIndex ) {
-                    player.Send( Packet.MakeAddEntity( other.ID, other.Name, other.Position ) );
-                }
+                player.Map = Map;
+                player.ChangeMap( Map );
 
                 // Add player to index
+                SpawnPlayers( player );
                 PlayerIndex.Add( player );
                 UpdatePlayerList();
-                player.Map = Map;
             }
             return true;
+        }
+
+
+        public static void SpawnPlayers( Player player ) {
+            lock( PlayerListLock ) {
+                foreach( Player other in PlayerIndex ) {
+                    if( other != player ) {
+                        player.Send( Packet.MakeAddEntity( other.ID, other.Name, other.Position ) );
+                    }
+                }
+            }
         }
 
 
@@ -291,17 +299,9 @@ namespace FemtoCraft {
 
         public static void ChangeMap( [NotNull] Map newMap ) {
             if( newMap == null ) throw new ArgumentNullException( "newMap" );
-            ThreadPool.QueueUserWorkItem( ChangeMapCallback, newMap );
-        }
-
-
-        static void ChangeMapCallback( [NotNull] object mapObj ) {
-            if( mapObj == null ) throw new ArgumentNullException( "mapObj" );
-            Map newMap = (Map)mapObj;
             lock( PlayerListLock ) {
-                Player[] playerListCache = PlayerIndex.ToArray();
-                foreach( Player player in playerListCache ) {
-                    player.KickSynchronously( "Changing map, please rejoin." );
+                foreach( Player player in PlayerIndex ) {
+                    player.ChangeMap( newMap );
                 }
                 Map = newMap;
             }
