@@ -16,12 +16,12 @@ namespace FemtoCraft {
             random = new Random();
             traversePattern = Enumerable.Range( 0, TraverseStep ).ToArray();
             RandomizeTraversal();
+            shadows = new short[map.Width, map.Length];
             for( int x = 0; x < map.Width; x++ ) {
                 for( int y = 0; y < map.Length; y++ ) {
                     UpdateShadow( x, y, map.Height - 1 );
                 }
             }
-            shadows = new short[map.Width, map.Length];
         }
 
 
