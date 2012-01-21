@@ -3,16 +3,26 @@
 namespace FemtoCraft {
     sealed class WaterPhysics {
         public const int TickDelay = 0;
+        const int SpongeRange = 2;
+
         readonly Map map;
+        readonly BitList spongeData;
 
 
         public WaterPhysics( Map map ) {
             this.map = map;
+            spongeData = new BitList( map.Volume );
+        }
+
+
+        public bool IsSponged( int x, int y, int z ) {
+            return spongeData[map.Index( x, y, z )];
         }
 
 
         public void OnNeighborUpdated( int x, int y, int z, Block thisBlock, Block updatedNeighbor ) {
-            if( updatedNeighbor == Block.Lava || updatedNeighbor == Block.StillLava ) {
+            if( ( thisBlock == Block.Water || thisBlock == Block.StillWater ) &&
+                ( updatedNeighbor == Block.Lava || updatedNeighbor == Block.StillLava ) ) {
                 map.SetBlock( null, x, y, z, Block.Stone );
 
             } else if( thisBlock == Block.Water && updatedNeighbor == Block.Air ) {
@@ -35,7 +45,7 @@ namespace FemtoCraft {
             bool updated = false;
             do {
                 z--;
-                if( z < 0 || map.GetBlock( x, y, z ) != Block.Air || map.IsSponged( x, y, z ) ) {
+                if( z < 0 || map.GetBlock( x, y, z ) != Block.Air || IsSponged( x, y, z ) ) {
                     break;
                 }
                 updated = map.SetBlock( null, x, y, z, Block.Water );
@@ -60,13 +70,59 @@ namespace FemtoCraft {
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
             if( currentBlock == Block.Air &&
-                    !map.IsSponged( x, y, z ) &&
+                    !IsSponged( x, y, z ) &&
                     map.SetBlock( null, x, y, z, Block.Water ) ) {
                 map.QueuePhysicsUpdate( x, y, z, Block.Water );
                 return true;
             } else {
                 return false;
             }
+        }
+
+
+        public void OnSpongePlaced( int x, int y, int z ) {
+            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
+                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
+                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
+                        if( map.InBounds( x1, y1, z1 ) ) {
+                            spongeData[map.Index( x1, y1, z1 )] = true;
+                            Block block = map.GetBlock( x1, y1, z1 );
+                            if( block == Block.Water || block == Block.StillWater ) {
+                                map.SetBlockNoNeighborChange( null, x1, y1, z1, Block.Air );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void OnSpongeRemoved( int x, int y, int z ) {
+            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
+                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
+                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
+                        if( map.InBounds( x1, y1, z1 ) ) {
+                            OnSpongeRemovedInner( x1, y1, z1 );
+                            map.PhysicsUpdateNeighbors( x1, y1, z1, map.GetBlock( x1, y1, z1 ) );
+                        }
+                    }
+                }
+            }
+        }
+
+
+        void OnSpongeRemovedInner( int x1, int y1, int z1 ) {
+            for( int x2 = x1 - SpongeRange; x2 <= x1 + SpongeRange; x2++ ) {
+                for( int y2 = y1 - SpongeRange; y2 <= y1 + SpongeRange; y2++ ) {
+                    for( int z2 = z1 - SpongeRange; z2 <= z1 + SpongeRange; z2++ ) {
+                        if( map.GetBlock( x2, y2, z2 ) == Block.Sponge ) {
+                            spongeData[map.Index( x1, y1, z1 )] = true;
+                            return;
+                        }
+                    }
+                }
+            }
+            spongeData[map.Index( x1, y1, z1 )] = false;
         }
     }
 }

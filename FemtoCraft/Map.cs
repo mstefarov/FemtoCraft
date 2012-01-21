@@ -41,7 +41,6 @@ namespace FemtoCraft {
                                   Math.Min( Height * 32, short.MaxValue ) );
             sandPhysics= new SandPhysics( this );
             plantPhysics = new PlantPhysics( this );
-            spongeData = new BitList( Volume );
             waterPhysics = new WaterPhysics( this );
             lavaPhysics = new LavaPhysics();
             shadows = new short[Width, Length];
@@ -141,7 +140,6 @@ namespace FemtoCraft {
 
         #region Physics
 
-        readonly BitList spongeData;
         readonly short[,] shadows;
         readonly SandPhysics sandPhysics;
         readonly PlantPhysics plantPhysics;
@@ -149,13 +147,13 @@ namespace FemtoCraft {
         readonly LavaPhysics lavaPhysics;
         readonly Queue<PhysicsUpdate> tickQueue = new Queue<PhysicsUpdate>();
         readonly object physicsLock = new object();
-        static byte[] TickDelays = new byte[256];
+        static readonly byte[] TickDelays = new byte[256];
         int tickNumber;
 
 
         void PhysicsOnRemoved( int x, int y, int z, Block oldBlock ) {
-            if( oldBlock == Block.Sponge ) {
-                OnSpongeRemoved( x, y, z );
+            if( Config.PhysicsWater && oldBlock == Block.Sponge ) {
+                waterPhysics.OnSpongeRemoved( x, y, z );
             }
         }
 
@@ -175,7 +173,7 @@ namespace FemtoCraft {
                 sandPhysics.Trigger( x, y, z );
 
             } else if( newBlock == Block.Sponge ) {
-                OnSpongeAdded( x, y, z );
+                waterPhysics.OnSpongePlaced( x, y, z );
             }
         }
 
@@ -198,9 +196,9 @@ namespace FemtoCraft {
                 waterPhysics.OnTick( x, y, z );
             }
         }
-        
 
-        void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
+
+        public void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
             PhysicsOnNeighborUpdate( x - 1, y, z, block );
             PhysicsOnNeighborUpdate( x + 1, y, z, block );
             PhysicsOnNeighborUpdate( x, y, z - 1, block );
@@ -245,6 +243,11 @@ namespace FemtoCraft {
         }
 
 
+        public bool IsSponged( int x, int y, int z ) {
+            return waterPhysics.IsSponged( x, y, z );
+        }
+
+
         public void PhysicsInit() {
             // calculate shadows
             Logger.Log( "Map: Preparing physics..." );
@@ -259,58 +262,12 @@ namespace FemtoCraft {
             fixed( byte* ptr = Blocks ) {
                 for( int i = 0; i < Blocks.Length; i++ ) {
                     if( (Block)ptr[i] == Block.Sponge ) {
-                        OnSpongeAdded( X( i ), Y( i ), Z( i ) );
+                        waterPhysics.OnSpongePlaced( X( i ), Y( i ), Z( i ) );
                     }
                 }
             }
             sw.Stop();
             Logger.Log( "Map: Physics prep done in {0}ms", sw.ElapsedMilliseconds );
-        }
-
-
-        const int SpongeRange = 2;
-
-        void OnSpongeAdded( int x, int y, int z ) {
-            int i = Index( x, y, z );
-            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
-                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
-                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
-                        if( InBounds( x1, y1, z1 ) ) {
-                            spongeData[Index( x1, y1, z1 )] = true;
-                        }
-                    }
-                }
-            }
-        }
-
-
-        void OnSpongeRemoved( int x, int y, int z ) {
-            for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
-                for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
-                    for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {
-                        OnSpongeRemovedInner( x1, y1, z1 );
-                    }
-                }
-            }
-        }
-
-
-        void OnSpongeRemovedInner( int x1, int y1, int z1 ) {
-            for( int x2 = x1 - SpongeRange; x2 <= x1 + SpongeRange; x2++ ) {
-                for( int y2 = y1 - SpongeRange; y2 <= y1 + SpongeRange; y2++ ) {
-                    for( int z2 = z1 - SpongeRange; z2 <= z1 + SpongeRange; z2++ ) {
-                        if( GetBlock( x2, y2, z2 ) == Block.Sponge ) {
-                            spongeData[Index( x1, y1, z1 )] = true;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-
-
-        public bool IsSponged( int x, int y, int z ) {
-            return spongeData[Index( x, y, z )];
         }
 
 
