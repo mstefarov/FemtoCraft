@@ -42,6 +42,8 @@ namespace FemtoCraft {
             sandPhysics= new SandPhysics( this );
             plantPhysics = new PlantPhysics( this );
             spongeData = new BitList( Volume );
+            waterPhysics = new WaterPhysics( this );
+            lavaPhysics = new LavaPhysics();
             shadows = new short[Width, Length];
         }
 
@@ -143,6 +145,8 @@ namespace FemtoCraft {
         readonly short[,] shadows;
         readonly SandPhysics sandPhysics;
         readonly PlantPhysics plantPhysics;
+        readonly WaterPhysics waterPhysics;
+        readonly LavaPhysics lavaPhysics;
         readonly Queue<PhysicsUpdate> tickQueue = new Queue<PhysicsUpdate>();
         readonly object physicsLock = new object();
         int tickNumber;
@@ -186,7 +190,9 @@ namespace FemtoCraft {
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
-
+            if( newBlock == Block.Water ) {
+                waterPhysics.Trigger( x, y, z );
+            }
         }
         
 
