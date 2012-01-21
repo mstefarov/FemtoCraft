@@ -92,6 +92,10 @@ namespace FemtoCraft {
                     SaveHandler( player, param );
                     break;
 
+                case "physics":
+                    PhysicsHandler( player, param );
+                    break;
+
                 default:
                     player.Message( "Unknown command \"{0}\"", command );
                     break;
@@ -358,6 +362,79 @@ namespace FemtoCraft {
             } catch( Exception ex ) {
                 player.Message( "Could not save map: {0}: {1}", ex.GetType().Name, ex.Message );
                 Logger.LogError( "Failed to save map: {0}", ex );
+            }
+        }
+
+
+        static void PhysicsHandler( [NotNull] Player player, [CanBeNull] string param ) {
+            if( !player.CheckIfOp() ) return;
+            if( param == null ) param = "";
+            switch( param.ToLower() ) {
+                case "":
+                    // print info
+                    break;
+
+                case "on":
+                    // toggle selected things on
+                    if( Config.Physics ) {
+                        player.Message( "Physics are already enabled." );
+                    } else {
+                        Config.Physics = true;
+                        player.Map.EnablePhysics();
+                        Logger.Log( "Player {0} enabled physics.",
+                                    player.Name );
+                    }
+                    break;
+
+                case "off":
+                    // toggle everything off
+                    if( Config.Physics ) {
+                        player.Message( "Physics are already enabled." );
+                    } else {
+                        Config.Physics = false;
+                        player.Map.DisablePhysics();
+                        Logger.Log( "Player {0} enabled physics.",
+                                    player.Name );
+                    }
+                    break;
+
+                case "grass":
+                    Config.PhysicsGrass = !Config.PhysicsGrass;
+                    Logger.Log( "Player {0} turned {1} grass physics.",
+                                player.Name, Config.PhysicsGrass ? "on" : "off" );
+                    break;
+
+                case "plant":
+                case "plants":
+                    Config.PhysicsPlants = !Config.PhysicsPlants;
+                    Logger.Log( "Player {0} turned {1} plant physics.",
+                                player.Name, Config.PhysicsPlants ? "on" : "off" );
+                    break;
+
+                case "sand":
+                    Config.PhysicsSand = !Config.PhysicsSand;
+                    Logger.Log( "Player {0} turned {1} sand/gravel physics.",
+                                player.Name, Config.PhysicsSand ? "on" : "off" );
+                    break;
+
+                case "tree":
+                case "trees":
+                    Config.PhysicsTrees = !Config.PhysicsTrees;
+                    Logger.Log( "Player {0} turned {1} tree physics.",
+                                player.Name, Config.PhysicsTrees ? "on" : "off" );
+                    break;
+
+                case "water":
+                    Config.PhysicsWater = !Config.PhysicsWater;
+                    Logger.Log( "Player {0} turned {1} water physics.",
+                                player.Name, Config.PhysicsWater ? "on" : "off" );
+                    break;
+
+                case "lava":
+                    Config.PhysicsLava = !Config.PhysicsLava;
+                    Logger.Log( "Player {0} turned {1} lava physics.",
+                                player.Name, Config.PhysicsLava ? "on" : "off" );
+                    break;
             }
         }
     }

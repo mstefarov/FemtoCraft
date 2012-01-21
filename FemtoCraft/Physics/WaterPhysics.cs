@@ -1,7 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 
 namespace FemtoCraft {
-    sealed class WaterPhysics {
+    unsafe sealed class WaterPhysics {
         public const int TickDelay = 0;
         const int SpongeRange = 2;
 
@@ -12,11 +12,13 @@ namespace FemtoCraft {
         public WaterPhysics( Map map ) {
             this.map = map;
             spongeData = new BitList( map.Volume );
-        }
-
-
-        public bool IsSponged( int x, int y, int z ) {
-            return spongeData[map.Index( x, y, z )];
+            fixed( byte* ptr = map.Blocks ) {
+                for( int i = 0; i < map.Volume; i++ ) {
+                    if( (Block)ptr[i] == Block.Sponge ) {
+                        SpongePlacedUpdateCoverage( map.X( i ), map.Y( i ), map.Z( i ) );
+                    }
+                }
+            }
         }
 
 
@@ -81,6 +83,11 @@ namespace FemtoCraft {
         }
 
 
+        bool IsSponged( int x, int y, int z ) {
+            return spongeData[map.Index( x, y, z )];
+        }
+
+
         public void OnSpongePlaced( int x, int y, int z  ) {
             SpongePlacedUpdateCoverage( x, y, z );
             for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
@@ -96,7 +103,7 @@ namespace FemtoCraft {
         }
 
 
-        public void SpongePlacedUpdateCoverage( int x, int y, int z ) {
+        void SpongePlacedUpdateCoverage( int x, int y, int z ) {
             for( int x1 = x - SpongeRange; x1 <= x + SpongeRange; x1++ ) {
                 for( int y1 = y - SpongeRange; y1 <= y + SpongeRange; y1++ ) {
                     for( int z1 = z - SpongeRange; z1 <= z + SpongeRange; z1++ ) {

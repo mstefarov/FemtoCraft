@@ -11,25 +11,22 @@ namespace FemtoCraft {
 
 
         public void Trigger( int x, int y, int z ) {
-            int dropHeight = Drop( x, y, z );
-            if( dropHeight != z ) {
-                Block oldBlock = map.GetBlock( x, y, dropHeight );
-                if( oldBlock != Block.Air && oldBlock.LetsSandThrough() ) {
-                    map.SetBlockNoUpdate( x, y, dropHeight, Block.Air );
+            int dropZ = z;
+            while( dropZ > 0 ) {
+                if( !map.GetBlock( x, y, dropZ - 1 ).LetsSandThrough() ) {
+                    break;
+                }
+                dropZ--;
+            }
+
+            if( dropZ != z ) {
+                Block oldBlock = map.GetBlock( x, y, dropZ );
+                if( oldBlock != Block.Air ) {
+                    map.SetBlockNoUpdate( x, y, dropZ, Block.Air );
                 }
                 map.Swap( x, y, z,
-                          x, y, dropHeight );
+                          x, y, dropZ );
             }
-        }
-
-
-        int Drop( int x, int y, int z ) {
-            for( ; z > 0; z-- ) {
-                if( !map.GetBlock( x, y, z - 1 ).LetsSandThrough() ) {
-                    return z;
-                }
-            }
-            return 0;
         }
     }
 }

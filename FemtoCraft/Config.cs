@@ -27,6 +27,8 @@ namespace FemtoCraft {
         public static bool OpLimitChatRate = true;
         public static bool OpAllowSpeedHack = true;
 
+        public static bool Physics = true;
+        public static int PhysicsTick = 50;
         public static bool PhysicsGrass = true;
         public static bool PhysicsPlants = true;
         public static bool PhysicsSand = true;
@@ -34,7 +36,6 @@ namespace FemtoCraft {
         public static bool PhysicsWater = true;
         public static bool PhysicsLava = true;
         public static bool PhysicsFloodProtection = false;
-        public static int PhysicsTick = 50;
 
         const string ConfigFileName = "server.properties";
 
@@ -122,6 +123,9 @@ namespace FemtoCraft {
                             OpAllowSpeedHack = Boolean.Parse( value );
                             break;
 
+                        case "physics":
+                            Physics = Boolean.Parse( value );
+                            break;
                         case "physics-tick":
                             PhysicsTick = Byte.Parse( value );
                             break;
@@ -184,6 +188,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "op-limit-chat-rate={0}", OpLimitChatRate );
                 writer.WriteLine( "op-allow-speed-hack={0}", OpAllowSpeedHack );
                 writer.WriteLine();
+                writer.WriteLine( "physics={0}", Physics );
                 writer.WriteLine( "physics-tick={0}", PhysicsTick );
                 writer.WriteLine( "physics-grass={0}", PhysicsGrass );
                 writer.WriteLine( "physics-plants={0}", PhysicsPlants );

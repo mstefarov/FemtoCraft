@@ -14,7 +14,9 @@ namespace FemtoCraft {
             map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
             map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
             map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
-            map.PhysicsInit();
+            if( Config.Physics ) {
+                map.EnablePhysics();
+            }
             return map;
         }
 
@@ -39,11 +41,6 @@ namespace FemtoCraft {
             Blocks = new byte[Volume];
             Spawn = new Position( Width * 16, Length * 16,
                                   Math.Min( Height * 32, short.MaxValue ) );
-            sandPhysics= new SandPhysics( this );
-            plantPhysics = new PlantPhysics( this );
-            waterPhysics = new WaterPhysics( this );
-            lavaPhysics = new LavaPhysics(this);
-            shadows = new short[Width, Length];
         }
 
 
@@ -99,7 +96,6 @@ namespace FemtoCraft {
             // do physics!
             PhysicsOnRemoved( x, y, z, oldBlock );
             PhysicsOnPlaced( x, y, z, newBlock );
-            UpdateShadow( x, y, z );
 
             Server.Players.Send( except, Packet.MakeSetBlock( x, y, z, newBlock ) );
             return true;
@@ -142,11 +138,10 @@ namespace FemtoCraft {
 
         #region Physics
 
-        readonly short[,] shadows;
-        readonly SandPhysics sandPhysics;
-        readonly PlantPhysics plantPhysics;
-        readonly WaterPhysics waterPhysics;
-        readonly LavaPhysics lavaPhysics;
+        SandPhysics sandPhysics;
+        PlantPhysics plantPhysics;
+        WaterPhysics waterPhysics;
+        LavaPhysics lavaPhysics;
         readonly Queue<PhysicsUpdate> tickQueue = new Queue<PhysicsUpdate>();
         readonly object physicsLock = new object();
         static readonly byte[] TickDelays = new byte[256];
@@ -161,6 +156,7 @@ namespace FemtoCraft {
 
 
         void PhysicsOnPlaced( int x, int y, int z, Block newBlock ) {
+            if( !physicsEnabled ) return;
             if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
                 SetBlock( null, x, y, z, Block.Air );
                 SetBlock( null, x, y, z - 1, Block.DoubleStair );
@@ -177,11 +173,12 @@ namespace FemtoCraft {
             } else if( newBlock == Block.Sponge ) {
                 waterPhysics.OnSpongePlaced( x, y, z );
             }
+            plantPhysics.OnBlockPlaced( x, y, z );
         }
 
 
         void PhysicsOnNeighborUpdate( int x, int y, int z, Block updatedNeighbor ) {
-            if( !InBounds( x, y, z ) ) return;
+            if( !physicsEnabled || !InBounds( x, y, z ) ) return;
             Block thisBlock = GetBlock( x, y, z );
 
             if( Config.PhysicsSand && ( thisBlock == Block.Sand || thisBlock == Block.Gravel ) ) {
@@ -197,6 +194,7 @@ namespace FemtoCraft {
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
+            if( !physicsEnabled ) return;
             if( newBlock == Block.Water ) {
                 waterPhysics.OnTick( x, y, z );
             } else if( newBlock == Block.Lava ) {
@@ -217,6 +215,7 @@ namespace FemtoCraft {
 
         public void PhysicsOnTick() {
             lock( physicsLock ) {
+                if( !physicsEnabled ) return;
                 tickNumber++;
                 if( tickNumber % 5 == 0 ) {
                     int oldLength = tickQueue.Count;
@@ -244,49 +243,31 @@ namespace FemtoCraft {
             }
         }
 
-
-        public bool IsLit( int x, int y, int z ) {
-            return shadows[x, y] <= z;
-        }
-
-
-        public bool IsSponged( int x, int y, int z ) {
-            return waterPhysics.IsSponged( x, y, z );
-        }
-
-
-        public void PhysicsInit() {
-            // calculate shadows
-            Logger.Log( "Map: Preparing physics..." );
-            Stopwatch sw = Stopwatch.StartNew();
-            for( int x = 0; x < Width; x++ ) {
-                for( int y = 0; y < Length; y++ ) {
-                    UpdateShadow( x, y, Height - 1 );
-                }
+        bool physicsEnabled;
+        public void DisablePhysics() {
+            lock( physicsLock ) {
+                sandPhysics = null;
+                plantPhysics = null;
+                waterPhysics = null;
+                lavaPhysics = null;
+                physicsEnabled = false;
             }
+            Logger.Log( "Map: Physics disabled" );
+        }
 
-            // calculate sponge coverage
-            fixed( byte* ptr = Blocks ) {
-                for( int i = 0; i < Blocks.Length; i++ ) {
-                    if( (Block)ptr[i] == Block.Sponge ) {
-                        waterPhysics.SpongePlacedUpdateCoverage( X( i ), Y( i ), Z( i ) );
-                    }
-                }
+
+        public void EnablePhysics() {
+            // calculate shadows
+            Stopwatch sw = Stopwatch.StartNew();
+            lock( physicsLock ) {
+                sandPhysics = new SandPhysics( this );
+                plantPhysics = new PlantPhysics( this );
+                waterPhysics = new WaterPhysics( this );
+                lavaPhysics = new LavaPhysics( this );
+                physicsEnabled = true;
             }
             sw.Stop();
-            Logger.Log( "Map: Physics prep done in {0}ms", sw.ElapsedMilliseconds );
-        }
-
-
-        void UpdateShadow( int x, int y, int topZ ) {
-            if( topZ < shadows[x, y] ) return;
-            for( int z = topZ; z >= 0; z-- ) {
-                if( GetBlock( x, y, z ).CastsShadow() ) {
-                    shadows[x, y] = (short)z;
-                    return;
-                }
-            }
-            shadows[x, y] = 0;
+            Logger.Log( "Map: Physics enabled in {0}ms", sw.ElapsedMilliseconds );
         }
 
         #endregion
@@ -344,7 +325,9 @@ namespace FemtoCraft {
                         }
                     }
 
-                    map.PhysicsInit();
+                    if( Config.Physics ) {
+                        map.EnablePhysics();
+                    }
                     return map;
                 }
             }

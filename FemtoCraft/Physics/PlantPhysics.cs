@@ -8,6 +8,7 @@ namespace FemtoCraft {
         readonly Random random;
         const int TraverseStep = 200;
         readonly int[] traversePattern = new int[TraverseStep];
+        readonly short[,] shadows;
 
 
         public PlantPhysics( Map map ) {
@@ -15,11 +16,39 @@ namespace FemtoCraft {
             random = new Random();
             traversePattern = Enumerable.Range( 0, TraverseStep ).ToArray();
             RandomizeTraversal();
+            for( int x = 0; x < map.Width; x++ ) {
+                for( int y = 0; y < map.Length; y++ ) {
+                    UpdateShadow( x, y, map.Height - 1 );
+                }
+            }
+            shadows = new short[map.Width, map.Length];
+        }
+
+
+        public bool IsLit( int x, int y, int z ) {
+            return shadows[x, y] <= z;
+        }
+
+
+        public void UpdateShadow( int x, int y, int topZ ) {
+            if( topZ < shadows[x, y] ) return;
+            for( int z = topZ; z >= 0; z-- ) {
+                if( map.GetBlock( x, y, z ).CastsShadow() ) {
+                    shadows[x, y] = (short)z;
+                    return;
+                }
+            }
+            shadows[x, y] = 0;
         }
 
 
         void RandomizeTraversal() {
             Array.Sort( traversePattern, ( i1, i2 ) => random.Next() );
+        }
+
+
+        public void OnBlockPlaced( int x, int y, int z ) {
+            UpdateShadow( x, y, z );
         }
 
 
@@ -57,8 +86,7 @@ namespace FemtoCraft {
         void TriggerMushroom( int x, int y, int z ) {
             if( !Config.PhysicsPlants ) return;
             Block blockUnder = map.GetBlock( x, y, z - 1 );
-            if( blockUnder != Block.Stone && blockUnder != Block.Gravel && blockUnder != Block.Cobblestone
-                    || map.IsLit( x, y, z ) ) {
+            if( blockUnder != Block.Stone && blockUnder != Block.Gravel && blockUnder != Block.Cobblestone || IsLit( x, y, z ) ) {
                 map.SetBlock( null, x, y, z, Block.Air );
             }
         }
@@ -68,7 +96,7 @@ namespace FemtoCraft {
         void TriggerFlower( int x, int y, int z ) {
             if( !Config.PhysicsPlants ) return;
             Block blockUnder = map.GetBlock( x, y, z - 1 );
-            if( blockUnder != Block.Grass && blockUnder != Block.Dirt || !map.IsLit( x, y, z ) ) {
+            if( blockUnder != Block.Grass && blockUnder != Block.Dirt || !IsLit( x, y, z ) ) {
                 map.SetBlock( null, x, y, z, Block.Air );
             }
         }
@@ -81,7 +109,7 @@ namespace FemtoCraft {
             if( random.Next( 4 ) != 0 ) return;
 
             // die (turn to dirt) if not lit
-            if( !map.IsLit( x, y, z ) ) {
+            if( !IsLit( x, y, z ) ) {
                 map.SetBlock( null, x, y, z, Block.Dirt );
                 return;
             }
@@ -92,7 +120,7 @@ namespace FemtoCraft {
                 int y2 = random.Next( y - 1, y + 2 );
                 int z2 = random.Next( z - 2, z + 3 );
                 if( map.InBounds( x2, y2, z2 ) &&
-                        map.IsLit( x2, y2, z2 ) &&
+                        IsLit( x2, y2, z2 ) &&
                         map.GetBlock( x2, y2, z2 ) == Block.Dirt ) {
                     map.SetBlock( null, x2, y2, z2, Block.Grass );
                     return;
@@ -104,7 +132,7 @@ namespace FemtoCraft {
         void TriggerSapling( int x, int y, int z ) {
             if( !Config.PhysicsPlants ) return;
             Block blockUnder = map.GetBlock( x, y, z - 1 );
-            if( blockUnder != Block.Grass && blockUnder != Block.Dirt || !map.IsLit( x, y, z ) ) {
+            if( blockUnder != Block.Grass && blockUnder != Block.Dirt || !IsLit( x, y, z ) ) {
                 map.SetBlock( null, x, y, z, Block.Air );
             }
             if( Config.PhysicsTrees && random.Next( 5 ) == 0 ) {

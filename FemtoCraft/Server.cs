@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.61";
+        public const string VersionString = "FemtoCraft 0.62";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -304,6 +304,7 @@ namespace FemtoCraft {
                     player.ChangeMap( newMap );
                 }
                 Map = newMap;
+                Map.Save( MapFileName );
             }
         }
 
