@@ -33,6 +33,7 @@ namespace FemtoCraft {
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
         public static bool PhysicsLava = true;
+        public static bool PhysicsFloodProtection = true;
         public static int PhysicsTick = 50;
 
         const string ConfigFileName = "server.properties";
@@ -142,6 +143,9 @@ namespace FemtoCraft {
                         case "physics-lava":
                             PhysicsLava = Boolean.Parse( value );
                             break;
+                        case "physics-flood-protection":
+                            PhysicsFloodProtection = Boolean.Parse( value );
+                            break;
 
                         default:
                             Logger.LogWarning( "Config: Unknown key in {0} line {1}: {2}",
@@ -186,6 +190,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "physics-trees={0}", PhysicsTrees );
                 writer.WriteLine( "physics-water={0}", PhysicsWater );
                 writer.WriteLine( "physics-lava={0}", PhysicsLava );
+                writer.WriteLine( "physics-flood-protection={0}", PhysicsFloodProtection );
             }
         }
     }
