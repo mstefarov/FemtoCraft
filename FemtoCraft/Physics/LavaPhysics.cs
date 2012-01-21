@@ -39,7 +39,7 @@ namespace FemtoCraft {
 
                 z--;
                 if( z >= 0 && map.GetBlock( x, y, z ) == Block.Air ) {
-                    updated = map.SetBlock( null, x, y, z, Block.StillLava );
+                    updated = map.SetBlock( null, x, y, z, Block.Lava );
                 }
             z++;
 
@@ -51,9 +51,9 @@ namespace FemtoCraft {
             }
 
             if( updated ) {
-                map.QueuePhysicsUpdate( x, y, z, Block.Water );
+                map.QueuePhysicsUpdate( x, y, z, Block.Lava );
             } else {
-                map.SetBlockNoUpdate( x, y, z, Block.StillWater );
+                map.SetBlockNoUpdate( x, y, z, Block.StillLava );
             }
         }
 
