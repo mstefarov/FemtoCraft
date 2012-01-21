@@ -149,6 +149,7 @@ namespace FemtoCraft {
         readonly LavaPhysics lavaPhysics;
         readonly Queue<PhysicsUpdate> tickQueue = new Queue<PhysicsUpdate>();
         readonly object physicsLock = new object();
+        static byte[] TickDelays = new byte[256];
         int tickNumber;
 
 
@@ -165,10 +166,10 @@ namespace FemtoCraft {
                 SetBlock( null, x, y, z - 1, Block.DoubleStair );
 
             } else if( Config.PhysicsWater && newBlock == Block.Water ) {
-                QueuePhysicsUpdate( new PhysicsUpdate( x, y, z, Block.Water, WaterPhysics.TickDelay ) );
+                QueuePhysicsUpdate( x, y, z, Block.Water );
 
             } else if( Config.PhysicsLava && newBlock == Block.Lava ) {
-                QueuePhysicsUpdate( new PhysicsUpdate( x, y, z, Block.Lava, LavaPhysics.TickDelay ) );
+                QueuePhysicsUpdate( x, y, z, Block.Lava );
 
             } else if( Config.PhysicsSand && ( newBlock == Block.Sand || newBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
@@ -179,19 +180,22 @@ namespace FemtoCraft {
         }
 
 
-        void PhysicsOnNeighborUpdate( int x, int y, int z, Block updatedBlock ) {
+        void PhysicsOnNeighborUpdate( int x, int y, int z, Block updatedNeighbor ) {
             if( !InBounds( x, y, z ) ) return;
-            Block neighborBlock = GetBlock( x, y, z );
+            Block thisBlock = GetBlock( x, y, z );
 
-            if( Config.PhysicsSand && ( neighborBlock == Block.Sand || neighborBlock == Block.Gravel ) ) {
+            if( Config.PhysicsSand && ( thisBlock == Block.Sand || thisBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
+            }
+            if( Config.PhysicsWater ) {
+                waterPhysics.OnNeighborUpdated( x, y, z, thisBlock, updatedNeighbor );
             }
         }
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
             if( newBlock == Block.Water ) {
-                waterPhysics.Trigger( x, y, z );
+                waterPhysics.OnTick( x, y, z );
             }
         }
         
@@ -228,7 +232,8 @@ namespace FemtoCraft {
         }
 
 
-        public void QueuePhysicsUpdate( PhysicsUpdate update ) {
+        public void QueuePhysicsUpdate( int x, int y, int z, Block oldBlock ) {
+            PhysicsUpdate update = new PhysicsUpdate( x, y, z, oldBlock, TickDelays[(int)oldBlock] );
             lock( physicsLock ) {
                 tickQueue.Enqueue( update );
             }
@@ -423,6 +428,9 @@ namespace FemtoCraft {
         static readonly byte[] Mapping = new byte[256];
 
         static Map() {
+            TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
+            TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
+
             Mapping[100] = (byte)Block.Glass;       // op_glass
             Mapping[101] = (byte)Block.Obsidian;    // opsidian
             Mapping[102] = (byte)Block.Brick;       // op_brick
