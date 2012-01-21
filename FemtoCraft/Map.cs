@@ -126,6 +126,16 @@ namespace FemtoCraft {
         }
 
 
+        public void Swap( int x1, int y1, int z1, int x2, int y2, int z2 ) {
+            Block block1 = GetBlock( x1, y1, z1 );
+            Block block2 = GetBlock( x2, y2, z2 );
+            SetBlockNoNeighborChange( null, x1, y1, z1, block2 );
+            SetBlockNoNeighborChange( null, x2, y2, z2, block1 );
+            PhysicsUpdateNeighbors( x1, y1, z1, block2 );
+            PhysicsUpdateNeighbors( x2, y2, z2, block1 );
+        }
+
+
         #region Physics
 
         readonly short[,] shadows;
@@ -134,16 +144,6 @@ namespace FemtoCraft {
         readonly Queue<PhysicsUpdate> tickQueue = new Queue<PhysicsUpdate>();
         readonly object physicsLock = new object();
         int tickNumber;
-
-
-        void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
-            PhysicsOnNeighborUpdate( x - 1, y, z, block );
-            PhysicsOnNeighborUpdate( x + 1, y, z, block );
-            PhysicsOnNeighborUpdate( x, y, z - 1, block );
-            PhysicsOnNeighborUpdate( x, y, z + 1, block );
-            PhysicsOnNeighborUpdate( x, y - 1, z, block );
-            PhysicsOnNeighborUpdate( x, y + 1, z, block );
-        }
 
 
         void PhysicsOnRemoved( int x, int y, int z, Block newBlock ) {
@@ -161,20 +161,33 @@ namespace FemtoCraft {
             } else if( Config.PhysicsLava && newBlock == Block.Lava ) {
                 QueuePhysicsUpdate( new PhysicsUpdate( x, y, z, Block.Lava, LavaPhysics.TickDelay ) );
 
+            } else if( Config.PhysicsSand && ( newBlock == Block.Sand || newBlock == Block.Gravel ) ) {
+                sandPhysics.Trigger( x, y, z );
             }
-            PhysicsOnNeighborUpdate( x, y, z, newBlock );
         }
 
 
-        void PhysicsOnNeighborUpdate( int x, int y, int z, Block newBlock ) {
+        void PhysicsOnNeighborUpdate( int x, int y, int z, Block updatedBlock ) {
             if( !InBounds( x, y, z ) ) return;
-            if( newBlock == GetBlock( x, y, z ) ) return;
-            // todo
-            sandPhysics.Trigger( x, y, z, newBlock );
+            Block neighborBlock = GetBlock( x, y, z );
+
+            if( Config.PhysicsSand && ( neighborBlock == Block.Sand || neighborBlock == Block.Gravel ) ) {
+                sandPhysics.Trigger( x, y, z );
+            }
         }
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
+        }
+
+
+        void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
+            PhysicsOnNeighborUpdate( x - 1, y, z, block );
+            PhysicsOnNeighborUpdate( x + 1, y, z, block );
+            PhysicsOnNeighborUpdate( x, y, z - 1, block );
+            PhysicsOnNeighborUpdate( x, y, z + 1, block );
+            PhysicsOnNeighborUpdate( x, y - 1, z, block );
+            PhysicsOnNeighborUpdate( x, y + 1, z, block );
         }
 
 

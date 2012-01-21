@@ -102,6 +102,20 @@ namespace FemtoCraft {
         }
 
 
+        public static bool LetsSandThrough( this Block block) {
+            switch( block ) {
+                case Block.Air:
+                case Block.Water:
+                case Block.Lava:
+                case Block.StillWater:
+                case Block.StillLava:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+
         public static void MoveOrReplaceFile( [NotNull] string source, [NotNull] string destination ) {
             if( source == null ) throw new ArgumentNullException( "source" );
             if( destination == null ) throw new ArgumentNullException( "destination" );
