@@ -52,12 +52,10 @@ namespace FemtoCraft {
             } while( updated );
             z++;
 
-            if( !updated ) {
-                updated |= Propagate( x - 1, y, z );
-                updated |= Propagate( x + 1, y, z );
-                updated |= Propagate( x, y - 1, z );
-                updated |= Propagate( x, y + 1, z );
-            }
+            updated |= Propagate( x - 1, y, z );
+            updated |= Propagate( x + 1, y, z );
+            updated |= Propagate( x, y - 1, z );
+            updated |= Propagate( x, y + 1, z );
 
             if( updated ) {
                 map.QueuePhysicsUpdate( x, y, z, Block.Water );

@@ -42,7 +42,7 @@ namespace FemtoCraft {
             sandPhysics= new SandPhysics( this );
             plantPhysics = new PlantPhysics( this );
             waterPhysics = new WaterPhysics( this );
-            lavaPhysics = new LavaPhysics();
+            lavaPhysics = new LavaPhysics(this);
             shadows = new short[Width, Length];
         }
 
@@ -188,12 +188,17 @@ namespace FemtoCraft {
             if( Config.PhysicsWater ) {
                 waterPhysics.OnNeighborUpdated( x, y, z, thisBlock, updatedNeighbor );
             }
+            if( Config.PhysicsLava ) {
+                lavaPhysics.OnNeighborUpdated( x, y, z, thisBlock, updatedNeighbor );
+            }
         }
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
             if( newBlock == Block.Water ) {
                 waterPhysics.OnTick( x, y, z );
+            } else if( newBlock == Block.Lava ) {
+                lavaPhysics.OnTick( x, y, z );
             }
         }
 

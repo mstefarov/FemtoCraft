@@ -1,5 +1,5 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
-// Contributed by Conrad "Redshift" Morgan
+// Based on ZombieDev code, contributed by Conrad "Redshift" Morgan
 namespace FemtoCraft {
     sealed class SandPhysics {
         readonly Map map;

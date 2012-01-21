@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System.Runtime.InteropServices;
 
 namespace FemtoCraft {
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
