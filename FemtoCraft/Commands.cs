@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
@@ -181,6 +182,7 @@ namespace FemtoCraft {
                     targetName = target.Name;
                     target.Kick( "Banned by " + player.Name );
                 }
+                Logger.Log( "Player {0} banned {1}", player.Name, targetName );
                 Server.Players.Message( "Player {0} was banned by {1}",
                                         targetName, player.Name );
             } else {
@@ -193,28 +195,47 @@ namespace FemtoCraft {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Bans.Remove( targetName ) ) {
                 Server.Bans.Save();
+                Logger.Log( "Player {0} unbanned {1}", player.Name, targetName );
                 Server.Players.Message( "Player {0} was unbanned by {1}",
                                         targetName, player.Name );
             } else {
-                player.Message( "Player {0} is not banned.", targetName );
+                player.Message( "Unban: Player {0} is not banned.", targetName );
             }
         }
 
 
         static void BanIPHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
-            if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
-            Player target = Server.FindPlayer( player, targetName );
-            if( target == null ) return;
+            if( !player.CheckIfOp() ) return;
+            if( targetName == null ) {
+                player.Message( "BanIP: Player name or IP address required." );
+                return;
+            }
 
-            target.Kick( "Banned by " + player.Name );
-            Server.Bans.Add( target.Name );
-            Server.IPBans.Add( target.IP );
-            Server.IPBans.Save();
-            Server.Players.Message( "Player {0} was IP-banned by {1}",
-                                    target.Name, player.Name );
-            var everyoneOnIP = Server.Players.Where( p => p.IP.Equals( target.IP ) );
-            foreach( Player playerOnIP in everyoneOnIP ) {
-                playerOnIP.Kick( "IP-Banned by " + player.Name );
+            IPAddress ip;
+            Player target = Server.FindPlayer( player, targetName );
+            if( target != null ) {
+                player.CheckPlayerName( targetName );
+                ip = target.IP;
+                Server.Bans.Add( target.Name );
+                Server.Bans.Save();
+            } else if( !IPAddress.TryParse( targetName, out ip ) ) {
+                player.Message( "BanIP: Player name or IP address required." );
+                return;
+            }
+
+            if( Server.IPBans.Add( ip ) ) {
+                Server.IPBans.Save();
+                Logger.Log( "Player {0} banned {1}", player.Name, ip );
+                var everyoneOnIP = Server.Players.Where( p => p.IP.Equals( ip ) );
+                foreach( Player playerOnIP in everyoneOnIP ) {
+                    Server.Bans.Add( playerOnIP.Name );
+                    playerOnIP.Kick( "IP-Banned by " + player.Name );
+                    Server.Players.Message( "Player {0} was IP-banned by {1}",
+                                            playerOnIP.Name, player.Name );
+                }
+                Server.Bans.Save();
+            } else {
+                player.Message( "Given IP ({0}) is already banned.", ip );
             }
         }
 
