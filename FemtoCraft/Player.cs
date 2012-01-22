@@ -26,6 +26,8 @@ namespace FemtoCraft {
         public bool IsOp { get; set; }
         public bool HasRegistered { get; set; }
 
+        public bool IsPainting { get; set; }
+
         const int Timeout = 10000;
         readonly TcpClient client;
         NetworkStream stream;
@@ -536,6 +538,7 @@ namespace FemtoCraft {
                 Logger.LogWarning( "Player {0} tried to place an invalid block type.", Name );
                 return false;
             }
+            if( IsPainting ) isDeleting = false;
             Block block = (Block)rawType;
             if( isDeleting ) block = Block.Air;
 

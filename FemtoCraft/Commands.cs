@@ -102,6 +102,10 @@ namespace FemtoCraft {
                     PhysicsHandler( player, param );
                     break;
 
+                case "paint":
+                    PaintHandler( player );
+                    break;
+
                 default:
                     player.Message( "Unknown command \"{0}\"", command );
                     break;
@@ -403,6 +407,7 @@ namespace FemtoCraft {
                         player.Map.EnablePhysics();
                         Logger.Log( "Player {0} enabled physics.",
                                     player.Name );
+                        player.Message( "Selected physics modules: ON" );
                     }
                     break;
 
@@ -415,6 +420,7 @@ namespace FemtoCraft {
                         player.Map.DisablePhysics();
                         Logger.Log( "Player {0} enabled physics.",
                                     player.Name );
+                        player.Message( "All physics: OFF" );
                     }
                     break;
 
@@ -422,6 +428,8 @@ namespace FemtoCraft {
                     Config.PhysicsGrass = !Config.PhysicsGrass;
                     Logger.Log( "Player {0} turned {1} grass physics.",
                                 player.Name, Config.PhysicsGrass ? "on" : "off" );
+                    player.Message( "Grass physics  : {0}",
+                                    Config.PhysicsGrass ? "ON" : "OFF" );
                     break;
 
                 case "plant":
@@ -429,12 +437,16 @@ namespace FemtoCraft {
                     Config.PhysicsPlants = !Config.PhysicsPlants;
                     Logger.Log( "Player {0} turned {1} plant physics.",
                                 player.Name, Config.PhysicsPlants ? "on" : "off" );
+                    player.Message( "Plant physics  : {0}",
+                                    Config.PhysicsPlants ? "ON" : "OFF" );
                     break;
 
                 case "sand":
                     Config.PhysicsSand = !Config.PhysicsSand;
                     Logger.Log( "Player {0} turned {1} sand/gravel physics.",
                                 player.Name, Config.PhysicsSand ? "on" : "off" );
+                    player.Message( "Sand physics  : {0}",
+                                    Config.PhysicsSand ? "ON" : "OFF" );
                     break;
 
                 case "tree":
@@ -442,20 +454,36 @@ namespace FemtoCraft {
                     Config.PhysicsTrees = !Config.PhysicsTrees;
                     Logger.Log( "Player {0} turned {1} tree physics.",
                                 player.Name, Config.PhysicsTrees ? "on" : "off" );
+                    player.Message( "Tree physics  : {0}",
+                                    Config.PhysicsTrees ? "ON" : "OFF" );
                     break;
 
                 case "water":
                     Config.PhysicsWater = !Config.PhysicsWater;
                     Logger.Log( "Player {0} turned {1} water physics.",
                                 player.Name, Config.PhysicsWater ? "on" : "off" );
+                    player.Message( "Water physics  : {0}",
+                                    Config.PhysicsWater ? "ON" : "OFF" );
                     break;
 
                 case "lava":
                     Config.PhysicsLava = !Config.PhysicsLava;
                     Logger.Log( "Player {0} turned {1} lava physics.",
                                 player.Name, Config.PhysicsLava ? "on" : "off" );
+                    player.Message( "Lava physics  : {0}",
+                                    Config.PhysicsLava ? "ON" : "OFF" );
                     break;
             }
+        }
+
+
+        static void PaintHandler( Player player ) {
+            if( player == Player.Console ) {
+                player.Message( "Can't paint from console!" );
+                return;
+            }
+            player.IsPainting = !player.IsPainting;
+            player.Message( "Paint: {0}", player.IsPainting ? "ON" : "OFF" );
         }
     }
 }
