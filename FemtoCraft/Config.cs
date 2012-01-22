@@ -6,7 +6,7 @@ using System.Net;
 namespace FemtoCraft {
     static class Config {
         public static string ServerName = "FemtoCraft Server";
-        public static string MOTD = "Welcome to the server.";
+        public static string MOTD = "Welcome to the server!";
         public static int Port = 25565;
         public static IPAddress IP = IPAddress.Any;
         public static int MaxPlayers = 20;
@@ -163,7 +163,7 @@ namespace FemtoCraft {
         }
 
 
-        static void Save() {
+        public static void Save() {
             using( var writer = new StreamWriter( ConfigFileName ) ) {
                 writer.WriteLine( "#{0} configuration file", Server.VersionString );
                 writer.WriteLine( "server-name={0}", ServerName );

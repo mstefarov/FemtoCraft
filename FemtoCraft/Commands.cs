@@ -290,7 +290,7 @@ namespace FemtoCraft {
         static void SayHandler( [NotNull] Player player, [CanBeNull] string message ) {
             if( player.CheckIfOp() ) {
                 if( message == null ) message = "";
-                Server.Players.Message( message );
+                Server.Players.Message( null, false, "&C" + message );
             }
         }
 
@@ -446,6 +446,7 @@ namespace FemtoCraft {
                     } else {
                         player.MessageNow( "Enabling physics, please wait..." );
                         Config.Physics = true;
+                        Config.Save();
                         player.Map.EnablePhysics();
                         Logger.Log( "Player {0} enabled physics.",
                                     player.Name );
@@ -459,6 +460,7 @@ namespace FemtoCraft {
                         player.Message( "Physics are already enabled." );
                     } else {
                         Config.Physics = false;
+                        Config.Save();
                         player.Map.DisablePhysics();
                         Logger.Log( "Player {0} enabled physics.",
                                     player.Name );
@@ -468,6 +470,7 @@ namespace FemtoCraft {
 
                 case "grass":
                     Config.PhysicsGrass = !Config.PhysicsGrass;
+                    Config.Save();
                     Logger.Log( "Player {0} turned {1} grass physics.",
                                 player.Name, Config.PhysicsGrass ? "on" : "off" );
                     player.Message( "Grass physics  : {0}",
@@ -477,6 +480,7 @@ namespace FemtoCraft {
                 case "plant":
                 case "plants":
                     Config.PhysicsPlants = !Config.PhysicsPlants;
+                    Config.Save();
                     Logger.Log( "Player {0} turned {1} plant physics.",
                                 player.Name, Config.PhysicsPlants ? "on" : "off" );
                     player.Message( "Plant physics  : {0}",
@@ -485,6 +489,7 @@ namespace FemtoCraft {
 
                 case "sand":
                     Config.PhysicsSand = !Config.PhysicsSand;
+                    Config.Save();
                     Logger.Log( "Player {0} turned {1} sand/gravel physics.",
                                 player.Name, Config.PhysicsSand ? "on" : "off" );
                     player.Message( "Sand physics  : {0}",
@@ -494,6 +499,7 @@ namespace FemtoCraft {
                 case "tree":
                 case "trees":
                     Config.PhysicsTrees = !Config.PhysicsTrees;
+                    Config.Save();
                     Logger.Log( "Player {0} turned {1} tree physics.",
                                 player.Name, Config.PhysicsTrees ? "on" : "off" );
                     player.Message( "Tree physics  : {0}",
@@ -502,6 +508,7 @@ namespace FemtoCraft {
 
                 case "water":
                     Config.PhysicsWater = !Config.PhysicsWater;
+                    Config.Save();
                     Logger.Log( "Player {0} turned {1} water physics.",
                                 player.Name, Config.PhysicsWater ? "on" : "off" );
                     player.Message( "Water physics  : {0}",
@@ -510,10 +517,15 @@ namespace FemtoCraft {
 
                 case "lava":
                     Config.PhysicsLava = !Config.PhysicsLava;
+                    Config.Save();
                     Logger.Log( "Player {0} turned {1} lava physics.",
                                 player.Name, Config.PhysicsLava ? "on" : "off" );
                     player.Message( "Lava physics  : {0}",
                                     Config.PhysicsLava ? "ON" : "OFF" );
+                    break;
+
+                default:
+                    player.Message( "Unknown /physics option \"{0}\"", param );
                     break;
             }
         }
