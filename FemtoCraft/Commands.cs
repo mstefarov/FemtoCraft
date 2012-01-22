@@ -1,6 +1,8 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
@@ -46,15 +48,19 @@ namespace FemtoCraft {
                     break;
 
                 case "solid":
+                case "s":
                     SolidHandler( player );
                     break;
                 case "water":
+                case "w":
                     WaterHandler( player );
                     break;
                 case "lava":
+                case "l":
                     LavaHandler( player );
                     break;
                 case "grass":
+                case "g":
                     GrassHandler( player );
                     break;
 
@@ -372,6 +378,20 @@ namespace FemtoCraft {
             switch( param.ToLower() ) {
                 case "":
                     // print info
+                    player.Message( "Physics are: {0}", Config.Physics ? "ON" : "OFF" );
+                    List<string> modules = new List<string>();
+                    if( Config.PhysicsGrass ) modules.Add( "grass" );
+                    if( Config.PhysicsLava ) modules.Add( "lava" );
+                    if( Config.PhysicsPlants ) modules.Add( "plants" );
+                    if( Config.PhysicsSand ) modules.Add( "sand" );
+                    if( Config.PhysicsTrees ) modules.Add( "trees" );
+                    if( Config.PhysicsWater ) modules.Add( "water" );
+                    if( modules.Count == 0 ) {
+                        player.Message( "None of the modules are enabled." );
+                    } else {
+                        player.Message( "Following modules are enabled: {0}",
+                                        modules.JoinToString( ", " ) );
+                    }
                     break;
 
                 case "on":

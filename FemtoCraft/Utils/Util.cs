@@ -7,7 +7,7 @@ using System.Text;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
-    unsafe static class Util {
+    static unsafe class Util {
         [NotNull]
         public static string GenerateSalt() {
             RandomNumberGenerator prng = RandomNumberGenerator.Create();
@@ -85,7 +85,7 @@ namespace FemtoCraft {
         }
 
 
-        public static bool CastsShadow( this Block block) {
+        public static bool CastsShadow( this Block block ) {
             switch( block ) {
                 case Block.Air:
                 case Block.Glass:
@@ -102,7 +102,7 @@ namespace FemtoCraft {
         }
 
 
-        public static bool LetsSandThrough( this Block block) {
+        public static bool LetsSandThrough( this Block block ) {
             switch( block ) {
                 case Block.Air:
                 case Block.Water:
@@ -120,11 +120,15 @@ namespace FemtoCraft {
             if( source == null ) throw new ArgumentNullException( "source" );
             if( destination == null ) throw new ArgumentNullException( "destination" );
             if( File.Exists( destination ) ) {
-                if( Path.GetPathRoot( Path.GetFullPath( source ) ) == Path.GetPathRoot( Path.GetFullPath( destination ) ) ) {
-                    File.Replace( source, destination, null, true );
+                if( Path.GetPathRoot( Path.GetFullPath( source ) ) ==
+                    Path.GetPathRoot( Path.GetFullPath( destination ) ) ) {
+                        try {
+                            File.Replace( source, destination, null, true );
+                        } catch( IOException ) {
+                            File.Copy( source, destination, true );
+                        }
                 } else {
-                    File.Delete( destination );
-                    File.Move( source, destination );
+                    File.Copy( source, destination, true );
                 }
             } else {
                 File.Move( source, destination );

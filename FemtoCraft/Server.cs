@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.63";
+        public const string VersionString = "FemtoCraft 0.64";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -84,7 +84,11 @@ namespace FemtoCraft {
             while( true ) {
                 string input = Console.ReadLine();
                 if( input == null ) return;
-                Player.Console.ProcessMessage( input );
+                try {
+                    Player.Console.ProcessMessage( input );
+                } catch( Exception ex ) {
+                    Logger.LogError( "Could not execute message: {0}", ex );
+                }
             }
 
 #if !DEBUG
