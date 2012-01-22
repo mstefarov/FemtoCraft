@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.67";
+        public const string VersionString = "FemtoCraft 0.68";
 
         public static readonly string Salt = Util.GenerateSalt();
         public static Uri Uri { get; set; }
@@ -53,8 +53,8 @@ namespace FemtoCraft {
             Bans = new PlayerNameSet( BansFileName );
             Ops = new PlayerNameSet( OpsFileName );
             IPBans = new IPAddressSet( IPBanFileName );
-            Logger.Log( "Server: Tracking {0} bans and {1} ops.",
-                        Bans.Count, Ops.Count );
+            Logger.Log( "Server: Tracking {0} bans, {1} ip-bans, and {2} ops.",
+                        Bans.Count, IPBans.Count, Ops.Count );
             if( Config.UseWhitelist ) {
                 Whitelist = new PlayerNameSet( WhitelistFileName );
                 Logger.Log( "Using a whitelist ({0} players): {1}",
@@ -63,7 +63,7 @@ namespace FemtoCraft {
 
             // load or create map
             if( File.Exists( MapFileName ) ) {
-                Map = Map.Load( MapFileName );
+                Map = LvlMapConverter.Load( MapFileName );
                 Logger.Log( "Loaded map from {0}", MapFileName );
             } else {
                 Map = Map.CreateFlatgrass( 256, 256, 64 );

@@ -25,12 +25,12 @@ namespace FemtoCraft {
         }
 
 
-        public bool IsLit( int x, int y, int z ) {
+        bool IsLit( int x, int y, int z ) {
             return shadows[x, y] <= z;
         }
 
 
-        public void UpdateShadow( int x, int y, int topZ ) {
+        void UpdateShadow( int x, int y, int topZ ) {
             if( topZ < shadows[x, y] ) return;
             for( int z = topZ; z >= 0; z-- ) {
                 if( map.GetBlock( x, y, z ).CastsShadow() ) {

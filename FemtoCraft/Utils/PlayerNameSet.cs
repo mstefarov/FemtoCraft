@@ -15,7 +15,10 @@ namespace FemtoCraft {
         public PlayerNameSet( [NotNull] string fileName ) {
             if( fileName == null ) throw new ArgumentNullException( "fileName" );
             this.fileName = fileName;
-            if( !File.Exists( fileName ) ) return;
+            if( !File.Exists( fileName ) ) {
+                File.Create( fileName );
+                return;
+            }
 
             foreach( string name in File.ReadAllLines( fileName ) ) {
                 if( Player.IsValidName( name ) ) {

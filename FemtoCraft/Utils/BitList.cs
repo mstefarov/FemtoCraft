@@ -21,10 +21,5 @@ namespace FemtoCraft {
                 }
             }
         }
-
-
-        public int Count {
-            get { return array.Length; }
-        }
     }
 }

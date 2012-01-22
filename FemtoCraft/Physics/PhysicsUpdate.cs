@@ -12,8 +12,8 @@ namespace FemtoCraft {
             Delay = delay;
         }
 
-        public short X, Y, Z;
-        public Block OldBlock;
+        public readonly short X, Y, Z;
+        public readonly Block OldBlock;
         public byte Delay;
     }
 }

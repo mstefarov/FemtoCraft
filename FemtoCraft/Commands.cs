@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
@@ -222,28 +221,28 @@ namespace FemtoCraft {
 
         static void SolidHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
-            player.Message( player.PlaceSolid ? "Solid: Off" : "Solid: On" );
+            player.Message( player.PlaceSolid ? "Solid: OFF" : "Solid: ON" );
             player.PlaceSolid = !player.PlaceSolid;
         }
 
 
         static void WaterHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
-            player.Message( player.PlaceWater ? "Water: Off" : "Water: On" );
+            player.Message( player.PlaceWater ? "Water: OFF" : "Water: ON" );
             player.PlaceWater = !player.PlaceWater;
         }
 
 
         static void LavaHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
-            player.Message( player.PlaceLava ? "Lava: Off" : "Lava: On" );
+            player.Message( player.PlaceLava ? "Lava: OFF" : "Lava: ON" );
             player.PlaceLava = !player.PlaceLava;
         }
 
 
         static void GrassHandler( [NotNull] Player player ) {
             if( !player.CheckIfOp() ) return;
-            player.Message( player.PlaceGrass ? "Grass: Off" : "Grass: On" );
+            player.Message( player.PlaceGrass ? "Grass: OFF" : "Grass: ON" );
             player.PlaceGrass = !player.PlaceGrass;
         }
 
@@ -350,7 +349,7 @@ namespace FemtoCraft {
                 if( fileName.EndsWith( ".dat", StringComparison.OrdinalIgnoreCase ) ) {
                     map = DatMapConverter.Load( fileName );
                 } else if( fileName.EndsWith( ".lvl", StringComparison.OrdinalIgnoreCase ) ) {
-                    map = Map.Load( fileName );
+                    map = LvlMapConverter.Load( fileName );
                 }else {
                     player.Message( "Load: Unsupported map format." );
                     return;
@@ -480,7 +479,7 @@ namespace FemtoCraft {
         }
 
 
-        static void PaintHandler( Player player ) {
+        static void PaintHandler( [NotNull] Player player ) {
             if( player == Player.Console ) {
                 player.Message( "Can't paint from console!" );
                 return;
