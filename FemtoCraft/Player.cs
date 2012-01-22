@@ -721,6 +721,20 @@ namespace FemtoCraft {
         }
 
 
+        [StringFormatMethod( "message" )]
+        public void MessageNow( [NotNull] string message, [NotNull] params object[] formatArgs ) {
+            if( formatArgs.Length > 0 ) {
+                message = String.Format( message, formatArgs );
+            }
+            if( this == Console ) {
+                System.Console.WriteLine( message );
+            } else {
+                foreach( Packet p in new LineWrapper( "&E" + message ) ) {
+                    writer.Write( p.Bytes );
+                }
+            }
+        }
+
         public bool CheckIfOp() {
             if( !IsOp ) {
                 Message( "You must be op to do this." );

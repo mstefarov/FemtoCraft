@@ -345,6 +345,7 @@ namespace FemtoCraft {
                 return;
             }
             try {
+                player.MessageNow( "Loading map, please wait..." );
                 Map map;
                 if( fileName.EndsWith( ".dat", StringComparison.OrdinalIgnoreCase ) ) {
                     map = DatMapConverter.Load( fileName );
@@ -404,6 +405,7 @@ namespace FemtoCraft {
                     if( Config.Physics ) {
                         player.Message( "Physics are already enabled." );
                     } else {
+                        player.MessageNow( "Enabling physics, please wait..." );
                         Config.Physics = true;
                         player.Map.EnablePhysics();
                         Logger.Log( "Player {0} enabled physics.",
