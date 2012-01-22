@@ -102,6 +102,7 @@ namespace FemtoCraft {
                     PhysicsHandler( player, param );
                     break;
 
+                case "p":
                 case "paint":
                     PaintHandler( player );
                     break;

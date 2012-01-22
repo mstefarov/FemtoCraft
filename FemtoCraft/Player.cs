@@ -597,7 +597,7 @@ namespace FemtoCraft {
 
             // check if sending back an update is necessary
             Block placedBlock = Map.GetBlock(x,y,z);
-            if( placedBlock != (Block)rawType ) {
+            if( IsPainting || placedBlock != (Block)rawType ) {
                 writer.Write( Packet.MakeSetBlock( x, y, z, placedBlock ).Bytes );
             }
             return true;
