@@ -46,6 +46,9 @@ namespace FemtoCraft {
                 case "banip":
                     BanIPHandler( player, param );
                     break;
+                case "unbanip":
+                    UnbanIPHandler( player, param );
+                    break;
 
                 case "solid":
                 case "s":
@@ -225,17 +228,33 @@ namespace FemtoCraft {
 
             if( Server.IPBans.Add( ip ) ) {
                 Server.IPBans.Save();
-                Logger.Log( "Player {0} banned {1}", player.Name, ip );
+                Logger.Log( "Player {0} banned IP {1}", player.Name, ip );
                 var everyoneOnIP = Server.Players.Where( p => p.IP.Equals( ip ) );
                 foreach( Player playerOnIP in everyoneOnIP ) {
-                    Server.Bans.Add( playerOnIP.Name );
                     playerOnIP.Kick( "IP-Banned by " + player.Name );
                     Server.Players.Message( "Player {0} was IP-banned by {1}",
                                             playerOnIP.Name, player.Name );
                 }
-                Server.Bans.Save();
             } else {
                 player.Message( "Given IP ({0}) is already banned.", ip );
+            }
+        }
+
+
+        static void UnbanIPHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
+            if( !player.CheckIfOp() ) return;
+            IPAddress ip;
+            if( !IPAddress.TryParse( targetName, out ip ) ) {
+                player.Message( "UnbanIP: IP address required." );
+                return;
+            }
+            if( Server.IPBans.Remove( ip ) ) {
+                Server.IPBans.Save();
+                Logger.Log( "Player {0} unbanned IP {1}", player.Name, ip );
+                player.Message( "UnbanIP: Unbanned {0}", ip );
+
+            } else {
+                player.Message( "Given IP ({0}) is not banned.", ip );
             }
         }
 
