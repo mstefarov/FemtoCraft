@@ -47,7 +47,12 @@ namespace FemtoCraft {
         public bool Add( [NotNull] string name ) {
             if( name == null ) throw new ArgumentNullException( "name" );
             lock( syncRoot ) {
-                return names.Add( name.ToLower() );
+                if( names.Add( name.ToLower() ) ) {
+                    Save();
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
 
@@ -55,12 +60,17 @@ namespace FemtoCraft {
         public bool Remove( [NotNull] string name ) {
             if( name == null ) throw new ArgumentNullException( "name" );
             lock( syncRoot ) {
-                return names.Remove( name.ToLower() );
+                if( names.Remove( name.ToLower() ) ) {
+                    Save();
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
 
 
-        public void Save() {
+        void Save() {
             lock( syncRoot ) {
                 string tempFileName = Path.GetTempFileName();
                 File.WriteAllLines( tempFileName, names.ToArray() );

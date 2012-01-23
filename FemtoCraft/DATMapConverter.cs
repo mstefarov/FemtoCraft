@@ -122,11 +122,14 @@ namespace FemtoCraft {
                         } else if( MemCmp( data, pointer, "height" ) ) {
                             length = (ushort)IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) );
                         } else if( MemCmp( data, pointer, "xSpawn" ) ) {
-                            spawn.X = (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
+                            spawn.X =
+                                (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
                         } else if( MemCmp( data, pointer, "ySpawn" ) ) {
-                            spawn.Z = (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
+                            spawn.Z =
+                                (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
                         } else if( MemCmp( data, pointer, "zSpawn" ) ) {
-                            spawn.Y = (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
+                            spawn.Y =
+                                (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
                         }
 
                         pointer += skip;
@@ -146,23 +149,22 @@ namespace FemtoCraft {
                     }
 
                     // copy the block array... or fail
-                    if( foundBlockArray ) {
-                        Array.Copy( data, pointer, map.Blocks, 0, map.Blocks.Length );
-
-                        fixed( byte* ptr = map.Blocks ) {
-                            for( int j = 0; j < map.Blocks.Length; j++ ) {
-                                if( ptr[j] > 49 ) {
-                                    ptr[j] = Mapping[ptr[j]];
-                                }
-                            }
-                        }
-                        if( Config.Physics ) {
-                            map.EnablePhysics();
-                        }
-
-                    } else {
+                    if( !foundBlockArray ) {
                         throw new Exception( "DatMapConverter: Could not locate block array." );
                     }
+
+                    Array.Copy( data, pointer, map.Blocks, 0, map.Blocks.Length );
+
+                    // Map survivaltest/indev blocktypes to standard/presentation blocktypes
+                    fixed( byte* ptr = map.Blocks ) {
+                        for( int j = 0; j < map.Blocks.Length; j++ ) {
+                            if( ptr[j] > 49 ) {
+                                ptr[j] = Mapping[ptr[j]];
+                            }
+                        }
+                    }
+
+                    if( Config.Physics ) map.EnablePhysics();
                     break;
                 }
                 return map;

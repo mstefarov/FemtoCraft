@@ -33,7 +33,7 @@ namespace FemtoCraft {
         void UpdateShadow( int x, int y, int topZ ) {
             if( topZ < shadows[x, y] ) return;
             for( int z = topZ; z >= 0; z-- ) {
-                if( map.GetBlock( x, y, z ).CastsShadow() ) {
+                if( CastsShadow( map.GetBlock( x, y, z ) ) ) {
                     shadows[x, y] = (short)z;
                     return;
                 }
@@ -186,6 +186,23 @@ namespace FemtoCraft {
                 }
             }
             return true;
+        }
+
+
+        static bool CastsShadow( Block block ) {
+            switch( block ) {
+                case Block.Air:
+                case Block.Glass:
+                case Block.Leaves:
+                case Block.YellowFlower:
+                case Block.RedFlower:
+                case Block.BrownMushroom:
+                case Block.RedMushroom:
+                case Block.Sapling:
+                    return false;
+                default:
+                    return true;
+            }
         }
     }
 }

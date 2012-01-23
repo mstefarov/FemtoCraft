@@ -13,7 +13,7 @@ namespace FemtoCraft {
         public void Trigger( int x, int y, int z ) {
             int dropZ = z;
             while( dropZ > 0 ) {
-                if( !map.GetBlock( x, y, dropZ - 1 ).LetsSandThrough() ) {
+                if( !LetsSandThrough( map.GetBlock( x, y, dropZ - 1 ) ) ) {
                     break;
                 }
                 dropZ--;
@@ -26,6 +26,20 @@ namespace FemtoCraft {
             }
             map.Swap( x, y, z,
                       x, y, dropZ );
+        }
+
+
+        static bool LetsSandThrough( Block block ) {
+            switch( block ) {
+                case Block.Air:
+                case Block.Water:
+                case Block.Lava:
+                case Block.StillWater:
+                case Block.StillLava:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

@@ -51,9 +51,13 @@ namespace FemtoCraft {
             if( address == null ) throw new ArgumentNullException( "address" );
             lock( syncRoot ) {
                 IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
-                if( existingAddress != null ) return false;
-                addresses.Add( address );
-                return true;
+                if( existingAddress == null ) {
+                    addresses.Add( address );
+                    Save();
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
 
@@ -62,16 +66,18 @@ namespace FemtoCraft {
             if( address == null ) throw new ArgumentNullException( "address" );
             lock( syncRoot ) {
                 IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
-                if( existingAddress == null ) {
-                    return false;
-                } else {
+                if( existingAddress != null ) {
                     addresses.Remove( existingAddress );
+                    Save();
+                    return true;
+                } else {
                     return false;
                 }
             }
         }
 
-        public void Save() {
+
+        void Save() {
             lock( syncRoot ) {
                 string tempFileName = Path.GetTempFileName();
                 File.WriteAllLines( fileName, addresses.Select( a => a.ToString() ).ToArray() );

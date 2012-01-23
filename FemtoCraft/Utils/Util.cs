@@ -85,37 +85,6 @@ namespace FemtoCraft {
         }
 
 
-        public static bool CastsShadow( this Block block ) {
-            switch( block ) {
-                case Block.Air:
-                case Block.Glass:
-                case Block.Leaves:
-                case Block.YellowFlower:
-                case Block.RedFlower:
-                case Block.BrownMushroom:
-                case Block.RedMushroom:
-                case Block.Sapling:
-                    return false;
-                default:
-                    return true;
-            }
-        }
-
-
-        public static bool LetsSandThrough( this Block block ) {
-            switch( block ) {
-                case Block.Air:
-                case Block.Water:
-                case Block.Lava:
-                case Block.StillWater:
-                case Block.StillLava:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-
         public static void MoveOrReplaceFile( [NotNull] string source, [NotNull] string destination ) {
             if( source == null ) throw new ArgumentNullException( "source" );
             if( destination == null ) throw new ArgumentNullException( "destination" );

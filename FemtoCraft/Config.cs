@@ -29,20 +29,20 @@ namespace FemtoCraft {
 
         public static bool Physics = true;
         public static int PhysicsTick = 50;
+        public static bool PhysicsFloodProtection = false;
         public static bool PhysicsGrass = true;
+        public static bool PhysicsLava = true;
         public static bool PhysicsPlants = true;
         public static bool PhysicsSand = true;
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
-        public static bool PhysicsLava = true;
-        public static bool PhysicsFloodProtection = false;
 
         const string ConfigFileName = "server.properties";
 
 
         public static void Load() {
             if( !File.Exists( ConfigFileName ) ) {
-                Logger.LogWarning( "Config.Load: server.properties missing, using defaults." );
+                Logger.LogWarning( "Config: \"server.properties\" missing, using defaults." );
                 Save();
                 return;
             }
@@ -129,8 +129,14 @@ namespace FemtoCraft {
                         case "physics-tick":
                             PhysicsTick = Byte.Parse( value );
                             break;
+                        case "physics-flood-protection":
+                            PhysicsFloodProtection = Boolean.Parse( value );
+                            break;
                         case "physics-grass":
                             PhysicsGrass = Boolean.Parse( value );
+                            break;
+                        case "physics-lava":
+                            PhysicsLava = Boolean.Parse( value );
                             break;
                         case "physics-plants":
                             PhysicsPlants = Boolean.Parse( value );
@@ -143,12 +149,6 @@ namespace FemtoCraft {
                             break;
                         case "physics-water":
                             PhysicsWater = Boolean.Parse( value );
-                            break;
-                        case "physics-lava":
-                            PhysicsLava = Boolean.Parse( value );
-                            break;
-                        case "physics-flood-protection":
-                            PhysicsFloodProtection = Boolean.Parse( value );
                             break;
 
                         default:
@@ -190,13 +190,13 @@ namespace FemtoCraft {
                 writer.WriteLine();
                 writer.WriteLine( "physics={0}", Physics );
                 writer.WriteLine( "physics-tick={0}", PhysicsTick );
+                writer.WriteLine( "physics-flood-protection={0}", PhysicsFloodProtection );
                 writer.WriteLine( "physics-grass={0}", PhysicsGrass );
+                writer.WriteLine( "physics-lava={0}", PhysicsLava );
                 writer.WriteLine( "physics-plants={0}", PhysicsPlants );
                 writer.WriteLine( "physics-sand={0}", PhysicsSand );
                 writer.WriteLine( "physics-trees={0}", PhysicsTrees );
                 writer.WriteLine( "physics-water={0}", PhysicsWater );
-                writer.WriteLine( "physics-lava={0}", PhysicsLava );
-                writer.WriteLine( "physics-flood-protection={0}", PhysicsFloodProtection );
             }
         }
     }

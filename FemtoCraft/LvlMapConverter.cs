@@ -49,6 +49,7 @@ namespace FemtoCraft {
                         bytesLeft -= readPass;
                     }
                     
+                    // Map custom MCSharp+ blocktypes to standard/presentation blocktypes
                     fixed( byte* ptr = map.Blocks ) {
                         for( int j = 0; j < map.Blocks.Length; j++ ) {
                             if( ptr[j] > 49 ) {
@@ -57,9 +58,7 @@ namespace FemtoCraft {
                         }
                     }
 
-                    if( Config.Physics ) {
-                        map.EnablePhysics();
-                    }
+                    if( Config.Physics ) map.EnablePhysics();
                     return map;
                 }
             }

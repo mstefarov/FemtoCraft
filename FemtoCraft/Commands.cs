@@ -129,16 +129,17 @@ namespace FemtoCraft {
         static void OpHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Ops.Add( targetName ) ) {
-                Server.Ops.Save();
                 Player target = Server.FindPlayerExact( targetName );
                 if( target != null ) {
-                    targetName = target.Name;
                     target.IsOp = true;
                     target.Send( Packet.MakeSetPermission( target.IsOp ) );
                     target.Message( "You are now op!" );
+                    Server.Players.Message( "Player {0} was opped by {1}",
+                                            target.Name, player.Name );
+                } else {
+                    Server.Players.Message( "Player {0} (offline) was opped by {1}",
+                                            targetName, player.Name );
                 }
-                Server.Players.Message( "Player {0} was promoted by {1}",
-                                        targetName, player.Name );
             } else {
                 player.Message( "Player {0} is already op", targetName );
             }
@@ -148,7 +149,6 @@ namespace FemtoCraft {
         static void DeopHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Ops.Remove( targetName ) ) {
-                Server.Ops.Save();
                 Player target = Server.FindPlayerExact( targetName );
                 if( target != null ) {
                     targetName = target.Name;
@@ -159,9 +159,12 @@ namespace FemtoCraft {
                     target.PlaceGrass = false;
                     target.Send( Packet.MakeSetPermission( target.IsOp ) );
                     target.Message( "You are no longer op." );
+                    Server.Players.Message( "Player {0} was deopped by {1}",
+                                            targetName, player.Name );
+                } else {
+                    Server.Players.Message( "Player {0} (offline) was deopped by {1}",
+                                            targetName, player.Name );
                 }
-                Server.Players.Message( "Player {0} was demoted by {1}",
-                                        targetName, player.Name );
             } else {
                 player.Message( "Player {0} is not an op.", targetName );
             }
@@ -173,21 +176,23 @@ namespace FemtoCraft {
             Player target = Server.FindPlayer( player, targetName );
             if( target == null ) return;
             target.Kick( "Kicked by " + player.Name );
+            Server.Players.Message( "Player {0} was kicked by {1}",
+                                    target.Name, player.Name );
         }
 
 
         static void BanHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Bans.Add( targetName ) ) {
-                Server.Bans.Save();
                 Player target = Server.FindPlayerExact( targetName );
                 if( target != null ) {
-                    targetName = target.Name;
                     target.Kick( "Banned by " + player.Name );
+                    Server.Players.Message( "Player {0} was banned by {1}",
+                                            target.Name, player.Name );
+                } else {
+                    Server.Players.Message( "Player {0} (offline) was banned by {1}",
+                                            targetName, player.Name );
                 }
-                Logger.Log( "Player {0} banned {1}", player.Name, targetName );
-                Server.Players.Message( "Player {0} was banned by {1}",
-                                        targetName, player.Name );
             } else {
                 player.Message( "Player {0} is already banned.", targetName );
             }
@@ -197,8 +202,6 @@ namespace FemtoCraft {
         static void UnbanHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() || !player.CheckPlayerName( targetName ) ) return;
             if( Server.Bans.Remove( targetName ) ) {
-                Server.Bans.Save();
-                Logger.Log( "Player {0} unbanned {1}", player.Name, targetName );
                 Server.Players.Message( "Player {0} was unbanned by {1}",
                                         targetName, player.Name );
             } else {
@@ -220,15 +223,13 @@ namespace FemtoCraft {
                 player.CheckPlayerName( targetName );
                 ip = target.IP;
                 Server.Bans.Add( target.Name );
-                Server.Bans.Save();
             } else if( !IPAddress.TryParse( targetName, out ip ) ) {
                 player.Message( "BanIP: Player name or IP address required." );
                 return;
             }
 
             if( Server.IPBans.Add( ip ) ) {
-                Server.IPBans.Save();
-                Logger.Log( "Player {0} banned IP {1}", player.Name, ip );
+                Logger.Log( "IP address {0} was banned by {1}", ip, player.Name );
                 var everyoneOnIP = Server.Players.Where( p => p.IP.Equals( ip ) );
                 foreach( Player playerOnIP in everyoneOnIP ) {
                     playerOnIP.Kick( "IP-Banned by " + player.Name );
@@ -249,8 +250,7 @@ namespace FemtoCraft {
                 return;
             }
             if( Server.IPBans.Remove( ip ) ) {
-                Server.IPBans.Save();
-                Logger.Log( "Player {0} unbanned IP {1}", player.Name, ip );
+                Logger.Log( "IP address {0} was unbanned bu {1}", ip, player.Name );
                 player.Message( "UnbanIP: Unbanned {0}", ip );
 
             } else {
@@ -346,7 +346,6 @@ namespace FemtoCraft {
                 return;
             }
             if( Server.Whitelist.Add( targetName ) ) {
-                Server.Whitelist.Save();
                 Server.Players.Message( "Player {0} was whitelisted by {1}",
                                         targetName, player.Name );
             } else {
@@ -362,7 +361,6 @@ namespace FemtoCraft {
                 return;
             }
             if( Server.Whitelist.Add( targetName ) ) {
-                Server.Whitelist.Save();
                 Player target = Server.FindPlayerExact( targetName );
                 if( target != null ) {
                     targetName = target.Name;
@@ -476,6 +474,15 @@ namespace FemtoCraft {
                                     Config.PhysicsGrass ? "ON" : "OFF" );
                     break;
 
+                case "lava":
+                    Config.PhysicsLava = !Config.PhysicsLava;
+                    Config.Save();
+                    Logger.Log( "Player {0} turned {1} lava physics.",
+                                player.Name, Config.PhysicsLava ? "on" : "off" );
+                    player.Message( "Lava physics  : {0}",
+                                    Config.PhysicsLava ? "ON" : "OFF" );
+                    break;
+
                 case "plant":
                 case "plants":
                     Config.PhysicsPlants = !Config.PhysicsPlants;
@@ -512,15 +519,6 @@ namespace FemtoCraft {
                                 player.Name, Config.PhysicsWater ? "on" : "off" );
                     player.Message( "Water physics  : {0}",
                                     Config.PhysicsWater ? "ON" : "OFF" );
-                    break;
-
-                case "lava":
-                    Config.PhysicsLava = !Config.PhysicsLava;
-                    Config.Save();
-                    Logger.Log( "Player {0} turned {1} lava physics.",
-                                player.Name, Config.PhysicsLava ? "on" : "off" );
-                    player.Message( "Lava physics  : {0}",
-                                    Config.PhysicsLava ? "ON" : "OFF" );
                     break;
 
                 default:
