@@ -51,12 +51,9 @@ namespace FemtoCraft {
             if( address == null ) throw new ArgumentNullException( "address" );
             lock( syncRoot ) {
                 IPAddress existingAddress = addresses.FirstOrDefault( address.Equals );
-                if( existingAddress == null ) {
-                    addresses.Add( address );
-                    return true;
-                } else {
-                    return false;
-                }
+                if( existingAddress != null ) return false;
+                addresses.Add( address );
+                return true;
             }
         }
 

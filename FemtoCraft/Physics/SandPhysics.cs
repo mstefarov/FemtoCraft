@@ -19,14 +19,13 @@ namespace FemtoCraft {
                 dropZ--;
             }
 
-            if( dropZ != z ) {
-                Block oldBlock = map.GetBlock( x, y, dropZ );
-                if( oldBlock != Block.Air ) {
-                    map.SetBlockNoUpdate( x, y, dropZ, Block.Air );
-                }
-                map.Swap( x, y, z,
-                          x, y, dropZ );
+            if( dropZ == z ) return;
+            Block oldBlock = map.GetBlock( x, y, dropZ );
+            if( oldBlock != Block.Air ) {
+                map.SetBlockNoUpdate( x, y, dropZ, Block.Air );
             }
+            map.Swap( x, y, z,
+                      x, y, dropZ );
         }
     }
 }

@@ -3,9 +3,7 @@
 using System;
 
 namespace FemtoCraft {
-    public struct Position : IEquatable<Position> {
-        public readonly static Position Zero = new Position( 0, 0, 0 );
-
+    public struct Position {
         public short X, Y, Z;
         public byte R, L;
 
@@ -22,30 +20,6 @@ namespace FemtoCraft {
         }
 
 
-        #region Equality
-
-        public static bool operator ==( Position a, Position b ) {
-            return a.Equals( b );
-        }
-
-        public static bool operator !=( Position a, Position b ) {
-            return !a.Equals( b );
-        }
-
-        public bool Equals( Position other ) {
-            return ( X == other.X ) && ( Y == other.Y ) && ( Z == other.Z ) && ( R == other.R ) && ( L == other.L );
-        }
-
-        public override bool Equals( object obj ) {
-            return obj is Position && Equals( (Position)obj );
-        }
-
-        public override int GetHashCode() {
-            return ( X + Y * short.MaxValue ) ^ ( R + L * short.MaxValue ) + Z;
-        }
-
-        #endregion
-
         // Adjust for bugs in position-reporting in Minecraft client by offsetting Z by -22 units.
         public Position GetFixed() {
             return new Position {
@@ -57,12 +31,18 @@ namespace FemtoCraft {
             };
         }
 
+
         public bool FitsIntoMoveRotatePacket {
             get {
                 return X >= SByte.MinValue && X <= SByte.MaxValue &&
                        Y >= SByte.MinValue && Y <= SByte.MaxValue &&
                        Z >= SByte.MinValue && Z <= SByte.MaxValue;
             }
+        }
+
+
+        public bool IsZero {
+            get { return X == 0 && Y == 0 && Z == 0 && R == 0 && L == 0; }
         }
     }
 }

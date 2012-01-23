@@ -1,7 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 
 namespace FemtoCraft {
-    class BitList {
+    sealed class BitList {
         readonly int[] array;
 
         public BitList( int size ) {

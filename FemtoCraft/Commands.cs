@@ -288,10 +288,9 @@ namespace FemtoCraft {
 
 
         static void SayHandler( [NotNull] Player player, [CanBeNull] string message ) {
-            if( player.CheckIfOp() ) {
-                if( message == null ) message = "";
-                Server.Players.Message( null, false, "&C" + message );
-            }
+            if( !player.CheckIfOp() ) return;
+            if( message == null ) message = "";
+            Server.Players.Message( null, false, "&C" + message );
         }
 
 

@@ -254,11 +254,8 @@ namespace FemtoCraft {
             if( ch >= (byte)'A' && ch <= (byte)'Z' ) {
                 ch += 32;
             }
-            if( ch >= (byte)'a' && ch <= (byte)'f' ||
-                ch >= (byte)'0' && ch <= (byte)'9' ) {
-                return true;
-            }
-            return false;
+            return ch >= (byte)'a' && ch <= (byte)'f' ||
+                   ch >= (byte)'0' && ch <= (byte)'9';
         }
 
 
