@@ -89,13 +89,10 @@ namespace FemtoCraft {
             if( source == null ) throw new ArgumentNullException( "source" );
             if( destination == null ) throw new ArgumentNullException( "destination" );
             if( File.Exists( destination ) ) {
-                if( Path.GetPathRoot( Path.GetFullPath( source ) ) ==
-                    Path.GetPathRoot( Path.GetFullPath( destination ) ) ) {
-                        try {
-                            File.Replace( source, destination, null, true );
-                        } catch( IOException ) {
-                            File.Copy( source, destination, true );
-                        }
+                if( Path.GetPathRoot( Path.GetFullPath( source ) ) == Path.GetPathRoot( Path.GetFullPath( destination ) ) ) {
+                    string backupFileName = destination + ".bak";
+                    File.Replace( source, destination, backupFileName, true );
+                    File.Delete( backupFileName );
                 } else {
                     File.Copy( source, destination, true );
                 }

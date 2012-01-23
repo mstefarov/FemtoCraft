@@ -428,7 +428,6 @@ namespace FemtoCraft {
 
 
         void BroadcastMovementChange( Position newPos, Position delta ) {
-            Position oldPos = Position;
             Position = newPos;
 
             bool posChanged = ( delta.X != 0 ) || ( delta.Y != 0 ) || ( delta.Z != 0 );
