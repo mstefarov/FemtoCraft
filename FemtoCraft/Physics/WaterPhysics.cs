@@ -71,10 +71,7 @@ namespace FemtoCraft {
 
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
-            if( currentBlock == Block.Air &&
-                !IsSponged( x, y, z ) &&
-                map.SetBlock( null, x, y, z, Block.Water ) ) {
-
+            if( currentBlock == Block.Air && !IsSponged( x, y, z ) && map.SetBlock( null, x, y, z, Block.Water ) ) {
                 map.PhysicsQueueTick( x, y, z, Block.Water );
                 return true;
             } else {

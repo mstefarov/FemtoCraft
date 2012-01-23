@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using JetBrains.Annotations;
@@ -391,7 +392,8 @@ namespace FemtoCraft {
                     player.Message( "Load: Unsupported map format." );
                     return;
                 }
-                Server.Players.Message( "Player {0} changed map to {1}", player.Name, fileName );
+                Server.Players.Message( "Player {0} changed map to {1}",
+                                        player.Name, Path.GetFileName( fileName) );
                 Server.ChangeMap( map );
             } catch( Exception ex ) {
                 player.Message( "Could not load map: {0}: {1}", ex.GetType().Name, ex.Message );
@@ -407,6 +409,7 @@ namespace FemtoCraft {
             }
             try {
                 player.Map.Save( fileName );
+                player.Message( "Map saved to {0}", Path.GetFileName( fileName ) );
             } catch( Exception ex ) {
                 player.Message( "Could not save map: {0}: {1}", ex.GetType().Name, ex.Message );
                 Logger.LogError( "Failed to save map: {0}", ex );

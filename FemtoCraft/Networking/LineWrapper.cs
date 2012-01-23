@@ -227,7 +227,6 @@ namespace FemtoCraft {
                 lastColor = color;
             }
 
-            //int spaceCount1 = spaceCount;
             if( spaceCount > 0 && outputIndex > outputStart ) {
                 // append spaces that accumulated since last word
                 while( spaceCount > 0 ) {

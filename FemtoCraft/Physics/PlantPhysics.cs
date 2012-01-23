@@ -120,9 +120,7 @@ namespace FemtoCraft {
                 int x2 = random.Next( x - 1, x + 2 );
                 int y2 = random.Next( y - 1, y + 2 );
                 int z2 = random.Next( z - 2, z + 3 );
-                if( map.InBounds( x2, y2, z2 ) &&
-                    IsLit( x2, y2, z2 ) &&
-                    map.GetBlock( x2, y2, z2 ) == Block.Dirt ) {
+                if( map.InBounds( x2, y2, z2 ) && IsLit( x2, y2, z2 ) && map.GetBlock( x2, y2, z2 ) == Block.Dirt ) {
                     map.SetBlock( null, x2, y2, z2, Block.Grass );
                     return;
                 }

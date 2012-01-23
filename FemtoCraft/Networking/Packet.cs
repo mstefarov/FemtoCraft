@@ -1,11 +1,11 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
-
 using System;
 using System.Text;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
     struct Packet {
+        public const byte ProtocolVersion = 7;
         public readonly byte[] Bytes;
 
 
@@ -109,6 +109,24 @@ namespace FemtoCraft {
         public static Packet MakeRemoveEntity( int id ) {
             Packet packet = new Packet( OpCode.RemoveEntity );
             packet.Bytes[1] = (byte)id;
+            return packet;
+        }
+
+
+        public static Packet MakeDisconnect( [NotNull] string reason ) {
+            if( reason == null ) throw new ArgumentNullException( "reason" );
+            Packet packet = new Packet( OpCode.Kick );
+            Encoding.ASCII.GetBytes( reason.PadRight( 64 ), 0, 64, packet.Bytes, 1 );
+            return packet;
+        }
+
+
+        internal static Packet MakeHandshake( bool isOp ) {
+            Packet packet = new Packet( OpCode.Handshake );
+            packet.Bytes[1] = ProtocolVersion;
+            Encoding.ASCII.GetBytes( Config.ServerName.PadRight( 64 ), 0, 64, packet.Bytes, 2 );
+            Encoding.ASCII.GetBytes( Config.MOTD.PadRight( 64 ), 0, 64, packet.Bytes, 66 );
+            packet.Bytes[130] = isOp ? (byte)100 : (byte)0;
             return packet;
         }
 

@@ -165,7 +165,7 @@ namespace FemtoCraft {
 
             // check protocol version
             int protocolVersion = reader.ReadByte();
-            if( protocolVersion != PacketWriter.ProtocolVersion ) {
+            if( protocolVersion != Packet.ProtocolVersion ) {
                 Logger.LogWarning( "Player from {0}: Wrong protocol version ({1})",
                                    IP, protocolVersion );
                 return false;
@@ -244,7 +244,7 @@ namespace FemtoCraft {
 
         void SendMap() {
             // write handshake
-            writer.WriteHandshake( IsOp );
+            writer.Write( Packet.MakeHandshake( IsOp ).Bytes );
 
             // write MapBegin
             writer.Write( OpCode.MapBegin );
@@ -324,7 +324,7 @@ namespace FemtoCraft {
 
         public void Kick( [NotNull] string message ) {
             if( message == null ) throw new ArgumentNullException( "message" );
-            Packet packet = PacketWriter.MakeDisconnect( message );
+            Packet packet = Packet.MakeDisconnect( message );
             lock( sendQueueLock ) {
                 canReceive = false;
                 canQueue = false;

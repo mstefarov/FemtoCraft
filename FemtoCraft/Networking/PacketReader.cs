@@ -9,13 +9,16 @@ namespace FemtoCraft {
         public PacketReader( [NotNull] Stream stream ) :
             base( stream ) { }
 
+
         public OpCode ReadOpCode() {
             return (OpCode)ReadByte();
         }
 
+
         public override short ReadInt16() {
             return IPAddress.NetworkToHostOrder( base.ReadInt16() );
         }
+
 
         public override string ReadString() {
             return Encoding.ASCII.GetString( ReadBytes( 64 ) ).Trim();
