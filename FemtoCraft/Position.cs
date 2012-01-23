@@ -15,10 +15,6 @@ namespace FemtoCraft {
             L = 0;
         }
 
-        public override string ToString() {
-            return String.Format( "Position({0},{1},{2} @{3},{4})", X, Y, Z, R, L );
-        }
-
 
         // Adjust for bugs in position-reporting in Minecraft client by offsetting Z by -22 units.
         public Position GetFixed() {
@@ -38,11 +34,6 @@ namespace FemtoCraft {
                        Y >= SByte.MinValue && Y <= SByte.MaxValue &&
                        Z >= SByte.MinValue && Z <= SByte.MaxValue;
             }
-        }
-
-
-        public bool IsZero {
-            get { return X == 0 && Y == 0 && Z == 0 && R == 0 && L == 0; }
         }
     }
 }

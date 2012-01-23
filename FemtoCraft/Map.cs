@@ -37,7 +37,7 @@ namespace FemtoCraft {
             WaterLevel = Height / 2;
             Blocks = new byte[Volume];
             Spawn = new Position( Width * 16, Length * 16,
-                                  Math.Min( Height * 32, short.MaxValue ) );
+                                  Math.Min( Height * 32, Int16.MaxValue ) );
         }
 
 

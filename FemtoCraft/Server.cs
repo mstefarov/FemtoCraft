@@ -10,10 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.73";
-
-        public static readonly string Salt = Util.GenerateSalt();
-        public static Uri Uri { get; set; }
+        public const string VersionString = "FemtoCraft 0.74";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
@@ -87,7 +84,7 @@ namespace FemtoCraft {
                 try {
                     Player.Console.ProcessMessage( input );
                 } catch( Exception ex ) {
-                    Logger.LogError( "Could not execute message: {0}", ex );
+                    Logger.LogError( "Could not process message: {0}", ex );
                 }
             }
 
@@ -111,8 +108,8 @@ namespace FemtoCraft {
             DateTime physicsTick = DateTime.UtcNow;
             DateTime mapTick = DateTime.UtcNow;
             DateTime pingTick = DateTime.UtcNow;
-            Logger.Log( "{0} is ready to go!", VersionString );
             physicsInterval = TimeSpan.FromMilliseconds( Config.PhysicsTick );
+            Logger.Log( "{0} is ready to go!", VersionString );
 
             while( true ) {
                 if( listener.Pending() ) {
@@ -166,6 +163,7 @@ namespace FemtoCraft {
 
         [NotNull]
         public static Player[] Players { get; private set; }
+
         static readonly Stack<byte> FreePlayerIDs = new Stack<byte>( 127 );
         static readonly List<Player> PlayerIndex = new List<Player>();
         static readonly object PlayerListLock = new object();
@@ -252,16 +250,13 @@ namespace FemtoCraft {
                 UpdatePlayerList();
 
                 // Announce departure
-                Logger.Log( "Player {0} left the server.", player.Name );
-                Players.Message( null, false,
-                                 "Player {0} left the server.", player.Name );
+                Players.Message( "Player {0} left the server.", player.Name );
             }
         }
 
 
         static void UpdatePlayerList() {
-            Players = PlayerIndex.OrderBy( player => player.Name, StringComparer.OrdinalIgnoreCase )
-                                 .ToArray();
+            Players = PlayerIndex.ToArray();
         }
 
 
@@ -280,8 +275,7 @@ namespace FemtoCraft {
             foreach( Player otherPlayer in Players ) {
                 if( otherPlayer.Name.Equals( partialName, StringComparison.OrdinalIgnoreCase ) ) {
                     return player;
-                }
-                if( otherPlayer.Name.StartsWith( partialName, StringComparison.OrdinalIgnoreCase ) ) {
+                } else if( otherPlayer.Name.StartsWith( partialName, StringComparison.OrdinalIgnoreCase ) ) {
                     matches.Add( otherPlayer );
                 }
             }

@@ -18,15 +18,15 @@ namespace FemtoCraft {
 
         [NotNull]
         public string Name { get; private set; }
+        public byte ID { get; set; }
 
         public IPAddress IP { get; private set; }
         public Position Position { get; private set; }
         public Map Map { get; set; }
+        Map mapToJoin;
 
-        public byte ID { get; set; }
         public bool IsOp { get; set; }
         public bool HasRegistered { get; set; }
-
         public bool IsPainting { get; set; }
 
         const int Timeout = 10000;
@@ -52,8 +52,8 @@ namespace FemtoCraft {
             try {
                 client = newClient;
                 thread = new Thread( IoThread ) {
-                                                    IsBackground = true
-                                                };
+                    IsBackground = true
+                };
                 thread.Start();
 
             } catch( Exception ex ) {
@@ -75,6 +75,7 @@ namespace FemtoCraft {
                 if( !LoginSequence() ) return;
 
                 while( canSend ) {
+                    // Write everything to output
                     while( canSend && sendQueue.Count > 0 ) {
                         Packet packet;
                         lock( sendQueueLock ) {
@@ -87,6 +88,17 @@ namespace FemtoCraft {
                         }
                     }
 
+                    // Check if a map change is pending. Resend map if it is.
+                    if( mapToJoin != Map ) {
+                        Map = mapToJoin;
+                        for( int i = 1; i < sbyte.MaxValue; i++ ) {
+                            writer.Write( Packet.MakeRemoveEntity( i ).Bytes );
+                        }
+                        SendMap();
+                        Server.SpawnPlayers( this );
+                    }
+
+                    // Read input from player
                     while( canReceive && stream.DataAvailable ) {
                         OpCode opcode = reader.ReadOpCode();
                         switch( opcode ) {
@@ -113,15 +125,6 @@ namespace FemtoCraft {
                         }
                     }
 
-                    if( mapToJoin != Map ) {
-                        Map = mapToJoin;
-                        for( int i = 1; i < sbyte.MaxValue; i++ ) {
-                            writer.Write( Packet.MakeRemoveEntity( i ).Bytes );
-                        }
-                        SendMap();
-                        Server.SpawnPlayers( this );
-                    }
-
                     Thread.Sleep( 5 );
                 }
 
@@ -145,16 +148,8 @@ namespace FemtoCraft {
             } else {
                 Server.UnregisterPlayer( this );
             }
-
-            if( reader != null ) {
-                reader.Close();
-            }
-            if( writer != null ) {
-                writer.Close();
-            }
-            if( client != null ) {
-                client.Close();
-            }
+            if( stream != null ) stream.Close();
+            if( client != null ) client.Close();
         }
 
 
@@ -193,7 +188,7 @@ namespace FemtoCraft {
                 }
                 MD5 hasher = MD5.Create();
                 StringBuilder sb = new StringBuilder( 32 );
-                foreach( byte b in hasher.ComputeHash( Encoding.ASCII.GetBytes( Server.Salt + name ) ) ) {
+                foreach( byte b in hasher.ComputeHash( Encoding.ASCII.GetBytes( Heartbeat.Salt + name ) ) ) {
                     sb.AppendFormat( "{0:x2}", b );
                 }
                 bool verified = sb.ToString().Equals( mppass, StringComparison.OrdinalIgnoreCase );
@@ -233,13 +228,15 @@ namespace FemtoCraft {
             // check if player is op
             IsOp = Server.Ops.Contains( Name );
 
+            // register player and send map
             if( !Server.RegisterPlayer( this ) ) return false;
-
             SendMap();
 
+            // announce player, and print MOTD
             Logger.Log( "Player {0} connected from {1}", Name, IP );
             Server.Players.Message( this, false,
                                     "Player {0} connected.", Name );
+            Message( Config.MOTD );
             return true;
         }
 
@@ -301,9 +298,6 @@ namespace FemtoCraft {
         }
 
 
-        Map mapToJoin;
-
-
         public void ChangeMap( Map newMap ) {
             mapToJoin = newMap;
         }
@@ -342,6 +336,7 @@ namespace FemtoCraft {
             if( message == null ) throw new ArgumentNullException( "message" );
             canReceive = false;
             canQueue = false;
+            canSend = false;
             writer.Write( OpCode.Kick );
             writer.Write( message );
         }
@@ -364,10 +359,8 @@ namespace FemtoCraft {
         int speedHackDetectionCounter,
             positionSyncCounter;
 
-        const int AntiSpeedMaxJumpDelta = 25,
-                  // 16 for normal client, 25 for WoM
-                  AntiSpeedMaxDistanceSquared = 1024,
-                  // 32 * 32
+        const int AntiSpeedMaxJumpDelta = 25, // 16 for normal client, 25 for WoM
+                  AntiSpeedMaxDistanceSquared = 1024, // 32 * 32
                   AntiSpeedMaxPacketCount = 200,
                   AntiSpeedMaxPacketInterval = 5,
                   PositionSyncInterval = 20;
@@ -381,28 +374,28 @@ namespace FemtoCraft {
         void ProcessMovementPacket() {
             reader.ReadByte();
             Position newPos = new Position {
-                                               X = reader.ReadInt16(),
-                                               Z = reader.ReadInt16(),
-                                               Y = reader.ReadInt16(),
-                                               R = reader.ReadByte(),
-                                               L = reader.ReadByte()
-                                           };
-
+                X = reader.ReadInt16(),
+                Z = reader.ReadInt16(),
+                Y = reader.ReadInt16(),
+                R = reader.ReadByte(),
+                L = reader.ReadByte()
+            };
             Position oldPos = Position;
 
             // calculate difference between old and new positions
             Position delta = new Position {
-                                              X = (short)( newPos.X - oldPos.X ),
-                                              Y = (short)( newPos.Y - oldPos.Y ),
-                                              Z = (short)( newPos.Z - oldPos.Z ),
-                                              R = (byte)Math.Abs( newPos.R - oldPos.R ),
-                                              L = (byte)Math.Abs( newPos.L - oldPos.L )
-                                          };
+                X = (short)( newPos.X - oldPos.X ),
+                Y = (short)( newPos.Y - oldPos.Y ),
+                Z = (short)( newPos.Z - oldPos.Z ),
+                R = (byte)Math.Abs( newPos.R - oldPos.R ),
+                L = (byte)Math.Abs( newPos.L - oldPos.L )
+            };
+
+            bool posChanged = ( delta.X != 0 ) || ( delta.Y != 0 ) || ( delta.Z != 0 );
+            bool rotChanged = ( delta.R != 0 ) || ( delta.L != 0 );
 
             // skip everything if player hasn't moved
-            if( delta.IsZero ) return;
-
-            bool rotChanged = ( delta.R != 0 ) || ( delta.L != 0 );
+            if( !posChanged && !rotChanged ) return;
 
             // only reset the timer if player rotated
             // if player is just pushed around, rotation does not change (and timer should not reset)
@@ -411,12 +404,9 @@ namespace FemtoCraft {
             if( !IsOp && !Config.AllowSpeedHack || IsOp && !Config.OpAllowSpeedHack ) {
                 int distSquared = delta.X * delta.X + delta.Y * delta.Y + delta.Z * delta.Z;
                 // speedhack detection
-                if( DetectMovementPacketSpam() ) {
-                    return;
-                }
+                if( DetectMovementPacketSpam() ) return;
                 if( ( distSquared - delta.Z * delta.Z > AntiSpeedMaxDistanceSquared ||
-                      delta.Z > AntiSpeedMaxJumpDelta ) &&
-                    speedHackDetectionCounter >= 0 ) {
+                    delta.Z > AntiSpeedMaxJumpDelta ) && speedHackDetectionCounter >= 0 ) {
 
                     if( speedHackDetectionCounter == 0 ) {
                         lastValidPosition = Position;
@@ -432,22 +422,13 @@ namespace FemtoCraft {
                 }
             }
 
-            BroadcastMovementChange( newPos );
+            BroadcastMovementChange( newPos, delta );
         }
 
 
-        void BroadcastMovementChange( Position newPos ) {
+        void BroadcastMovementChange( Position newPos, Position delta ) {
             Position oldPos = Position;
             Position = newPos;
-
-            // calculate difference between old and new positions
-            Position delta = new Position {
-                                              X = (short)( newPos.X - oldPos.X ),
-                                              Y = (short)( newPos.Y - oldPos.Y ),
-                                              Z = (short)( newPos.Z - oldPos.Z ),
-                                              R = (byte)Math.Abs( newPos.R - oldPos.R ),
-                                              L = (byte)Math.Abs( newPos.L - oldPos.L )
-                                          };
 
             bool posChanged = ( delta.X != 0 ) || ( delta.Y != 0 ) || ( delta.Z != 0 );
             bool rotChanged = ( delta.R != 0 ) || ( delta.L != 0 );
@@ -458,12 +439,12 @@ namespace FemtoCraft {
                 if( posChanged && rotChanged ) {
                     // incremental position + rotation update
                     packet = Packet.MakeMoveRotate( ID, new Position {
-                                                                         X = delta.X,
-                                                                         Y = delta.Y,
-                                                                         Z = delta.Z,
-                                                                         R = newPos.R,
-                                                                         L = newPos.L
-                                                                     } );
+                        X = delta.X,
+                        Y = delta.Y,
+                        Z = delta.Z,
+                        R = newPos.R,
+                        L = newPos.L
+                    } );
 
                 } else if( posChanged ) {
                     // incremental position update
@@ -642,9 +623,7 @@ namespace FemtoCraft {
 
             // special handler for WoM id packets
             // (which are erroneously padded with zeroes instead of spaces).
-            if( message.StartsWith( "/womid " ) ) {
-                return true;
-            }
+            if( message.StartsWith( "/womid " ) ) return true;
 
             if( ContainsInvalidChars( message ) ) {
                 KickNow( "Hacking detected." );
@@ -743,12 +722,8 @@ namespace FemtoCraft {
 
 
         public bool CheckIfOp() {
-            if( !IsOp ) {
-                Message( "You must be op to do this." );
-                return false;
-            } else {
-                return true;
-            }
+            if( !IsOp ) Message( "You must be op to do this." );
+            return IsOp;
         }
 
 

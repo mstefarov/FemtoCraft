@@ -12,6 +12,9 @@ namespace FemtoCraft {
         static readonly TimeSpan Delay = TimeSpan.FromSeconds( 25 );
         const string UrlFileName = "externalurl.txt";
 
+        public static readonly string Salt = Util.GenerateSalt();
+        static Uri uri;
+
 
         public static void Start() {
             Thread heartbeatThread = new Thread( Beat ) { IsBackground = true };
@@ -29,7 +32,7 @@ namespace FemtoCraft {
                                        Config.MaxPlayers,
                                        Server.Players.Length,
                                        Config.Port,
-                                       Uri.EscapeDataString( Server.Salt ),
+                                       Uri.EscapeDataString( Salt ),
                                        Uri.EscapeDataString( Config.ServerName ) );
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create( requestUri );
@@ -44,9 +47,9 @@ namespace FemtoCraft {
                             string responseText = responseReader.ReadToEnd().Trim();
                             Uri newUri;
                             if( Uri.TryCreate( responseText, UriKind.Absolute, out newUri ) ) {
-                                if( newUri != Server.Uri ) {
+                                if( newUri != uri ) {
                                     File.WriteAllText( UrlFileName, newUri.ToString() );
-                                    Server.Uri = newUri;
+                                    uri = newUri;
                                     Logger.Log( "Heartbeat: {0}", newUri );
                                 }
                             } else {
