@@ -6,23 +6,12 @@ using System.Diagnostics;
 
 namespace FemtoCraft {
     sealed class Map {
-        public static Map CreateFlatgrass( int width, int length, int height ) {
-            Map map = new Map( width, length, height );
-            map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
-            map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
-            map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
-            if( Config.Physics ) {
-                map.EnablePhysics();
-            }
-            return map;
-        }
-
-
         public readonly int Width, Length, Height,
                             Volume,
                             WaterLevel;
         public readonly byte[] Blocks;
         public Position Spawn;
+
 
         public Map( int width, int length, int height ) {
             if( width < 16 || width > 2048 ||
@@ -135,6 +124,7 @@ namespace FemtoCraft {
 
         #region Physics
 
+        bool physicsEnabled;
         SandPhysics sandPhysics;
         PlantPhysics plantPhysics;
         WaterPhysics waterPhysics;
@@ -146,6 +136,7 @@ namespace FemtoCraft {
 
 
         void PhysicsOnRemoved( int x, int y, int z, Block oldBlock ) {
+            if( !physicsEnabled ) return;
             if( Config.PhysicsWater && oldBlock == Block.Sponge ) {
                 waterPhysics.OnSpongeRemoved( x, y, z );
             }
@@ -153,16 +144,16 @@ namespace FemtoCraft {
 
 
         void PhysicsOnPlaced( int x, int y, int z, Block newBlock ) {
-            if( !physicsEnabled ) return;
+            if( !physicsEnabled || !InBounds( x, y, z ) ) return;
             if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
                 SetBlock( null, x, y, z, Block.Air );
                 SetBlock( null, x, y, z - 1, Block.DoubleStair );
 
             } else if( Config.PhysicsWater && newBlock == Block.Water ) {
-                QueuePhysicsUpdate( x, y, z, Block.Water );
+                PhysicsQueueTick( x, y, z, Block.Water );
 
             } else if( Config.PhysicsLava && newBlock == Block.Lava ) {
-                QueuePhysicsUpdate( x, y, z, Block.Lava );
+                PhysicsQueueTick( x, y, z, Block.Lava );
 
             } else if( Config.PhysicsSand && ( newBlock == Block.Sand || newBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
@@ -191,7 +182,7 @@ namespace FemtoCraft {
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
-            if( !physicsEnabled ) return;
+            if( !physicsEnabled || !InBounds( x, y, z ) ) return;
             if( newBlock == Block.Water ) {
                 waterPhysics.OnTick( x, y, z );
             } else if( newBlock == Block.Lava ) {
@@ -200,17 +191,7 @@ namespace FemtoCraft {
         }
 
 
-        public void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
-            PhysicsOnNeighborUpdate( x - 1, y, z, block );
-            PhysicsOnNeighborUpdate( x + 1, y, z, block );
-            PhysicsOnNeighborUpdate( x, y, z - 1, block );
-            PhysicsOnNeighborUpdate( x, y, z + 1, block );
-            PhysicsOnNeighborUpdate( x, y - 1, z, block );
-            PhysicsOnNeighborUpdate( x, y + 1, z, block );
-        }
-
-
-        public void PhysicsOnTick() {
+        public void Tick() {
             lock( physicsLock ) {
                 if( !physicsEnabled ) return;
                 tickNumber++;
@@ -233,20 +214,31 @@ namespace FemtoCraft {
         }
 
 
-        public void QueuePhysicsUpdate( int x, int y, int z, Block oldBlock ) {
+        public void PhysicsUpdateNeighbors( int x, int y, int z, Block block ) {
+            PhysicsOnNeighborUpdate( x - 1, y, z, block );
+            PhysicsOnNeighborUpdate( x + 1, y, z, block );
+            PhysicsOnNeighborUpdate( x, y, z - 1, block );
+            PhysicsOnNeighborUpdate( x, y, z + 1, block );
+            PhysicsOnNeighborUpdate( x, y - 1, z, block );
+            PhysicsOnNeighborUpdate( x, y + 1, z, block );
+        }
+
+
+        public void PhysicsQueueTick( int x, int y, int z, Block oldBlock ) {
             PhysicsUpdate update = new PhysicsUpdate( x, y, z, oldBlock, TickDelays[(int)oldBlock] );
             lock( physicsLock ) {
                 tickQueue.Enqueue( update );
             }
         }
 
-        bool physicsEnabled;
+
         public void DisablePhysics() {
             lock( physicsLock ) {
                 sandPhysics = null;
                 plantPhysics = null;
                 waterPhysics = null;
                 lavaPhysics = null;
+                tickQueue.Clear();
                 physicsEnabled = false;
             }
             Logger.Log( "Map: Physics disabled" );
@@ -254,7 +246,6 @@ namespace FemtoCraft {
 
 
         public void EnablePhysics() {
-            // calculate shadows
             Stopwatch sw = Stopwatch.StartNew();
             lock( physicsLock ) {
                 sandPhysics = new SandPhysics( this );
@@ -273,6 +264,18 @@ namespace FemtoCraft {
         static Map() {
             TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
             TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
+        }
+
+
+        public static Map CreateFlatgrass( int width, int length, int height ) {
+            Map map = new Map( width, length, height );
+            map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
+            map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
+            map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
+            if( Config.Physics ) {
+                map.EnablePhysics();
+            }
+            return map;
         }
     }
 }

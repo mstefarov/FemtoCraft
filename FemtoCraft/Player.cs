@@ -28,6 +28,7 @@ namespace FemtoCraft {
         public bool IsOp { get; set; }
         public bool HasRegistered { get; set; }
         public bool IsPainting { get; set; }
+        public DateTime LastActiveTime { get; private set; }
 
         const int Timeout = 10000;
         readonly TcpClient client;
@@ -756,9 +757,6 @@ namespace FemtoCraft {
         #endregion
 
 
-        public DateTime LastActiveTime { get; private set; }
-
-
         void ResetIdleTimer() {
             LastActiveTime = DateTime.UtcNow;
         }
@@ -774,6 +772,7 @@ namespace FemtoCraft {
         }
 
 
+        // checks if message contains any characters that cannot be typed in from Minecraft client
         static bool ContainsInvalidChars( [NotNull] string message ) {
             return message.Any( t => t < ' ' || t == '&' || t > '~' );
         }

@@ -18,7 +18,7 @@ namespace FemtoCraft {
                 map.SetBlock( null, x, y, z, Block.Stone );
 
             } else if( thisBlock == Block.Lava ) {
-                map.QueuePhysicsUpdate( x, y, z, updatedNeighbor );
+                map.PhysicsQueueTick( x, y, z, updatedNeighbor );
 
             } else if( thisBlock == Block.StillLava ) {
                 if( map.GetBlock( x - 1, y, z ) == Block.Air ||
@@ -27,7 +27,7 @@ namespace FemtoCraft {
                     map.GetBlock( x, y + 1, z ) == Block.Air ||
                     map.GetBlock( x, y, z - 1 ) == Block.Air ) {
                     map.SetBlockNoUpdate( x, y, z, Block.Lava );
-                    map.QueuePhysicsUpdate( x, y, z, Block.Lava );
+                    map.PhysicsQueueTick( x, y, z, Block.Lava );
                 }
             }
         }
@@ -51,7 +51,7 @@ namespace FemtoCraft {
             }
 
             if( updated ) {
-                map.QueuePhysicsUpdate( x, y, z, Block.Lava );
+                map.PhysicsQueueTick( x, y, z, Block.Lava );
             } else {
                 map.SetBlockNoUpdate( x, y, z, Block.StillLava );
             }
@@ -61,7 +61,7 @@ namespace FemtoCraft {
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
             if( currentBlock == Block.Air && map.SetBlock( null, x, y, z, Block.Lava ) ) {
-                map.QueuePhysicsUpdate( x, y, z, Block.Lava );
+                map.PhysicsQueueTick( x, y, z, Block.Lava );
                 return true;
             } else {
                 return false;

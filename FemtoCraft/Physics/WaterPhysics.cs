@@ -29,7 +29,7 @@ namespace FemtoCraft {
                 map.SetBlock( null, x, y, z, Block.Stone );
 
             } else if( thisBlock == Block.Water ) {
-                map.QueuePhysicsUpdate( x, y, z, updatedNeighbor );
+                map.PhysicsQueueTick( x, y, z, updatedNeighbor );
 
             } else if( thisBlock == Block.StillWater ) {
                 if( map.GetBlock( x - 1, y, z ) == Block.Air ||
@@ -38,7 +38,7 @@ namespace FemtoCraft {
                     map.GetBlock( x, y + 1, z ) == Block.Air ||
                     map.GetBlock( x, y, z - 1 ) == Block.Air ) {
                     map.SetBlockNoUpdate( x, y, z, Block.Water );
-                    map.QueuePhysicsUpdate( x, y, z, Block.Water );
+                    map.PhysicsQueueTick( x, y, z, Block.Water );
                 }
             }
         }
@@ -62,7 +62,7 @@ namespace FemtoCraft {
             updated |= Propagate( x, y + 1, z );
 
             if( updated ) {
-                map.QueuePhysicsUpdate( x, y, z, Block.Water );
+                map.PhysicsQueueTick( x, y, z, Block.Water );
             } else {
                 map.SetBlockNoUpdate( x, y, z, Block.StillWater );
             }
@@ -75,7 +75,7 @@ namespace FemtoCraft {
                 !IsSponged( x, y, z ) &&
                 map.SetBlock( null, x, y, z, Block.Water ) ) {
 
-                map.QueuePhysicsUpdate( x, y, z, Block.Water );
+                map.PhysicsQueueTick( x, y, z, Block.Water );
                 return true;
             } else {
                 return false;

@@ -131,7 +131,7 @@ namespace FemtoCraft {
                 }
 
                 while( DateTime.UtcNow.Subtract( physicsTick ) > physicsInterval ) {
-                    Map.PhysicsOnTick();
+                    Map.Tick();
                     physicsTick += physicsInterval;
                 }
 
