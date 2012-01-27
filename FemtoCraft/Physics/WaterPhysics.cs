@@ -4,7 +4,6 @@ namespace FemtoCraft {
     unsafe sealed class WaterPhysics {
         public const int TickDelay = 0;
         const int SpongeRange = 2;
-
         readonly Map map;
         readonly BitList spongeData;
 
@@ -26,7 +25,7 @@ namespace FemtoCraft {
             if( Config.PhysicsFloodProtection && z >= map.WaterLevel ) return;
             if( ( thisBlock == Block.Water || thisBlock == Block.StillWater ) &&
                 ( updatedNeighbor == Block.Lava || updatedNeighbor == Block.StillLava ) ) {
-                map.SetBlock( null, x, y, z, Block.Stone );
+                map.SetBlock( null, x, y, z, LavaPhysics.LavaPlusWater );
 
             } else if( thisBlock == Block.Water ) {
                 map.PhysicsQueueTick( x, y, z, updatedNeighbor );

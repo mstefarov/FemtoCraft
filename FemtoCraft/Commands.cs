@@ -111,6 +111,10 @@ namespace FemtoCraft {
                     PaintHandler( player );
                     break;
 
+                case "players":
+                    PlayersHandler( player );
+                    break;
+
                 default:
                     player.Message( "Unknown command \"{0}\"", command );
                     break;
@@ -456,8 +460,8 @@ namespace FemtoCraft {
 
                 case "off":
                     // toggle everything off
-                    if( Config.Physics ) {
-                        player.Message( "Physics are already enabled." );
+                    if( !Config.Physics ) {
+                        player.Message( "Physics are already disabled." );
                     } else {
                         Config.Physics = false;
                         Config.Save();
@@ -538,6 +542,16 @@ namespace FemtoCraft {
             }
             player.IsPainting = !player.IsPainting;
             player.Message( "Paint: {0}", player.IsPainting ? "ON" : "OFF" );
+        }
+
+
+        static void PlayersHandler( [NotNull] Player player ) {
+            Player[] players = Server.Players;
+            if( players.Length == 0 ) {
+                player.Message( "There are no players online." );
+            } else {
+                player.Message( "Players: {0}", players.JoinToString( ", " ) );
+            }
         }
     }
 }

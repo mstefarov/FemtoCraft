@@ -3,6 +3,7 @@
 namespace FemtoCraft {
     sealed class LavaPhysics {
         public const int TickDelay = 5;
+        public const Block LavaPlusWater = Block.Stone;
         readonly Map map;
 
 
@@ -15,7 +16,7 @@ namespace FemtoCraft {
             if( Config.PhysicsFloodProtection && z >= map.WaterLevel ) return;
             if( ( thisBlock == Block.Lava || thisBlock == Block.StillLava ) &&
                 ( updatedNeighbor == Block.Water || updatedNeighbor == Block.StillWater ) ) {
-                map.SetBlock( null, x, y, z, Block.Stone );
+                    map.SetBlock( null, x, y, z, LavaPlusWater );
 
             } else if( thisBlock == Block.Lava ) {
                 map.PhysicsQueueTick( x, y, z, updatedNeighbor );
