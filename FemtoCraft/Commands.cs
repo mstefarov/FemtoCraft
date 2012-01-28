@@ -255,7 +255,7 @@ namespace FemtoCraft {
                 return;
             }
             if( Server.IPBans.Remove( ip ) ) {
-                Logger.Log( "IP address {0} was unbanned bu {1}", ip, player.Name );
+                Logger.Log( "IP address {0} was unbanned by {1}", ip, player.Name );
                 player.Message( "UnbanIP: Unbanned {0}", ip );
 
             } else {

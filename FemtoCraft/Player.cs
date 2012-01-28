@@ -30,7 +30,9 @@ namespace FemtoCraft {
         public bool IsPainting { get; set; }
         public DateTime LastActiveTime { get; private set; }
 
-        const int Timeout = 10000;
+        const int Timeout = 10000,
+                  MaxPacketsPerTick = 100,
+                  SleepDelay = 5;
         readonly TcpClient client;
         NetworkStream stream;
         PacketReader reader;
@@ -77,7 +79,7 @@ namespace FemtoCraft {
 
                 while( canSend ) {
                     // Write everything to output
-                    while( canSend && sendQueue.Count > 0 ) {
+                    for( int packets = 0; packets < MaxPacketsPerTick && canSend && sendQueue.Count > 0; packets++ ) {
                         Packet packet;
                         lock( sendQueueLock ) {
                             packet = sendQueue.Dequeue();
@@ -116,7 +118,7 @@ namespace FemtoCraft {
                                 break;
 
                             case OpCode.Ping:
-                                continue;
+                                break;
 
                             default:
                                 Logger.Log( "Player {0} was kicked after sending an invalid opcode ({1}).",
@@ -126,7 +128,7 @@ namespace FemtoCraft {
                         }
                     }
 
-                    Thread.Sleep( 5 );
+                    Thread.Sleep( SleepDelay );
                 }
 
 
