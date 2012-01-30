@@ -27,36 +27,22 @@ namespace FemtoCraft {
 
         #region Packet-Making
 
+        public static Packet MakeHandshake( bool isOp ) {
+            Packet packet = new Packet( OpCode.Handshake );
+            packet.Bytes[1] = ProtocolVersion;
+            Encoding.ASCII.GetBytes( Config.ServerName.PadRight( 64 ), 0, 64, packet.Bytes, 2 );
+            Encoding.ASCII.GetBytes( Config.MOTD.PadRight( 64 ), 0, 64, packet.Bytes, 66 );
+            packet.Bytes[130] = isOp ? (byte)100 : (byte)0;
+            return packet;
+        }
+
+
         public static Packet MakeSetBlock( int x, int y, int z, Block type ) {
             Packet packet = new Packet( OpCode.SetBlockServer );
             ToNetOrder( x, packet.Bytes, 1 );
             ToNetOrder( z, packet.Bytes, 3 );
             ToNetOrder( y, packet.Bytes, 5 );
             packet.Bytes[7] = (byte)type;
-            return packet;
-        }
-
-
-        public static Packet MakeSelfTeleport( Position pos ) {
-            return MakeTeleport( 255, pos.GetFixed() );
-        }
-
-
-        public static Packet MakeTeleport( byte id, Position pos ) {
-            Packet packet = new Packet( OpCode.Teleport );
-            packet.Bytes[1] = id;
-            ToNetOrder( pos.X, packet.Bytes, 2 );
-            ToNetOrder( pos.Z, packet.Bytes, 4 );
-            ToNetOrder( pos.Y, packet.Bytes, 6 );
-            packet.Bytes[8] = pos.R;
-            packet.Bytes[9] = pos.L;
-            return packet;
-        }
-
-
-        public static Packet MakeSetPermission( bool isOp ) {
-            Packet packet = new Packet( OpCode.SetPermission );
-            if( isOp ) packet.Bytes[1] = 100;
             return packet;
         }
 
@@ -72,6 +58,23 @@ namespace FemtoCraft {
             packet.Bytes[72] = pos.R;
             packet.Bytes[73] = pos.L;
             return packet;
+        }
+
+
+        public static Packet MakeTeleport( byte id, Position pos ) {
+            Packet packet = new Packet( OpCode.Teleport );
+            packet.Bytes[1] = id;
+            ToNetOrder( pos.X, packet.Bytes, 2 );
+            ToNetOrder( pos.Z, packet.Bytes, 4 );
+            ToNetOrder( pos.Y, packet.Bytes, 6 );
+            packet.Bytes[8] = pos.R;
+            packet.Bytes[9] = pos.L;
+            return packet;
+        }
+
+
+        public static Packet MakeSelfTeleport( Position pos ) {
+            return MakeTeleport( 255, pos.GetFixed() );
         }
 
 
@@ -113,7 +116,7 @@ namespace FemtoCraft {
         }
 
 
-        public static Packet MakeDisconnect( [NotNull] string reason ) {
+        public static Packet MakeKick( [NotNull] string reason ) {
             if( reason == null ) throw new ArgumentNullException( "reason" );
             Packet packet = new Packet( OpCode.Kick );
             Encoding.ASCII.GetBytes( reason.PadRight( 64 ), 0, 64, packet.Bytes, 1 );
@@ -121,12 +124,9 @@ namespace FemtoCraft {
         }
 
 
-        internal static Packet MakeHandshake( bool isOp ) {
-            Packet packet = new Packet( OpCode.Handshake );
-            packet.Bytes[1] = ProtocolVersion;
-            Encoding.ASCII.GetBytes( Config.ServerName.PadRight( 64 ), 0, 64, packet.Bytes, 2 );
-            Encoding.ASCII.GetBytes( Config.MOTD.PadRight( 64 ), 0, 64, packet.Bytes, 66 );
-            packet.Bytes[130] = isOp ? (byte)100 : (byte)0;
+        public static Packet MakeSetPermission( bool isOp ) {
+            Packet packet = new Packet( OpCode.SetPermission );
+            if( isOp ) packet.Bytes[1] = 100;
             return packet;
         }
 

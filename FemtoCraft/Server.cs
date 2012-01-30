@@ -141,7 +141,6 @@ namespace FemtoCraft {
 
 
         static void AcceptCallback( [NotNull] IAsyncResult e ) {
-            if( e == null ) throw new ArgumentNullException( "e" );
             TcpClient client = listener.EndAcceptTcpClient( e );
             new Player( client );
         }
@@ -239,8 +238,9 @@ namespace FemtoCraft {
 
         public static void UnregisterPlayer( [NotNull] Player player ) {
             if( player == null ) throw new ArgumentNullException( "player" );
-            if( !player.HasRegistered ) return;
             lock( PlayerListLock ) {
+                if( !player.HasRegistered ) return;
+
                 // Despawn player entity
                 Players.Send( player, Packet.MakeRemoveEntity( player.ID ) );
                 FreePlayerIDs.Push( player.ID );

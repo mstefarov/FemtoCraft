@@ -157,7 +157,7 @@ namespace FemtoCraft {
 
 
         bool LoginSequence() {
-            // read the first packet
+            // start reading the first packet
             OpCode opCode = reader.ReadOpCode();
             if( opCode != OpCode.Handshake ) {
                 Logger.LogWarning( "Player from {0}: Enexpected handshake packet opcode ({1})",
@@ -326,7 +326,7 @@ namespace FemtoCraft {
 
         public void Kick( [NotNull] string message ) {
             if( message == null ) throw new ArgumentNullException( "message" );
-            Packet packet = Packet.MakeDisconnect( message );
+            Packet packet = Packet.MakeKick( message );
             lock( sendQueueLock ) {
                 canReceive = false;
                 canQueue = false;
