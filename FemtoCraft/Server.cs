@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.84";
+        public const string VersionString = "FemtoCraft 0.85";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
@@ -66,6 +66,7 @@ namespace FemtoCraft {
                 Map = Map.CreateFlatgrass( 256, 256, 64 );
                 Map.Save( MapFileName );
             }
+            Player.Console.Map = Map;
 
             // start listening for incoming connections
             listener = new TcpListener( Config.IP, Config.Port );
@@ -301,6 +302,7 @@ namespace FemtoCraft {
                 foreach( Player player in PlayerIndex ) {
                     player.ChangeMap( newMap );
                 }
+                Player.Console.Map = newMap;
                 Map = newMap;
                 Map.Save( MapFileName );
             }

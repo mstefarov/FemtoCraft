@@ -65,7 +65,8 @@ namespace FemtoCraft {
         }
 
 
-        public static void Save( this Map map, [NotNull] string fileName ) {
+        public static void Save( [NotNull] this Map map, [NotNull] string fileName ) {
+            if( map == null ) throw new ArgumentNullException( "map" );
             if( fileName == null ) throw new ArgumentNullException( "fileName" );
             string tempFileName = fileName + ".tmp";
             using( FileStream mapStream = File.Create( tempFileName ) ) {
