@@ -166,6 +166,8 @@ namespace FemtoCraft {
         public static void Save() {
             using( var writer = new StreamWriter( ConfigFileName ) ) {
                 writer.WriteLine( "#{0} configuration file", Server.VersionString );
+                writer.WriteLine( "#For instructions, see http://femto.fcraft.net/#configuration" );
+                writer.WriteLine();
                 writer.WriteLine( "server-name={0}", ServerName );
                 writer.WriteLine( "motd={0}", MOTD );
                 writer.WriteLine( "port={0}", Port );
