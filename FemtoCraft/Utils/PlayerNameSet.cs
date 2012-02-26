@@ -72,7 +72,7 @@ namespace FemtoCraft {
 
         void Save() {
             lock( syncRoot ) {
-                string tempFileName = Path.GetTempFileName();
+                string tempFileName = fileName + ".tmp";
                 File.WriteAllLines( tempFileName, names.ToArray() );
                 Util.MoveOrReplaceFile( tempFileName, fileName );
             }

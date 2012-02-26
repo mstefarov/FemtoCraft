@@ -67,7 +67,7 @@ namespace FemtoCraft {
 
         public static void Save( this Map map, [NotNull] string fileName ) {
             if( fileName == null ) throw new ArgumentNullException( "fileName" );
-            string tempFileName = Path.GetTempFileName();
+            string tempFileName = fileName + ".tmp";
             using( FileStream mapStream = File.Create( tempFileName ) ) {
                 using( GZipStream gs = new GZipStream( mapStream, CompressionMode.Compress ) ) {
                     BinaryWriter bs = new BinaryWriter( gs );
