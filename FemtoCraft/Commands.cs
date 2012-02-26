@@ -558,7 +558,7 @@ namespace FemtoCraft {
             } else {
                 player.Message( "Player ({0}): {1}",
                                 players.Length,
-                                players.JoinToString( ", ", p => ( p.IsOp ? "&B" : "&F" ) + p.Name ) );
+                                players.JoinToString( ", ", p => p.Name ) );
             }
         }
     }
