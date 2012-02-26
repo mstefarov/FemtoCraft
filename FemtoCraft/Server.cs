@@ -28,72 +28,88 @@ namespace FemtoCraft {
         public static PlayerNameSet Whitelist { get; private set; }
 
 
-        static void Main() {
+        static int Main() {
 #if !DEBUG
             try {
 #endif
-            Console.Title = VersionString;
-            Logger.Log( "Starting {0}", VersionString );
+                Console.Title = VersionString;
+                Logger.Log( "Starting {0}", VersionString );
 
-            // load config
-            Config.Load();
-            Console.Title = Config.ServerName + " - " + VersionString;
+                // load config
+                Config.Load();
+                Console.Title = Config.ServerName + " - " + VersionString;
 
-            // prepare to accept players and fire up the heartbeat
-            for( byte i = 1; i <= sbyte.MaxValue; i++ ) {
-                FreePlayerIDs.Push( i );
-            }
-            UpdatePlayerList();
-            Heartbeat.Start();
-
-            // load player and IP lists
-            Bans = new PlayerNameSet( BansFileName );
-            Ops = new PlayerNameSet( OpsFileName );
-            IPBans = new IPAddressSet( IPBanFileName );
-            Logger.Log( "Server: Tracking {0} bans, {1} ip-bans, and {2} ops.",
-                        Bans.Count, IPBans.Count, Ops.Count );
-            if( Config.UseWhitelist ) {
-                Whitelist = new PlayerNameSet( WhitelistFileName );
-                Logger.Log( "Using a whitelist ({0} players): {1}",
-                            Whitelist.Count, Whitelist.GetCopy().JoinToString( ", " ) );
-            }
-
-            // load or create map
-            if( File.Exists( MapFileName ) ) {
-                Map = LvlMapConverter.Load( MapFileName );
-                Logger.Log( "Loaded map from {0}", MapFileName );
-            } else {
-                Map = Map.CreateFlatgrass( 256, 256, 64 );
-                Map.Save( MapFileName );
-            }
-            Player.Console.Map = Map;
-
-            // start listening for incoming connections
-            listener = new TcpListener( Config.IP, Config.Port );
-            listener.Start();
-
-            // start the scheduler thread
-            Thread schedulerThread = new Thread( SchedulerLoop ) {
-                IsBackground = true
-            };
-            schedulerThread.Start();
-
-            // listen for console input
-            while( true ) {
-                string input = Console.ReadLine();
-                if( input == null ) return;
-                try {
-                    Player.Console.ProcessMessage( input );
-                } catch( Exception ex ) {
-                    Logger.LogError( "Could not process message: {0}", ex );
+                // prepare to accept players and fire up the heartbeat
+                for( byte i = 1; i <= sbyte.MaxValue; i++ ) {
+                    FreePlayerIDs.Push( i );
                 }
-            }
+                UpdatePlayerList();
+                Heartbeat.Start();
+
+                // load player and IP lists
+                Bans = new PlayerNameSet( BansFileName );
+                Ops = new PlayerNameSet( OpsFileName );
+                IPBans = new IPAddressSet( IPBanFileName );
+                Logger.Log( "Server: Tracking {0} bans, {1} ip-bans, and {2} ops.",
+                            Bans.Count, IPBans.Count, Ops.Count );
+                if( Config.UseWhitelist ) {
+                    Whitelist = new PlayerNameSet( WhitelistFileName );
+                    Logger.Log( "Using a whitelist ({0} players): {1}",
+                                Whitelist.Count, Whitelist.GetCopy().JoinToString( ", " ) );
+                }
+
+                // load or create map
+                if( File.Exists( MapFileName ) ) {
+                    Map = LvlMapConverter.Load( MapFileName );
+                    Logger.Log( "Loaded map from {0}", MapFileName );
+                } else {
+                    Map = Map.CreateFlatgrass( 256, 256, 64 );
+                    Map.Save( MapFileName );
+                }
+                Player.Console.Map = Map;
+
+                // start listening for incoming connections
+                listener = new TcpListener( Config.IP, Config.Port );
+                listener.Start();
+
+                // start the scheduler thread
+                Thread schedulerThread = new Thread( SchedulerLoop ) {
+                                                                         IsBackground = true
+                                                                     };
+                schedulerThread.Start();
+
+                // listen for console input
+                while( true ) {
+                    string input = Console.ReadLine();
+                    if( input == null ) {
+                        Shutdown();
+                        return 0;
+                    }
+                    try {
+                        Player.Console.ProcessMessage( input.Trim() );
+                    } catch( Exception ex ) {
+                        Logger.LogError( "Could not process message: {0}", ex );
+                    }
+                }
 
 #if !DEBUG
             } catch( Exception ex ) {
                 Logger.LogError( "Server crashed: {0}", ex );
+                return 1;
             }
 #endif
+        }
+
+
+        static void Shutdown() {
+            Logger.Log( "Shutting down" );
+            lock( PlayerListLock ) {
+                foreach( Player player in PlayerIndex ) {
+                    player.Kick( "Server shutting down" );
+                }
+            }
+            Map.Save( MapFileName );
+            Thread.Sleep( 1000 );
         }
 
 

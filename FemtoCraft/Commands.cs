@@ -124,7 +124,9 @@ namespace FemtoCraft {
 
         static void OpsHandler( [NotNull] Player player ) {
             if( Server.Ops.Count > 0 ) {
-                player.Message( "Ops: {0}", Server.Ops.GetCopy().JoinToString( ", " ) );
+                string[] opNames = Server.Ops.GetCopy();
+                Array.Sort( opNames, StringComparer.OrdinalIgnoreCase );
+                player.Message( "Ops: {0}", opNames.JoinToString( ", " ) );
             } else {
                 player.Message( "There are no ops." );
             }
@@ -338,7 +340,9 @@ namespace FemtoCraft {
 
         static void WhitelistHandler( [NotNull] Player player ) {
             if( Config.UseWhitelist ) {
-                player.Message( "Whitelist: {0}", Server.Whitelist.GetCopy().JoinToString( ", " ) );
+                string[] whitelistNames = Server.Whitelist.GetCopy();
+                Array.Sort( whitelistNames, StringComparer.OrdinalIgnoreCase );
+                player.Message( "Whitelist: {0}", whitelistNames.JoinToString( ", " ) );
             } else {
                 player.Message( "Whitelist is disabled." );
             }
@@ -548,12 +552,13 @@ namespace FemtoCraft {
 
         static void PlayersHandler( [NotNull] Player player ) {
             Player[] players = Server.Players;
+            Array.Sort( players, ( p1, p2 ) => StringComparer.OrdinalIgnoreCase.Compare( p1.Name, p2.Name ) );
             if( players.Length == 0 ) {
                 player.Message( "There are no players online." );
             } else {
                 player.Message( "Player ({0}): {1}",
                                 players.Length,
-                                players.JoinToString( ", ", p => p.Name ) );
+                                players.JoinToString( ", ", p => ( p.IsOp ? "&B" : "&F" ) + p.Name ) );
             }
         }
     }
