@@ -688,8 +688,15 @@ namespace FemtoCraft {
 
             // broadcast chat
             Logger.LogChat( "{0}: {1}", Name, rawMessage );
-            Server.Players.Message( null, false,
-                                    "&F{0}: {1}", Name, rawMessage );
+            if( Config.RevealOps && IsOp ) {
+                Server.Players.Message( null, false,
+                                        "{0}{1}&F: {2}",
+                                        Config.OpColor, Name, rawMessage );
+            } else {
+                Server.Players.Message( null, false,
+                                        "&F{0}: {1}",
+                                        Name, rawMessage );
+            }
         }
 
 

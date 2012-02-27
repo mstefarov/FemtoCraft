@@ -228,7 +228,11 @@ namespace FemtoCraft {
 
                 // Assign index and spawn player
                 player.ID = FreePlayerIDs.Pop();
-                PlayerIndex.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
+                if( Config.RevealOps && player.IsOp ) {
+                    PlayerIndex.Send( null, Packet.MakeAddEntity( player.ID, Config.OpColor + player.Name, Map.Spawn ) );
+                } else {
+                    PlayerIndex.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
+                }
                 player.HasRegistered = true;
                 player.Map = Map;
                 player.ChangeMap( Map );
@@ -291,7 +295,7 @@ namespace FemtoCraft {
             List<Player> matches = new List<Player>();
             foreach( Player otherPlayer in Players ) {
                 if( otherPlayer.Name.Equals( partialName, StringComparison.OrdinalIgnoreCase ) ) {
-                    return player;
+                    return otherPlayer;
                 } else if( otherPlayer.Name.StartsWith( partialName, StringComparison.OrdinalIgnoreCase ) ) {
                     matches.Add( otherPlayer );
                 }

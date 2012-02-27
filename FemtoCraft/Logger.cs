@@ -9,7 +9,7 @@ namespace FemtoCraft {
         static readonly object LogLock = new object();
 
 
-        [StringFormatMethod("message")]
+        [StringFormatMethod( "message" )]
         public static void LogError( [NotNull] string message, [NotNull] params object[] formatArgs ) {
             LogInternal( message, formatArgs, "ERROR ", true );
         }
@@ -39,15 +39,16 @@ namespace FemtoCraft {
         }
 
 
-        static void LogInternal( [NotNull] string message, [NotNull] object[] formatArgs, [NotNull] string prefix, bool error ) {
+        static void LogInternal( [NotNull] string message, [NotNull] object[] formatArgs, [NotNull] string prefix,
+                                 bool error ) {
             if( message == null ) throw new ArgumentNullException( "message" );
             if( formatArgs == null ) throw new ArgumentNullException( "formatArgs" );
             if( prefix == null ) throw new ArgumentNullException( "prefix" );
             lock( LogLock ) {
                 string consoleMessage = String.Format( "{0} {1}> {2}",
-                                                    ConsoleTimestamp(),
-                                                    prefix,
-                                                    String.Format( message, formatArgs ) );
+                                                       ConsoleTimestamp(),
+                                                       prefix,
+                                                       String.Format( message, formatArgs ) );
                 if( error ) {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.Error.WriteLine( consoleMessage );

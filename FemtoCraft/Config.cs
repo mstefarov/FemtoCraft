@@ -14,6 +14,7 @@ namespace FemtoCraft {
         public static bool VerifyNames = true;
         public static bool UseWhitelist = false;
         public static bool AdminSlot = true;
+        public static bool RevealOps = false;
 
         public static int MaxConnections = 3;
         public static bool LimitClickRate = true;
@@ -36,6 +37,8 @@ namespace FemtoCraft {
         public static bool PhysicsSand = true;
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
+
+        public const string OpColor = "&B";
 
         const string ConfigFileName = "server.properties";
 
@@ -89,6 +92,9 @@ namespace FemtoCraft {
                             break;
                         case "admin-slot":
                             AdminSlot = Boolean.Parse( value );
+                            break;
+                        case "reveal-ops":
+                            RevealOps = Boolean.Parse( value );
                             break;
 
                         case "max-connections":
@@ -168,37 +174,38 @@ namespace FemtoCraft {
                 writer.WriteLine( "#{0} configuration file", Server.VersionString );
                 writer.WriteLine( "#For instructions, see http://femto.fcraft.net/#configuration" );
                 writer.WriteLine();
-                writer.WriteLine( "server-name={0}", ServerName );
-                writer.WriteLine( "motd={0}", MOTD );
-                writer.WriteLine( "port={0}", Port );
-                writer.WriteLine( "ip={0}", IP );
-                writer.WriteLine( "max-players={0}", MaxPlayers );
-                writer.WriteLine( "public={0}", Public );
-                writer.WriteLine( "verify-names={0}", VerifyNames );
-                writer.WriteLine( "use-whitelist={0}", UseWhitelist );
-                writer.WriteLine( "admin-slot={0}", AdminSlot );
+                writer.WriteLine( "server-name=" + ServerName );
+                writer.WriteLine( "motd=" + MOTD );
+                writer.WriteLine( "port=" + Port );
+                writer.WriteLine( "ip=" + IP );
+                writer.WriteLine( "max-players=" + MaxPlayers );
+                writer.WriteLine( "public=" + Public );
+                writer.WriteLine( "verify-names=" + VerifyNames );
+                writer.WriteLine( "use-whitelist=" + UseWhitelist );
+                writer.WriteLine( "admin-slot=" + AdminSlot );
+                writer.WriteLine( "reveal-ops=" + RevealOps );
                 writer.WriteLine();
-                writer.WriteLine( "max-connections={0}", MaxConnections );
-                writer.WriteLine( "limit-click-rate={0}", LimitClickRate );
-                writer.WriteLine( "limit-click-distance={0}", LimitClickDistance );
-                writer.WriteLine( "limit-chat-rate={0}", LimitChatRate );
-                writer.WriteLine( "allow-speed-hack={0}", AllowSpeedHack );
+                writer.WriteLine( "max-connections=" + MaxConnections );
+                writer.WriteLine( "limit-click-rate=" + LimitClickRate );
+                writer.WriteLine( "limit-click-distance=" + LimitClickDistance );
+                writer.WriteLine( "limit-chat-rate=" + LimitChatRate );
+                writer.WriteLine( "allow-speed-hack=" + AllowSpeedHack );
                 writer.WriteLine();
-                writer.WriteLine( "op-max-connections={0}", OpMaxConnections );
-                writer.WriteLine( "op-limit-click-rate={0}", OpLimitClickRate );
-                writer.WriteLine( "op-limit-click-distance={0}", OpLimitClickDistance );
-                writer.WriteLine( "op-limit-chat-rate={0}", OpLimitChatRate );
-                writer.WriteLine( "op-allow-speed-hack={0}", OpAllowSpeedHack );
+                writer.WriteLine( "op-max-connections=" + OpMaxConnections );
+                writer.WriteLine( "op-limit-click-rate=" + OpLimitClickRate );
+                writer.WriteLine( "op-limit-click-distance=" + OpLimitClickDistance );
+                writer.WriteLine( "op-limit-chat-rate=" + OpLimitChatRate );
+                writer.WriteLine( "op-allow-speed-hack=" + OpAllowSpeedHack );
                 writer.WriteLine();
-                writer.WriteLine( "physics={0}", Physics );
-                writer.WriteLine( "physics-tick={0}", PhysicsTick );
-                writer.WriteLine( "physics-flood-protection={0}", PhysicsFloodProtection );
-                writer.WriteLine( "physics-grass={0}", PhysicsGrass );
-                writer.WriteLine( "physics-lava={0}", PhysicsLava );
-                writer.WriteLine( "physics-plants={0}", PhysicsPlants );
-                writer.WriteLine( "physics-sand={0}", PhysicsSand );
-                writer.WriteLine( "physics-trees={0}", PhysicsTrees );
-                writer.WriteLine( "physics-water={0}", PhysicsWater );
+                writer.WriteLine( "physics=" + Physics );
+                writer.WriteLine( "physics-tick=" + PhysicsTick );
+                writer.WriteLine( "physics-flood-protection=" + PhysicsFloodProtection );
+                writer.WriteLine( "physics-grass=" + PhysicsGrass );
+                writer.WriteLine( "physics-lava=" + PhysicsLava );
+                writer.WriteLine( "physics-plants=" + PhysicsPlants );
+                writer.WriteLine( "physics-sand=" + PhysicsSand );
+                writer.WriteLine( "physics-trees=" + PhysicsTrees );
+                writer.WriteLine( "physics-water=" + PhysicsWater );
             }
         }
     }

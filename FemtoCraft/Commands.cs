@@ -123,6 +123,7 @@ namespace FemtoCraft {
 
 
         static void OpsHandler( [NotNull] Player player ) {
+            if( !Config.RevealOps && !player.CheckIfOp() ) return;
             if( Server.Ops.Count > 0 ) {
                 string[] opNames = Server.Ops.GetCopy();
                 Array.Sort( opNames, StringComparer.OrdinalIgnoreCase );
@@ -227,7 +228,6 @@ namespace FemtoCraft {
             IPAddress ip;
             Player target = Server.FindPlayer( player, targetName );
             if( target != null ) {
-                player.CheckPlayerName( targetName );
                 ip = target.IP;
                 Server.Bans.Add( target.Name );
             } else if( !IPAddress.TryParse( targetName, out ip ) ) {
@@ -252,7 +252,7 @@ namespace FemtoCraft {
         static void UnbanIPHandler( [NotNull] Player player, [CanBeNull] string targetName ) {
             if( !player.CheckIfOp() ) return;
             IPAddress ip;
-            if( !IPAddress.TryParse( targetName, out ip ) ) {
+            if( targetName == null || !IPAddress.TryParse( targetName, out ip ) ) {
                 player.Message( "UnbanIP: IP address required." );
                 return;
             }
@@ -397,12 +397,12 @@ namespace FemtoCraft {
                     map = DatMapConverter.Load( fileName );
                 } else if( fileName.EndsWith( ".lvl", StringComparison.OrdinalIgnoreCase ) ) {
                     map = LvlMapConverter.Load( fileName );
-                }else {
+                } else {
                     player.Message( "Load: Unsupported map format." );
                     return;
                 }
                 Server.Players.Message( "Player {0} changed map to {1}",
-                                        player.Name, Path.GetFileName( fileName) );
+                                        player.Name, Path.GetFileName( fileName ) );
                 Server.ChangeMap( map );
             } catch( Exception ex ) {
                 player.Message( "Could not load map: {0}: {1}", ex.GetType().Name, ex.Message );
@@ -412,7 +412,7 @@ namespace FemtoCraft {
 
         static void SaveHandler( [NotNull] Player player, [CanBeNull] string fileName ) {
             if( !player.CheckIfOp() ) return;
-            if( fileName == null || !fileName.EndsWith(".lvl") ) {
+            if( fileName == null || !fileName.EndsWith( ".lvl" ) ) {
                 player.Message( "Load: Filename that ends with .lvl is required." );
                 return;
             }
@@ -556,9 +556,15 @@ namespace FemtoCraft {
             if( players.Length == 0 ) {
                 player.Message( "There are no players online." );
             } else {
-                player.Message( "Player ({0}): {1}",
-                                players.Length,
-                                players.JoinToString( ", ", p => p.Name ) );
+                if( player.IsOp || Config.RevealOps ) {
+                    player.Message( "Player ({0}): {1}",
+                                    players.Length,
+                                    players.JoinToString( ", ", p => ( p.IsOp ? Config.OpColor : "&F" ) + p.Name ) );
+                } else {
+                    player.Message( "Player ({0}): {1}",
+                                    players.Length,
+                                    players.JoinToString( ", ", p => p.Name ) );
+                }
             }
         }
     }
