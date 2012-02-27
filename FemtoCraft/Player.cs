@@ -27,6 +27,7 @@ namespace FemtoCraft {
 
         public bool IsOp { get; set; }
         public bool HasRegistered { get; set; }
+        public bool HasBeenAnnounced { get; set; }
         public bool IsPainting { get; set; }
         public DateTime LastActiveTime { get; private set; }
 
@@ -239,7 +240,9 @@ namespace FemtoCraft {
             Logger.Log( "Player {0} connected from {1}", Name, IP );
             Server.Players.Message( this, false,
                                     "Player {0} connected.", Name );
+            HasBeenAnnounced = true;
             Message( Config.MOTD );
+            Commands.PlayersHandler( this );
             return true;
         }
 

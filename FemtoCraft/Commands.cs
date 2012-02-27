@@ -551,7 +551,7 @@ namespace FemtoCraft {
         }
 
 
-        static void PlayersHandler( [NotNull] Player player ) {
+        public static void PlayersHandler( [NotNull] Player player ) {
             Player[] players = Server.Players;
             Array.Sort( players, ( p1, p2 ) => StringComparer.OrdinalIgnoreCase.Compare( p1.Name, p2.Name ) );
             if( players.Length == 0 ) {

@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.91";
+        public const string VersionString = "FemtoCraft 0.92";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
@@ -266,6 +266,11 @@ namespace FemtoCraft {
             lock( PlayerListLock ) {
                 if( !player.HasRegistered ) return;
 
+                // Announce departure
+                if( player.HasBeenAnnounced ) {
+                    Players.Message( "Player {0} left the server.", player.Name );
+                }
+
                 // Despawn player entity
                 Players.Send( player, Packet.MakeRemoveEntity( player.ID ) );
                 FreePlayerIDs.Push( player.ID );
@@ -273,9 +278,6 @@ namespace FemtoCraft {
                 // Remove player from index
                 PlayerIndex.Remove( player );
                 UpdatePlayerList();
-
-                // Announce departure
-                Players.Message( "Player {0} left the server.", player.Name );
             }
         }
 
