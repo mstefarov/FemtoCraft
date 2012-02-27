@@ -11,6 +11,7 @@ namespace FemtoCraft {
                             WaterLevel;
         public readonly byte[] Blocks;
         public Position Spawn;
+        public bool ChangedSinceSave;
 
 
         public Map( int width, int length, int height ) {
@@ -77,6 +78,7 @@ namespace FemtoCraft {
             }
 
             Blocks[Index( x, y, z )] = (byte)newBlock;
+            ChangedSinceSave = true;
 
             PhysicsOnRemoved( x, y, z, oldBlock );
             PhysicsOnPlaced( x, y, z, newBlock );
@@ -91,6 +93,7 @@ namespace FemtoCraft {
             if( oldBlock == newBlock || oldBlock == Block.Undefined ) return false;
 
             Blocks[Index( x, y, z )] = (byte)newBlock;
+            ChangedSinceSave = true;
             return true;
         }
 

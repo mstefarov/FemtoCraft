@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.87";
+        public const string VersionString = "FemtoCraft 0.90";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
@@ -108,6 +108,7 @@ namespace FemtoCraft {
                     player.Kick( "Server shutting down" );
                 }
             }
+            Map.ChangedSinceSave = false;
             Map.Save( MapFileName );
             Thread.Sleep( 1000 );
         }
@@ -165,7 +166,10 @@ namespace FemtoCraft {
 
         static void MapSaveCallback( object unused ) {
             try {
-                Map.Save( MapFileName );
+                if( Map.ChangedSinceSave ) {
+                    Map.ChangedSinceSave = false;
+                    Map.Save( MapFileName );
+                }
                 Logger.Log( "Map saved to {0}", MapFileName );
             } catch( Exception ex ) {
                 Logger.LogError( "Failed to save map: {0}", ex );
