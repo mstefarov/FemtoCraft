@@ -333,7 +333,7 @@ namespace FemtoCraft {
             }
             player.Map.Spawn = player.Position;
             player.Send( Packet.MakeAddEntity( 255, player.Name, player.Map.Spawn.GetFixed() ) );
-            player.Send( Packet.MakeSelfTeleport( player.Map.Spawn.GetFixed() ) );
+            player.Send( Packet.MakeSelfTeleport( player.Map.Spawn ) );
             Server.Players.Message( "Player {0} set a new spawn point.", player.Name );
         }
 
@@ -482,7 +482,7 @@ namespace FemtoCraft {
                     Config.Save();
                     Logger.Log( "Player {0} turned {1} grass physics.",
                                 player.Name, Config.PhysicsGrass ? "on" : "off" );
-                    player.Message( "Grass physics  : {0}",
+                    player.Message( "Grass physics: {0}",
                                     Config.PhysicsGrass ? "ON" : "OFF" );
                     break;
 
@@ -491,7 +491,7 @@ namespace FemtoCraft {
                     Config.Save();
                     Logger.Log( "Player {0} turned {1} lava physics.",
                                 player.Name, Config.PhysicsLava ? "on" : "off" );
-                    player.Message( "Lava physics  : {0}",
+                    player.Message( "Lava physics: {0}",
                                     Config.PhysicsLava ? "ON" : "OFF" );
                     break;
 
@@ -501,7 +501,7 @@ namespace FemtoCraft {
                     Config.Save();
                     Logger.Log( "Player {0} turned {1} plant physics.",
                                 player.Name, Config.PhysicsPlants ? "on" : "off" );
-                    player.Message( "Plant physics  : {0}",
+                    player.Message( "Plant physics: {0}",
                                     Config.PhysicsPlants ? "ON" : "OFF" );
                     break;
 
@@ -510,7 +510,7 @@ namespace FemtoCraft {
                     Config.Save();
                     Logger.Log( "Player {0} turned {1} sand/gravel physics.",
                                 player.Name, Config.PhysicsSand ? "on" : "off" );
-                    player.Message( "Sand physics  : {0}",
+                    player.Message( "Sand physics: {0}",
                                     Config.PhysicsSand ? "ON" : "OFF" );
                     break;
 
@@ -520,7 +520,7 @@ namespace FemtoCraft {
                     Config.Save();
                     Logger.Log( "Player {0} turned {1} tree physics.",
                                 player.Name, Config.PhysicsTrees ? "on" : "off" );
-                    player.Message( "Tree physics  : {0}",
+                    player.Message( "Tree physics: {0}",
                                     Config.PhysicsTrees ? "ON" : "OFF" );
                     break;
 
@@ -529,7 +529,7 @@ namespace FemtoCraft {
                     Config.Save();
                     Logger.Log( "Player {0} turned {1} water physics.",
                                 player.Name, Config.PhysicsWater ? "on" : "off" );
-                    player.Message( "Water physics  : {0}",
+                    player.Message( "Water physics: {0}",
                                     Config.PhysicsWater ? "ON" : "OFF" );
                     break;
 
