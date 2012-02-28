@@ -75,6 +75,12 @@ namespace FemtoCraft {
             if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) &&
                 ( z >= WaterLevel - 2 && z < WaterLevel ) && ( newBlock == Block.Air ) ) {
                 newBlock = Block.Water;
+
+            // stair stacking
+            } else if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
+                SetBlock( null, x, y, z, Block.Air );
+                SetBlock( null, x, y, z - 1, Block.DoubleStair );
+                return true;
             }
 
             Blocks[Index( x, y, z )] = (byte)newBlock;
@@ -145,11 +151,8 @@ namespace FemtoCraft {
 
         void PhysicsOnPlaced( int x, int y, int z, Block newBlock ) {
             if( !physicsEnabled ) return;
-            if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
-                SetBlock( null, x, y, z, Block.Air );
-                SetBlock( null, x, y, z - 1, Block.DoubleStair );
 
-            } else if( Config.PhysicsWater && newBlock == Block.Water ) {
+            if( Config.PhysicsWater && newBlock == Block.Water ) {
                 PhysicsQueueTick( x, y, z, Block.Water );
 
             } else if( Config.PhysicsLava && newBlock == Block.Lava ) {
