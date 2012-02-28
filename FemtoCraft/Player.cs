@@ -27,7 +27,7 @@ namespace FemtoCraft {
 
         public bool IsOp { get; set; }
         public bool HasRegistered { get; set; }
-        public bool HasBeenAnnounced { get; set; }
+        public bool HasBeenAnnounced { get; private set; }
         public bool IsPainting { get; set; }
         public DateTime LastActiveTime { get; private set; }
 

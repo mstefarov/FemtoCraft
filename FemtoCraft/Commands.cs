@@ -557,15 +557,14 @@ namespace FemtoCraft {
             if( players.Length == 0 ) {
                 player.Message( "There are no players online." );
             } else {
+                string playerList;
                 if( player.IsOp || Config.RevealOps ) {
-                    player.Message( "Player ({0}): {1}",
-                                    players.Length,
-                                    players.JoinToString( ", ", p => ( p.IsOp ? Config.OpColor : "&F" ) + p.Name ) );
+                    playerList = players.JoinToString( ", ", p => ( p.IsOp ? Config.OpColor : "&F" ) + p.Name );
                 } else {
-                    player.Message( "Player ({0}): {1}",
-                                    players.Length,
-                                    players.JoinToString( ", ", p => p.Name ) );
+                    playerList = players.JoinToString( ", ", p => p.Name );
                 }
+                player.Message( "There are {0} players online: {1}",
+                                players.Length, playerList );
             }
         }
     }

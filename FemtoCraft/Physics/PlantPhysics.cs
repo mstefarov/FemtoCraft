@@ -43,7 +43,13 @@ namespace FemtoCraft {
 
 
         void RandomizeTraversal() {
-            Array.Sort( traversePattern, ( i1, i2 ) => random.Next() );
+            for( int i = 0; i < traversePattern.Length; i++ ) {
+                int i1 = random.Next( 0, traversePattern.Length );
+                int i2 = random.Next( 0, traversePattern.Length );
+                int temp = traversePattern[i1];
+                traversePattern[i1] = traversePattern[i2];
+                traversePattern[i2] = temp;
+            }
         }
 
 
