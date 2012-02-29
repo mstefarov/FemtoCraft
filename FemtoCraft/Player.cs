@@ -32,13 +32,17 @@ namespace FemtoCraft {
         public DateTime LastActiveTime { get; private set; }
 
         const int Timeout = 10000,
-                  MaxPacketsPerTick = 100,
                   SleepDelay = 5;
         readonly TcpClient client;
         NetworkStream stream;
         PacketReader reader;
         PacketWriter writer;
         readonly Thread thread;
+
+        static readonly TimeSpan ThrottleInterval = new TimeSpan( 0, 0, 1 );
+        DateTime throttleCheckTimer;
+        int throttlePacketCount;
+        const int ThrottleThreshold = 4096;
 
         bool canReceive = true,
              canSend = true,
@@ -75,12 +79,13 @@ namespace FemtoCraft {
                 stream = client.GetStream();
                 reader = new PacketReader( stream );
                 writer = new PacketWriter( stream );
+                throttleCheckTimer = DateTime.UtcNow + ThrottleInterval;
 
                 if( !LoginSequence() ) return;
 
                 while( canSend ) {
-                    // Write everything to output
-                    for( int packets = 0; packets < MaxPacketsPerTick && canSend && sendQueue.Count > 0; packets++ ) {
+                    // Write normal packets to output
+                    while( sendQueue.Count > 0 ) {
                         Packet packet;
                         lock( sendQueueLock ) {
                             packet = sendQueue.Dequeue();
@@ -90,6 +95,20 @@ namespace FemtoCraft {
                             writer.Flush();
                             return;
                         }
+                    }
+
+                    // Write SetBlock packets to output
+                    while( blockSendQueue.Count > 0 && throttlePacketCount < ThrottleThreshold && canSend ) {
+                        Packet packet;
+                        lock( blockSendQueueLock ) {
+                            packet = blockSendQueue.Dequeue();
+                        }
+                        writer.Write( packet.Bytes );
+                        throttlePacketCount++;
+                    }
+                    if( DateTime.UtcNow > throttleCheckTimer ) {
+                        throttlePacketCount = 0;
+                        throttleCheckTimer += ThrottleInterval;
                     }
 
                     // Check if a map change is pending. Resend map if it is.
@@ -311,17 +330,27 @@ namespace FemtoCraft {
 
         #region Send / Kick
 
-        readonly object sendQueueLock = new object();
+        readonly object sendQueueLock = new object(),
+                        blockSendQueueLock = new object();
         readonly Queue<Packet> sendQueue = new Queue<Packet>();
+        readonly Queue<Packet> blockSendQueue = new Queue<Packet>();
 
         bool useSyncKick;
         readonly AutoResetEvent kickWaiter = new AutoResetEvent( false );
 
 
         public void Send( Packet packet ) {
-            lock( sendQueueLock ) {
-                if( canQueue ) {
-                    sendQueue.Enqueue( packet );
+            if( packet.OpCode == OpCode.SetBlockServer ) {
+                lock( blockSendQueueLock ) {
+                    if( canQueue ) {
+                        blockSendQueue.Enqueue( packet );
+                    }
+                }
+            } else {
+                lock( sendQueueLock ) {
+                    if( canQueue ) {
+                        sendQueue.Enqueue( packet );
+                    }
                 }
             }
         }
