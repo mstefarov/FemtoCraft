@@ -143,53 +143,10 @@ namespace FemtoCraft {
             }
             if( Config.PhysicsTrees && random.Next( 5 ) == 0 ) {
                 map.SetBlockNoUpdate( x, y, z, Block.Air );
-                if( !GrowTree( x, y, z ) ) {
+                if( !map.GrowTree( random, x, y, z ) ) {
                     map.SetBlockNoUpdate( x, y, z, Block.Sapling );
                 }
             }
-        }
-
-
-        bool GrowTree( int sx, int sy, int sz ) {
-            int treeHeight = random.Next( 4, 7 );
-            if( sz >= map.Height - treeHeight - 1 ) return false;
-
-            for( int z = sz; z <= sz + treeHeight + 1; z++ ) {
-                byte extent = 1;
-                if( z == sz ) extent = 0;
-                if( z >= sz + treeHeight - 1 ) extent = 2;
-                for( int x = sx - extent; x <= sx + extent; x++ ) {
-                    for( int y = sy - extent; y <= sy + extent; y++ ) {
-                        if( map.GetBlock( x, y, z ) != Block.Air ) {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            if( map.GetBlock( sx, sy, sz - 1 ) != Block.Grass ) return false;
-
-            map.SetBlock( null, sx, sy, sz - 1, Block.Dirt );
-
-            for( int z = ( sz - 3 ) + treeHeight; z <= sz + treeHeight; z++ ) {
-                int blocksLeft = z - ( sz + treeHeight );
-                int foliageExtent = 1 - blocksLeft / 2;
-                for( int x = sx - foliageExtent; x <= sx + foliageExtent; x++ ) {
-                    for( int y = sy - foliageExtent; y <= sy + foliageExtent; y++ ) {
-                        if( ( Math.Abs( x - sx ) != foliageExtent || Math.Abs( y - sz ) != foliageExtent ||
-                                random.Next( 2 ) != 0 && blocksLeft != 0 ) &&
-                                map.GetBlock( x, y, z ) == Block.Air )
-                            map.SetBlock( null, x, y, z, Block.Leaves );
-                    }
-                }
-            }
-
-            for( int z = 0; z < treeHeight; z++ ) {
-                if( map.GetBlock( sx, sy, sz + z ) == Block.Air ) {
-                    map.SetBlock( null, sx, sy, sz + z, Block.Log );
-                }
-            }
-            return true;
         }
 
 

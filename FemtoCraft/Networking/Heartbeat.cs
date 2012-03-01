@@ -51,6 +51,7 @@ namespace FemtoCraft {
                                     File.WriteAllText( UrlFileName, newUri.ToString() );
                                     uri = newUri;
                                     Logger.Log( "Heartbeat: {0}", newUri );
+                                    Logger.Log( "Heartbeat URL also saved to {0} file.", UrlFileName );
                                 }
                             } else {
                                 Logger.LogWarning( "Heartbeat: Minecraft.net replied with: {0}", responseText );

@@ -38,7 +38,7 @@ namespace FemtoCraft {
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
 
-        public const string OpColor = "&B";
+        public const string OpColor = "&3";
 
         const string ConfigFileName = "server.properties";
 

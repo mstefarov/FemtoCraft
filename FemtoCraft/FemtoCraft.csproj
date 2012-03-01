@@ -47,6 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LvlMapConverter.cs" />
+    <Compile Include="NotchyMapGenerator.cs" />
+    <Compile Include="Utils\PerlinNoise.cs" />
     <Compile Include="Physics\LavaPhysics.cs" />
     <Compile Include="Physics\PhysicsUpdate.cs" />
     <Compile Include="Physics\PlantPhysics.cs" />

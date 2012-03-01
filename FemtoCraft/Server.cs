@@ -63,7 +63,7 @@ namespace FemtoCraft {
                     Map = LvlMapConverter.Load( MapFileName );
                     Logger.Log( "Loaded map from {0}", MapFileName );
                 } else {
-                    Map = Map.CreateFlatgrass( 256, 256, 64 );
+                    Map = NotchyMapGenerator.Generate( 256, 256, 64 ); //Map.CreateFlatgrass( 256, 256, 64 );
                     Map.Save( MapFileName );
                 }
                 Player.Console.Map = Map;
@@ -244,6 +244,7 @@ namespace FemtoCraft {
                 // Add player to index
                 SpawnPlayers( player );
                 PlayerIndex.Add( player );
+                Logger.Log( "Player {0} connected from {1}", player.Name, player.IP );
                 UpdatePlayerList();
             }
             return true;

@@ -256,7 +256,6 @@ namespace FemtoCraft {
             SendMap();
 
             // announce player, and print MOTD
-            Logger.Log( "Player {0} connected from {1}", Name, IP );
             Server.Players.Message( this, false,
                                     "Player {0} connected.", Name );
             HasBeenAnnounced = true;
