@@ -38,6 +38,15 @@ namespace FemtoCraft {
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
 
+        public static bool AllowWaterBlocks = false;
+        public static bool AllowLavaBlocks = false;
+        public static bool AllowGrassBlocks = false;
+        public static bool AllowSolidBlocks = false;
+        public static bool OpAllowWaterBlocks = true;
+        public static bool OpAllowLavaBlocks = true;
+        public static bool OpAllowGrassBlocks = true;
+        public static bool OpAllowSolidBlocks = true;
+
         public const string OpColor = "&3";
 
         const string ConfigFileName = "server.properties";
@@ -157,6 +166,31 @@ namespace FemtoCraft {
                             PhysicsWater = Boolean.Parse( value );
                             break;
 
+                        case "allow-water-blocks":
+                            AllowWaterBlocks = Boolean.Parse( value );
+                            break;
+                        case "allow-lava-blocks":
+                            AllowLavaBlocks = Boolean.Parse( value );
+                            break;
+                        case "allow-grass-blocks":
+                            AllowGrassBlocks = Boolean.Parse( value );
+                            break;
+                        case "allow-solid-blocks":
+                            AllowSolidBlocks = Boolean.Parse( value );
+                            break;
+                        case "op-allow-water-blocks":
+                            OpAllowWaterBlocks = Boolean.Parse( value );
+                            break;
+                        case "op-allow-lava-blocks":
+                            OpAllowLavaBlocks = Boolean.Parse( value );
+                            break;
+                        case "op-allow-grass-blocks":
+                            OpAllowGrassBlocks = Boolean.Parse( value );
+                            break;
+                        case "op-allow-solid-blocks":
+                            OpAllowSolidBlocks = Boolean.Parse( value );
+                            break;
+
                         default:
                             Logger.LogWarning( "Config: Unknown key in {0} line {1}: {2}",
                                                ConfigFileName, lineNumber, line );
@@ -206,6 +240,15 @@ namespace FemtoCraft {
                 writer.WriteLine( "physics-sand=" + PhysicsSand );
                 writer.WriteLine( "physics-trees=" + PhysicsTrees );
                 writer.WriteLine( "physics-water=" + PhysicsWater );
+                writer.WriteLine();
+                writer.WriteLine( "allow-water-blocks=" + AllowWaterBlocks );
+                writer.WriteLine( "allow-lava-blocks=" + AllowLavaBlocks );
+                writer.WriteLine( "allow-grass-blocks=" + AllowGrassBlocks );
+                writer.WriteLine( "allow-solid-blocks=" + AllowSolidBlocks );
+                writer.WriteLine( "op-allow-water-blocks=" + OpAllowWaterBlocks );
+                writer.WriteLine( "op-allow-lava-blocks=" + OpAllowLavaBlocks );
+                writer.WriteLine( "op-allow-grass-blocks=" + OpAllowGrassBlocks );
+                writer.WriteLine( "op-allow-solid-blocks=" + OpAllowSolidBlocks );
             }
         }
     }

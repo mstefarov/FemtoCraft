@@ -147,7 +147,7 @@ namespace FemtoCraft {
                 Player target = Server.FindPlayerExact( targetName );
                 if( target != null ) {
                     target.IsOp = true;
-                    target.Send( Packet.MakeSetPermission( target.IsOp ) );
+                    target.Send( Packet.MakeSetPermission( target.CanUseSolid ) );
                     target.Message( "You are now op!" );
                     Server.Players.Message( "Player {0} was opped by {1}",
                                             target.Name, player.Name );
@@ -172,7 +172,7 @@ namespace FemtoCraft {
                     target.PlaceWater = false;
                     target.PlaceLava = false;
                     target.PlaceGrass = false;
-                    target.Send( Packet.MakeSetPermission( target.IsOp ) );
+                    target.Send( Packet.MakeSetPermission( target.CanUseSolid ) );
                     target.Message( "You are no longer op." );
                     Server.Players.Message( "Player {0} was deopped by {1}",
                                             targetName, player.Name );
@@ -274,28 +274,28 @@ namespace FemtoCraft {
 
 
         static void SolidHandler( [NotNull] Player player ) {
-            if( !player.CheckIfOp() ) return;
+            if( !player.CheckIfAllowed( Config.AllowSolidBlocks, Config.OpAllowSolidBlocks ) ) return;
             player.Message( player.PlaceSolid ? "Solid: OFF" : "Solid: ON" );
             player.PlaceSolid = !player.PlaceSolid;
         }
 
 
         static void WaterHandler( [NotNull] Player player ) {
-            if( !player.CheckIfOp() ) return;
+            if( !player.CheckIfAllowed( Config.AllowWaterBlocks, Config.OpAllowWaterBlocks ) ) return;
             player.Message( player.PlaceWater ? "Water: OFF" : "Water: ON" );
             player.PlaceWater = !player.PlaceWater;
         }
 
 
         static void LavaHandler( [NotNull] Player player ) {
-            if( !player.CheckIfOp() ) return;
+            if( !player.CheckIfAllowed( Config.AllowLavaBlocks, Config.OpAllowLavaBlocks ) ) return;
             player.Message( player.PlaceLava ? "Lava: OFF" : "Lava: ON" );
             player.PlaceLava = !player.PlaceLava;
         }
 
 
         static void GrassHandler( [NotNull] Player player ) {
-            if( !player.CheckIfOp() ) return;
+            if( !player.CheckIfAllowed( Config.AllowGrassBlocks, Config.OpAllowGrassBlocks ) ) return;
             player.Message( player.PlaceGrass ? "Grass: OFF" : "Grass: ON" );
             player.PlaceGrass = !player.PlaceGrass;
         }
@@ -549,10 +549,7 @@ namespace FemtoCraft {
 
 
         static void PaintHandler( [NotNull] Player player ) {
-            if( player == Player.Console ) {
-                player.Message( "Can't paint from console!" );
-                return;
-            }
+            if( player.CheckIfConsole() ) return;
             player.IsPainting = !player.IsPainting;
             player.Message( "Paint: {0}", player.IsPainting ? "ON" : "OFF" );
         }

@@ -42,7 +42,7 @@ namespace FemtoCraft {
         static readonly TimeSpan ThrottleInterval = new TimeSpan( 0, 0, 1 );
         DateTime throttleCheckTimer;
         int throttlePacketCount;
-        const int ThrottleThreshold = 4096;
+        const int ThrottleThreshold = 2500;
 
         bool canReceive = true,
              canSend = true,
@@ -253,6 +253,9 @@ namespace FemtoCraft {
 
             // register player and send map
             if( !Server.RegisterPlayer( this ) ) return false;
+
+            // write handshake, send map
+            writer.Write( Packet.MakeHandshake( CanUseSolid ).Bytes );
             SendMap();
 
             // announce player, and print MOTD
@@ -266,9 +269,6 @@ namespace FemtoCraft {
 
 
         void SendMap() {
-            // write handshake
-            writer.Write( Packet.MakeHandshake( IsOp ).Bytes );
-
             // write MapBegin
             writer.Write( OpCode.MapBegin );
 
@@ -597,8 +597,10 @@ namespace FemtoCraft {
             }
 
             // check if blocktype is permitted
-            if( ( block == Block.Water || block == Block.Lava || block == Block.Admincrete ||
-                  block == Block.StillWater || block == Block.StillLava || block == Block.Grass ) && !IsOp ) {
+            if( ( block == Block.Water || block == Block.StillWater ) && !CanUseWater ||
+                ( block == Block.Lava || block == Block.StillLava ) && !CanUseLava ||
+                ( block == Block.Grass ) && !CanUseGrass ||
+                ( block == Block.Admincrete || block == Block.Admincrete ) && !CanUseSolid ) {
                 KickNow( "Hacking detected." );
                 Logger.LogWarning( "Player {0} tried to place a restricted block type.", Name );
                 return false;
@@ -606,7 +608,7 @@ namespace FemtoCraft {
 
             // check if deleting admincrete
             Block oldBlock = Map.GetBlock( x, y, z );
-            if( oldBlock == Block.Admincrete && !IsOp ) {
+            if( ( oldBlock == Block.Admincrete ) && !CanUseSolid ) {
                 KickNow( "Hacking detected." );
                 Logger.LogWarning( "Player {0} tried to delete a restricted block type.", Name );
                 return false;
@@ -767,6 +769,12 @@ namespace FemtoCraft {
         }
 
 
+        public bool CheckIfConsole() {
+            if( this == Console ) Message( "You cannot use this command from console." );
+            return (this == Console);
+        }
+
+
         public bool CheckPlayerName( [CanBeNull] string givenName ) {
             if( givenName == null ) {
                 Message( "This command requires a player name." );
@@ -777,6 +785,19 @@ namespace FemtoCraft {
             } else {
                 return true;
             }
+        }
+
+
+        public bool CheckIfAllowed( bool guestConfigKey, bool opConfigKey ) {
+            if( CheckIfConsole() ) return false;
+            if( !guestConfigKey ) {
+                if( !opConfigKey ) {
+                    Message( "This command is disabled on this server." );
+                } else if( !CheckIfOp() ) {
+                    return false;
+                }
+            }
+            return true;
         }
 
 
@@ -791,6 +812,27 @@ namespace FemtoCraft {
             }
             spamChatLog.Enqueue( DateTime.UtcNow );
             return false;
+        }
+
+        #endregion
+
+
+        #region Permissions
+
+        public bool CanUseWater {
+            get { return ( Config.AllowWaterBlocks || Config.OpAllowWaterBlocks && IsOp ); }
+        }
+
+        public bool CanUseLava {
+            get { return ( Config.AllowLavaBlocks || Config.OpAllowLavaBlocks && IsOp ); }
+        }
+
+        public bool CanUseGrass {
+            get { return ( Config.AllowGrassBlocks || Config.OpAllowGrassBlocks && IsOp ); }
+        }
+
+        public bool CanUseSolid {
+            get { return ( Config.AllowSolidBlocks || Config.OpAllowSolidBlocks && IsOp ); }
         }
 
         #endregion
