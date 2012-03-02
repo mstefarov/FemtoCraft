@@ -1,16 +1,35 @@
-﻿using System;
-using System.Collections;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+// Based on Minecraft Classic's "com.mojang.minecraft.level.a.a" - Minecraft is Copyright 2009-2012 Mojang
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace FemtoCraft {
-    class NotchyMapGenerator {
+    sealed class NotchyMapGenerator {
+        const int WaterSpawnDensity = 8000,
+                  LavaSpawnDensity = 20000,
+                  FlowerClusterDensity = 3000,
+                  FlowerSpread = 6,
+                  FlowerChainsPerCluster = 10,
+                  FlowersPerChain = 5,
+                  TreeClusterDensity = 4000,
+                  TreeChainsPerCluster = 20,
+                  TreeHopsPerChain = 20,
+                  TreeSpread = 6,
+                  TreePlantRatio = 4;
+
+        readonly int mapWidth;
+        readonly int mapLength;
+        readonly int mapHeight;
+        readonly Random random;
+        readonly byte[] blocks;
+        readonly int waterLevel;
+        readonly int[] heightmap;
+        readonly Map map;
+
+
         public static Map Generate( int mapWidth, int mapLength, int mapHeight ) {
             return new NotchyMapGenerator( mapWidth, mapLength, mapHeight ).Generate();
         }
-
 
         NotchyMapGenerator( int mapWidth, int mapLength, int mapHeight ) {
             this.mapWidth = mapWidth;
@@ -23,21 +42,14 @@ namespace FemtoCraft {
             blocks = map.Blocks;
         }
 
-
-        readonly int mapWidth;
-        readonly int mapLength;
-        readonly int mapHeight;
-        readonly Random random;
-        readonly byte[] blocks;
-        readonly int waterLevel;
-        readonly int[] heightmap;
-        readonly Map map;
-
-
         Map Generate() {
             Raise();
             Erode();
             Soil();
+            Carve();
+            MakeOreVeins( Block.Coal, 90 );
+            MakeOreVeins( Block.IronOre, 70 );
+            MakeOreVeins( Block.GoldOre, 50 );
             Water();
             Melt();
             Grow();
@@ -54,18 +66,18 @@ namespace FemtoCraft {
             PerlinNoise raiseNoise3 = new PerlinNoise( random, 6 );
 
             // raising
-            const float f3 = 1.3F;
+            const float scale = 1.3F;
             for( int x = 0; x < mapWidth; x++ ) {
                 for( int y = 0; y < mapLength; y++ ) {
-                    double d2 = raiseNoise1.GetNoise( x * f3, y * f3 ) / 6.0 - 4;
-                    double d3 = raiseNoise2.GetNoise( x * f3, y * f3 ) / 5.0 + 10.0 - 4;
+                    double d2 = raiseNoise1.GetNoise( x * scale, y * scale ) / 6.0 - 4;
+                    double d3 = raiseNoise2.GetNoise( x * scale, y * scale ) / 5.0 + 10.0 - 4;
                     double d4 = raiseNoise3.GetNoise( x, y ) / 8.0;
                     if( d4 > 0 )
                         d3 = d2;
-                    double d5 = Math.Max( d2, d3 ) / 2.0;
-                    if( d5 < 0 )
-                        d5 *= 0.8;
-                    heightmap[( x + y * mapWidth )] = (int)d5;
+                    double elevation = Math.Max( d2, d3 ) / 2.0;
+                    if( elevation < 0 )
+                        elevation *= 0.8;
+                    heightmap[( x + y * mapWidth )] = (int)elevation;
                 }
             }
         }
@@ -100,7 +112,6 @@ namespace FemtoCraft {
                     if( heightmap[( x + y * mapWidth )] < 1 )
                         heightmap[( x + y * mapWidth )] = 1;
                     for( int z = 0; z < mapHeight; z++ ) {
-                        int index = ( z * mapLength + y ) * mapWidth + x;
                         Block block = Block.Air;
                         if( z <= i19 )
                             block = Block.Dirt;
@@ -108,6 +119,7 @@ namespace FemtoCraft {
                             block = Block.Stone;
                         if( z == 0 )
                             block = Block.Lava;
+                        int index = ( z * mapLength + y ) * mapWidth + x;
                         blocks[index] = (byte)block;
                     }
                 }
@@ -118,33 +130,33 @@ namespace FemtoCraft {
         void Water() {
             for( int x = 0; x < mapWidth; x++ ) {
                 FloodFill( x, 0, mapHeight / 2 - 1, Block.StillWater );
-                FloodFill( x, mapLength - 1, mapHeight / 2 - 1,Block.StillWater );
+                FloodFill( x, mapLength - 1, mapHeight / 2 - 1, Block.StillWater );
             }
             for( int y = 0; y < mapLength; y++ ) {
                 FloodFill( 0, y, mapHeight / 2 - 1, Block.StillWater );
                 FloodFill( mapWidth - 1, y, mapHeight / 2 - 1, Block.StillWater );
             }
-            int i4 = mapWidth * mapLength / 8000;
-            for( int i12 = 0; i12 < i4; i12++ ) {
-                int i16 = random.Next( mapWidth );
-                int i8 = waterLevel - 1 - random.Next( 2 );
-                int i20 = random.Next( mapLength );
-                if( blocks[( ( i8 * mapLength + i20 ) * mapWidth + i16 )] != 0 )
+            int maxWaterSpawns = mapWidth * mapLength / WaterSpawnDensity;
+            for( int waterSpawn = 0; waterSpawn < maxWaterSpawns; waterSpawn++ ) {
+                int x = random.Next( mapWidth );
+                int y = random.Next( mapLength );
+                int z = waterLevel - 1 - random.Next( 2 );
+                if( blocks[( ( z * mapLength + y ) * mapWidth + x )] != (byte)Block.Air )
                     continue;
-                FloodFill( i16, i20, i8, Block.StillWater );
+                FloodFill( x, y, z, Block.StillWater );
             }
         }
 
 
         void Melt() {
-            int m = mapWidth * mapLength * mapHeight / 20000;
-            for( int i1 = 0; i1 < m; i1++ ) {
-                int i2 = random.Next( mapWidth );
-                int i4 = (int)( random.NextDouble() * random.NextDouble() * ( waterLevel - 3 ) );
-                int i12 = random.Next( mapLength );
-                if( blocks[( ( i4 * mapLength + i12 ) * mapWidth + i2 )] != 0 )
+            int lavaSpawns = mapWidth * mapLength * mapHeight / LavaSpawnDensity;
+            for( int lavaSpawn = 0; lavaSpawn < lavaSpawns; lavaSpawn++ ) {
+                int x = random.Next( mapWidth );
+                int y = random.Next( mapLength );
+                int z = (int)( random.NextDouble() * random.NextDouble() * ( waterLevel - 3 ) );
+                if( blocks[( ( z * mapLength + y ) * mapWidth + x )] != (byte)Block.Air )
                     continue;
-                FloodFill( i2, i12, i4, Block.StillLava );
+                FloodFill( x, y, z, Block.StillLava );
             }
         }
 
@@ -154,30 +166,27 @@ namespace FemtoCraft {
             PerlinNoise growNoise2 = new PerlinNoise( random, 8 );
             for( int x = 0; x < mapWidth; x++ ) {
                 for( int y = 0; y < mapLength; y++ ) {
-                    bool placeSand = growNoise1.GetNoise( x, y ) > 8.0;
-                    bool placeGravel = growNoise2.GetNoise( x, y ) > 12.0;
-                    int i24 = heightmap[( x + y * mapWidth )];
-                    int index = ( i24 * mapLength + y ) * mapWidth + x;
-                    Block tileAbove = (Block)blocks[( ( ( i24 + 1 ) * mapLength + y ) * mapWidth + x )];
-                    if( ( ( tileAbove == Block.Water ) || ( tileAbove == Block.StillWater ) ) &&
-                        ( i24 <= mapHeight / 2 - 1 ) && placeGravel )
-                        blocks[index] = (byte)Block.Gravel;
-                    if( tileAbove != Block.Air )
-                        continue;
-                    if( ( i24 <= mapHeight / 2 - 1 ) && placeSand ) {
-                        blocks[index] = (byte)Block.Sand;
-                    } else {
-                        blocks[index] = (byte)Block.Grass;
+                    int elevation = heightmap[( x + y * mapWidth )];
+                    Block blockAbove = (Block)blocks[( ( ( elevation + 1 ) * mapLength + y ) * mapWidth + x )];
+                    int index = ( elevation * mapLength + y ) * mapWidth + x;
+
+                    if( blockAbove == Block.Air ) {
+                        bool placeSand = growNoise1.GetNoise( x, y ) > 8.0;
+                        if( ( elevation <= mapHeight / 2 - 1 ) && placeSand ) {
+                            blocks[index] = (byte)Block.Sand;
+                        } else {
+                            blocks[index] = (byte)Block.Grass;
+                        }
+                    } else if( ( ( blockAbove == Block.Water ) || ( blockAbove == Block.StillWater ) ) && ( elevation <= mapHeight / 2 - 1 ) ) {
+                        bool placeGravel = growNoise2.GetNoise( x, y ) > 12.0;
+                        if( placeGravel ) {
+                            blocks[index] = (byte)Block.Gravel;
+                        }
                     }
                 }
             }
         }
 
-
-        const int FlowerClusterDensity = 3000,
-                  FlowerSpread = 6,
-                  FlowerChainsPerCluster = 10,
-                  FlowersPerChain = 5;
 
         void PlantFlowers() {
             int maxFlowers = mapWidth * mapLength / FlowerClusterDensity;
@@ -193,18 +202,21 @@ namespace FemtoCraft {
                         y += random.Next( FlowerSpread ) - random.Next( FlowerSpread );
                         if( ( x < 0 ) || ( y < 0 ) || ( x >= mapWidth ) || ( y >= mapLength ) )
                             continue;
-                        int flowerAltitude = heightmap[( x + y * mapWidth )] + 1;
-                        int tileAbove = blocks[( ( flowerAltitude * mapLength + y ) * mapWidth + x )];
-                        if( tileAbove != (byte)Block.Air )
+
+                        int z = heightmap[( x + y * mapWidth )] + 1;
+                        int index = Index( x, y, z );
+
+                        Block blockAbove = (Block)blocks[index];
+                        if( blockAbove != Block.Air )
                             continue;
-                        int i29 = ( flowerAltitude * mapLength + y ) * mapWidth + x;
-                        Block blockUnder = (Block)blocks[( ( ( flowerAltitude - 1 ) * mapLength + y ) * mapWidth + x )];
+                        Block blockUnder = (Block)blocks[Index( x, y, z - 1 )];
                         if( blockUnder != Block.Grass )
                             continue;
+
                         if( flowerType == 0 ) {
-                            blocks[i29] = (byte)Block.YellowFlower;
+                            blocks[index] = (byte)Block.YellowFlower;
                         } else {
-                            blocks[i29] = (byte)Block.RedFlower;
+                            blocks[index] = (byte)Block.RedFlower;
                         }
                     }
                 }
@@ -230,13 +242,15 @@ namespace FemtoCraft {
                         if( ( x < 0 ) || ( y < 0 ) || ( z < 1 ) || ( x >= mapWidth ) || ( y >= mapLength ) ||
                             ( z >= heightmap[( x + y * mapWidth )] - 1 ) )
                             continue;
-                        int i30 = ( blocks[( ( z * mapLength + y ) * mapWidth + x )] ) == (byte)Block.Air ? 1 : 0;
-                        if( i30 == 0 )
+
+                        int index = Index( x, y, z );
+                        Block blockAbove = (Block)blocks[index];
+                        if( blockAbove != Block.Air )
                             continue;
-                        int index = ( z * mapLength + y ) * mapWidth + x;
-                        Block blockUnder = (Block)blocks[( ( ( z - 1 ) * mapLength + y ) * mapWidth + x )];
+                        Block blockUnder = (Block)blocks[Index( x, y, z - 1 )];
                         if( blockUnder != Block.Stone )
                             continue;
+
                         if( shroomType == 0 ) {
                             blocks[index] = (byte)Block.BrownMushroom;
                         } else {
@@ -247,12 +261,6 @@ namespace FemtoCraft {
             }
         }
 
-
-        const int TreeClusterDensity = 4000,
-                  TreeChainsPerCluster = 20,
-                  TreeHopsPerChain = 20,
-                  TreeSpread = 6,
-                  TreePlantRatio = 4;
 
         void PlantTrees() {
             int maxTrees = mapWidth * mapLength / TreeClusterDensity;
@@ -267,10 +275,104 @@ namespace FemtoCraft {
                         y += random.Next( TreeSpread ) - random.Next( TreeSpread );
                         if( ( x < 0 ) || ( y < 0 ) || ( x >= mapWidth ) || ( y >= mapLength ) )
                             continue;
-                        int i26 = heightmap[( x + y * mapWidth )] + 1;
                         if( random.Next( TreePlantRatio ) != 0 )
                             continue;
-                        map.GrowTree( random, x, y, i26 );
+                        int z = heightmap[( x + y * mapWidth )] + 1;
+                        map.GrowTree( random, x, y, z );
+                    }
+                }
+            }
+        }
+
+
+        void Carve() {
+            int maxCaves = mapWidth * mapLength * mapHeight / 256 / 64 * 2;
+            for( int i = 0; i < maxCaves; i++ ) {
+                double startX = random.NextDouble() * mapWidth;
+                double startY = random.NextDouble() * mapLength;
+                double startZ = random.NextDouble() * mapHeight;
+                double f9 = random.NextDouble() * Math.PI * 2;
+                double f10 = 0;
+                double f11 = random.NextDouble() * Math.PI * 2;
+                double f12 = 0;
+                double f13 = random.NextDouble() * random.NextDouble();
+                int caveLength = (int)( ( random.NextDouble() + random.NextDouble() ) * 200 );
+                for( int step = 0; step < caveLength; step++ ) {
+                    startX += Math.Sin( f9 ) * Math.Cos( f11 );
+                    startY += Math.Cos( f9 ) * Math.Cos( f11 );
+                    startZ += Math.Sin( f11 );
+                    f9 += f10 * 0.2;
+                    f10 = f10 * 0.9 + ( random.NextDouble() - random.NextDouble() );
+                    f11 = ( f11 + f12 * 0.5 ) * 0.5;
+                    f12 = f12 * 0.75 + ( random.NextDouble() - random.NextDouble() );
+                    if( random.NextDouble() < 0.25 )
+                        continue;
+                    double f1 = startX + ( random.NextDouble() * 4 - 2 ) * 0.2;
+                    double f2 = startZ + ( random.NextDouble() * 4 - 2 ) * 0.2;
+                    double f5 = startY + ( random.NextDouble() * 4 - 2 ) * 0.2;
+                    double f6 = ( mapHeight - f2 ) / mapHeight;
+                    f6 = 1.2 + ( f6 * 3.5 + 1 ) * f13;
+                    f6 = Math.Sin( step * Math.PI / caveLength ) * f6;
+                    for( int x = (int)( f1 - f6 ); x <= (int)( f1 + f6 ); x++ ) {
+                        for( int z = (int)( f2 - f6 ); z <= (int)( f2 + f6 ); z++ ) {
+                            for( int y = (int)( f5 - f6 ); y <= (int)( f5 + f6 ); y++ ) {
+                                double f14 = x - f1;
+                                double f15 = z - f2;
+                                double f16 = y - f5;
+                                f14 = f14 * f14 + f15 * f15 * 2 + f16 * f16;
+                                if( ( f14 >= f6 * f6 ) ||
+                                    ( x < 1 ) || ( z < 1 ) || ( y < 1 ) ||
+                                    ( x >= mapWidth - 1 ) || ( z >= mapHeight - 1 ) || ( y >= mapLength - 1 ) ) {
+                                    continue;
+                                }
+                                int index = Index( x, y, z );
+                                if( (Block)blocks[index] == Block.Stone ) {
+                                    blocks[index] = (byte)Block.Air;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        void MakeOreVeins( Block oreTile, int density ) {
+            int maxVeins = mapWidth * mapLength * mapHeight / 256 / 64 * density / 100;
+            for( int i = 0; i < maxVeins; i++ ) {
+                double f1 = random.NextDouble() * mapWidth;
+                double f2 = random.NextDouble() * mapHeight;
+                double f3 = random.NextDouble() * mapLength;
+                int m = (int)( ( random.NextDouble() + random.NextDouble() ) * 75 * density / 100 );
+                double f4 = random.NextDouble() * Math.PI * 2;
+                double f5 = 0;
+                double f6 = random.NextDouble() * Math.PI * 2;
+                double f7 = 0;
+                for( int n = 0; n < m; n++ ) {
+                    f1 += Math.Sin( f4 ) * Math.Cos( f6 );
+                    f3 += Math.Cos( f4 ) * Math.Sin( f6 );
+                    f2 += Math.Sin( f6 );
+                    f4 += f5 * 0.2;
+                    f5 = (f5 * 0.9) + ( random.NextDouble() - random.NextDouble() );
+                    f6 = ( f6 + f7 * 0.5 ) * 0.5;
+                    f7 = (f7 * 0.9) + ( random.NextDouble() - random.NextDouble() );
+                    double f8 = Math.Sin( n * Math.PI / m ) * density / 100 + 1;
+                    for( int x = (int)( f1 - f8 ); x <= (int)( f1 + f8 ); x++ ) {
+                        for( int z = (int)( f2 - f8 ); z <= (int)( f2 + f8 ); z++ ) {
+                            for( int y = (int)( f3 - f8 ); y <= (int)( f3 + f8 ); y++ ) {
+                                double f9 = x - f1;
+                                double f10 = z - f2;
+                                double f11 = y - f3;
+                                f9 = f9 * f9 + f10 * f10 * 2 + f11 * f11;
+                                if( ( f9 >= f8 * f8 ) || ( x < 1 ) || ( z < 1 ) || ( y < 1 ) ||
+                                    ( x >= mapWidth - 1 ) || ( z >= mapHeight - 1 ) || ( y >= mapLength - 1 ) )
+                                    continue;
+                                int index = Index( x, y, z );
+                                if( (Block)blocks[index] == Block.Stone ) {
+                                    blocks[index] = (byte)oreTile;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -284,7 +386,7 @@ namespace FemtoCraft {
             stack.Push( coord );
             while( stack.Count > 0 ) {
                 coord = stack.Pop();
-                blocks[Index( coord )] = (byte)newBlock;
+                blocks[Index( coord.X, coord.Y, coord.Z )] = (byte)newBlock;
                 if( coord.X + 1 < mapWidth && blocks[Index( coord.X + 1, coord.Y, coord.Z )] == (byte)Block.Air ) {
                     stack.Push( new Vector3I( coord.X + 1, coord.Y, coord.Z ) );
                 }
@@ -316,11 +418,6 @@ namespace FemtoCraft {
 
         int Index( int x, int y, int z ) {
             return ( z * mapLength + y ) * mapWidth + x;
-        }
-
-
-        int Index( Vector3I coord ) {
-            return ( coord.Z * mapLength + coord.Y ) * mapWidth + coord.X;
         }
     }
 }

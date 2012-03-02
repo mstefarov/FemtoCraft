@@ -115,6 +115,13 @@ namespace FemtoCraft {
                     PlayersHandler( player );
                     break;
 
+                case "gen":
+                    GenHandler( false, player, param );
+                    break;
+                case "genflat":
+                    GenHandler( true, player, param );
+                    break;
+
                 default:
                     player.Message( "Unknown command \"{0}\"", command );
                     break;
@@ -414,7 +421,7 @@ namespace FemtoCraft {
         static void SaveHandler( [NotNull] Player player, [CanBeNull] string fileName ) {
             if( !player.CheckIfOp() ) return;
             if( fileName == null || !fileName.EndsWith( ".lvl" ) ) {
-                player.Message( "Load: Filename that ends with .lvl is required." );
+                player.Message( "Load: Filename must end with .lvl" );
                 return;
             }
             try {
@@ -563,9 +570,72 @@ namespace FemtoCraft {
                 } else {
                     playerList = players.JoinToString( ", ", p => p.Name );
                 }
-                player.Message( "There are {0} players online: {1}",
-                                players.Length, playerList );
+                if( players.Length % 10 == 1 ) {
+                    player.Message( "There is {0} player online: {1}",
+                                    players.Length, playerList );
+                } else {
+                    player.Message( "There are {0} players online: {1}",
+                                    players.Length, playerList );
+                }
             }
+        }
+
+
+        static void GenHandler( bool flat, [NotNull] Player player, [CanBeNull] string param ) {
+            if( !player.CheckIfOp() ) return;
+
+            string cmdName = ( flat ? "GenFlat" : "Gen" );
+            if( String.IsNullOrEmpty( param ) ) {
+                PrintGenUsage(cmdName, player );
+                return;
+            }
+
+            string[] args = param.Split( ' ' );
+
+            ushort width, length, height;
+            if( args.Length != 4 ||
+                !UInt16.TryParse( args[0], out width ) ||
+                !UInt16.TryParse( args[1], out length ) ||
+                !UInt16.TryParse( args[2], out height ) ) {
+                PrintGenUsage( cmdName, player );
+                return;
+            }
+
+            if( !IsPowerOfTwo( width ) || !IsPowerOfTwo( length ) || !IsPowerOfTwo( height ) ||
+                width < 16 || length < 16 || height < 16 ||
+                width > 1024 || length > 1024 || height > 1024 ) {
+                    player.Message( "{0}: Map dimensions should be powers-of-2 between 16 and 1024", cmdName );
+                    return;
+            }
+
+            string fileName = args[3];
+            if( !fileName.EndsWith( ".lvl" ) ) {
+                player.Message( "Load: Filename must end with .lvl" );
+                return;
+            }
+
+            player.MessageNow( "Generating a {0}x{1}x{2} map...", width, length, height );
+            Map map;
+            if( flat ) {
+                map = Map.CreateFlatgrass( width, length, height );
+            } else {
+                map = NotchyMapGenerator.Generate( width, length, height );
+            }
+            try {
+                map.Save( fileName );
+                player.Message( "Map saved to {0}", Path.GetFileName( fileName ) );
+            } catch( Exception ex ) {
+                player.Message( "Could not save map: {0}: {1}", ex.GetType().Name, ex.Message );
+                Logger.LogError( "Failed to save map: {0}", ex );
+            }
+        }
+
+        static bool IsPowerOfTwo( int x ) {
+            return ( x != 0 ) && ( ( x & ( x - 1 ) ) == 0 );
+        }
+
+        static void PrintGenUsage( string cmdName, Player player ) {
+            player.Message( "Usage: /{0} Width Length Height filename.lvl", cmdName );
         }
     }
 }

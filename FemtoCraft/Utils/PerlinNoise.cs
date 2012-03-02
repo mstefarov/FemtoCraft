@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System;
 
 namespace FemtoCraft {
+    // Based on Minecraft Classic's "com.mojang.minecraft.level.a.a.a"
     public sealed class FilteredNoise {
         readonly PerlinNoise noise1, noise2;
 
@@ -14,7 +16,7 @@ namespace FemtoCraft {
         }
     }
 
-
+    // Based on Minecraft Classic's "com.mojang.minecraft.level.a.a.b"
     public sealed class PerlinNoise {
         readonly ImprovedNoise[] noiseLayers;
         readonly int octaves;

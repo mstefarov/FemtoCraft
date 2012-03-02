@@ -1,5 +1,5 @@
 ﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
-// Based on fCraft.MapConversion.MapMCSharp - fCraft is Copyright 2009-2012 Matvei Stefarov <me@matvei.org> | See LICENSE.fCraft.txt
+// Designed after Minecraft Classic's "com.mojang.minecraft.level" - Minecraft is Copyright 2009-2012 Mojang
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +12,7 @@ namespace FemtoCraft {
         public readonly byte[] Blocks;
         public Position Spawn;
         public bool ChangedSinceSave;
+        public bool IsActive;
 
 
         public Map( int width, int length, int height ) {
@@ -89,7 +90,9 @@ namespace FemtoCraft {
             PhysicsOnRemoved( x, y, z, oldBlock );
             PhysicsOnPlaced( x, y, z, newBlock );
 
-            Server.Players.Send( except, Packet.MakeSetBlock( x, y, z, GetBlock( x, y, z ) ) );
+            if( IsActive ) {
+                Server.Players.Send( except, Packet.MakeSetBlock( x, y, z, GetBlock( x, y, z ) ) );
+            }
             return true;
         }
 
@@ -263,44 +266,48 @@ namespace FemtoCraft {
         #endregion
 
 
-        public bool GrowTree( Random random, int sx, int sy, int sz ) {
-            int treeHeight = random.Next( 4, 7 );
-            if( sz >= Height - treeHeight - 1 ) return false;
+        // Based on Minecraft Classic's "com.mojang.minecraft.level.maybeGrowTree"
+        public bool GrowTree( Random random, int startX, int startY, int startZ ) {
+            int treeHeight = random.Next( 3 ) + 4;
 
-            for( int z = sz; z <= sz + treeHeight + 1; z++ ) {
-                byte extent = 1;
-                if( z == sz ) extent = 0;
-                if( z >= sz + treeHeight - 1 ) extent = 2;
-                for( int x = sx - extent; x <= sx + extent; x++ ) {
-                    for( int y = sy - extent; y <= sy + extent; y++ ) {
-                        if( GetBlock( x, y, z ) != Block.Air ) {
+            Block blockUnder = GetBlock( startX, startY, startZ - 1 );
+            if( ( blockUnder != Block.Grass ) || ( startZ >= Height - treeHeight - 1 ) )
+                return false;
+
+            for( int z = startZ; z <= startZ + 1 + treeHeight; z++ ) {
+                int extent = 1;
+                if( z == startZ ) extent = 0;
+                if( z >= startZ + 1 + treeHeight - 2 ) extent = 2;
+                for( int x = startX - extent; ( x <= startX + extent ); x++ ) {
+                    for( int y = startY - extent; ( y <= startY + extent ); y++ ) {
+                        if( ( x >= 0 ) && ( z >= 0 ) && ( y >= 0 ) && ( x < Width ) && ( z < Height ) && ( y < Length ) ) {
+                            if( GetBlock( x, y, z ) != Block.Air )
+                                return false;
+                        } else {
                             return false;
                         }
                     }
                 }
             }
 
-            if( GetBlock( sx, sy, sz - 1 ) != Block.Grass ) return false;
+            SetBlock( null, startX, startY, startZ - 1, Block.Dirt );
 
-            SetBlock( null, sx, sy, sz - 1, Block.Dirt );
-
-            for( int z = ( sz - 3 ) + treeHeight; z <= sz + treeHeight; z++ ) {
-                int blocksLeft = z - ( sz + treeHeight );
-                int foliageExtent = 1 - blocksLeft / 2;
-                for( int x = sx - foliageExtent; x <= sx + foliageExtent; x++ ) {
-                    for( int y = sy - foliageExtent; y <= sy + foliageExtent; y++ ) {
-                        if( ( Math.Abs( x - sx ) != foliageExtent || Math.Abs( y - sz ) != foliageExtent ||
-                                random.Next( 2 ) != 0 && blocksLeft != 0 ) &&
-                                GetBlock( x, y, z ) == Block.Air )
-                            SetBlock( null, x, y, z, Block.Leaves );
+            for( int z = startZ - 3 + treeHeight; z <= startZ + treeHeight; z++ ) {
+                int n = z - ( startZ + treeHeight );
+                int i1 = 1 - n / 2;
+                for( int x = startX - i1; x <= startX + i1; x++ ) {
+                    int j = x - startX;
+                    for( int y = startY - i1; y <= startY + i1; y++ ) {
+                        int i3 = y - startY;
+                        if( ( Math.Abs( j ) == i1 ) && ( Math.Abs( i3 ) == i1 ) &&
+                            ( ( random.Next( 2 ) == 0 ) || ( n == 0 ) ) )
+                            continue;
+                        SetBlock( null, x, y, z, Block.Leaves );
                     }
                 }
             }
-
             for( int z = 0; z < treeHeight; z++ ) {
-                if( GetBlock( sx, sy, sz + z ) == Block.Air ) {
-                    SetBlock( null, sx, sy, sz + z, Block.Log );
-                }
+                SetBlock( null, startX, startY, startZ + z, Block.Log );
             }
             return true;
         }

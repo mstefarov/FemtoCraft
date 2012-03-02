@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.96";
+        public const string VersionString = "FemtoCraft 0.97";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
@@ -63,9 +63,10 @@ namespace FemtoCraft {
                     Map = LvlMapConverter.Load( MapFileName );
                     Logger.Log( "Loaded map from {0}", MapFileName );
                 } else {
-                    Map = NotchyMapGenerator.Generate( 256, 256, 64 ); //Map.CreateFlatgrass( 256, 256, 64 );
+                    Map = NotchyMapGenerator.Generate( 256, 256, 64 );
                     Map.Save( MapFileName );
                 }
+                Map.IsActive = true;
                 Player.Console.Map = Map;
 
                 // start listening for incoming connections
@@ -330,7 +331,9 @@ namespace FemtoCraft {
                     player.ChangeMap( newMap );
                 }
                 Player.Console.Map = newMap;
+                Map.IsActive = false;
                 Map = newMap;
+                Map.IsActive = true;
                 Map.Save( MapFileName );
             }
         }
