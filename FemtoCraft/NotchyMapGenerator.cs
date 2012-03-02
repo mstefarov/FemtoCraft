@@ -2,20 +2,32 @@
 // Based on Minecraft Classic's "com.mojang.minecraft.level.a.a" - Minecraft is Copyright 2009-2012 Mojang
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class NotchyMapGenerator {
-        const int WaterSpawnDensity = 8000,
+        const int TerrainFeatureOctaves = 6,
+                  TerrainDetailOctaves = 8,
+                  WaterSpawnDensity = 8000,
                   LavaSpawnDensity = 20000,
                   FlowerClusterDensity = 3000,
                   FlowerSpread = 6,
                   FlowerChainsPerCluster = 10,
                   FlowersPerChain = 5,
+                  ShroomClusterDensity = 2000,
+                  ShroomChainsPerCluster = 20,
+                  ShroomHopsPerChain = 5,
+                  ShroomSpreadHozirontal = 6,
+                  ShroomSpreadVertical = 2,
                   TreeClusterDensity = 4000,
                   TreeChainsPerCluster = 20,
                   TreeHopsPerChain = 20,
                   TreeSpread = 6,
-                  TreePlantRatio = 4;
+                  TreePlantRatio = 4,
+                  CoalOreDensity = 90,
+                  IronOreDensity = 70,
+                  GoldOreDensity = 50,
+                  CaveDensity = 256;
 
         readonly int mapWidth;
         readonly int mapLength;
@@ -27,6 +39,7 @@ namespace FemtoCraft {
         readonly Map map;
 
 
+        [NotNull]
         public static Map Generate( int mapWidth, int mapLength, int mapHeight ) {
             return new NotchyMapGenerator( mapWidth, mapLength, mapHeight ).Generate();
         }
@@ -47,9 +60,9 @@ namespace FemtoCraft {
             Erode();
             Soil();
             Carve();
-            MakeOreVeins( Block.Coal, 90 );
-            MakeOreVeins( Block.IronOre, 70 );
-            MakeOreVeins( Block.GoldOre, 50 );
+            MakeOreVeins( Block.Coal, CoalOreDensity );
+            MakeOreVeins( Block.IronOre, IronOreDensity );
+            MakeOreVeins( Block.GoldOre, GoldOreDensity );
             Water();
             Melt();
             Grow();
@@ -61,12 +74,14 @@ namespace FemtoCraft {
 
 
         void Raise() {
-            FilteredNoise raiseNoise1 = new FilteredNoise( new PerlinNoise( random, 8 ), new PerlinNoise( random, 8 ) );
-            FilteredNoise raiseNoise2 = new FilteredNoise( new PerlinNoise( random, 8 ), new PerlinNoise( random, 8 ) );
-            PerlinNoise raiseNoise3 = new PerlinNoise( random, 6 );
+            FilteredNoise raiseNoise1 = new FilteredNoise( new PerlinNoise( random, TerrainDetailOctaves ),
+                                                           new PerlinNoise( random, TerrainDetailOctaves ) );
+            FilteredNoise raiseNoise2 = new FilteredNoise( new PerlinNoise( random, TerrainDetailOctaves ),
+                                                           new PerlinNoise( random, TerrainDetailOctaves ) );
+            PerlinNoise raiseNoise3 = new PerlinNoise( random, TerrainFeatureOctaves );
 
             // raising
-            const float scale = 1.3F;
+            const double scale = 1.3;
             for( int x = 0; x < mapWidth; x++ ) {
                 for( int y = 0; y < mapLength; y++ ) {
                     double d2 = raiseNoise1.GetNoise( x * scale, y * scale ) / 6.0 - 4;
@@ -84,8 +99,10 @@ namespace FemtoCraft {
 
 
         void Erode() {
-            FilteredNoise erodeNoise1 = new FilteredNoise( new PerlinNoise( random, 8 ), new PerlinNoise( random, 8 ) );
-            FilteredNoise erodeNoise2 = new FilteredNoise( new PerlinNoise( random, 8 ), new PerlinNoise( random, 8 ) );
+            FilteredNoise erodeNoise1 = new FilteredNoise( new PerlinNoise( random, TerrainDetailOctaves ),
+                                                           new PerlinNoise( random, TerrainDetailOctaves ) );
+            FilteredNoise erodeNoise2 = new FilteredNoise( new PerlinNoise( random, TerrainDetailOctaves ),
+                                                           new PerlinNoise( random, TerrainDetailOctaves ) );
             for( int x = 0; x < mapWidth; x++ ) {
                 for( int y = 0; y < mapLength; y++ ) {
                     double d1 = erodeNoise1.GetNoise( x * 2, y * 2 ) / 8.0;
@@ -225,20 +242,20 @@ namespace FemtoCraft {
 
 
         void PlantShrooms() {
-            int maxShrooms = mapWidth * mapLength * mapHeight / 2000;
+            int maxShrooms = mapWidth * mapLength * mapHeight / ShroomClusterDensity;
             for( int cluster = 0; cluster < maxShrooms; cluster++ ) {
                 int shroomType = random.Next( 2 );
                 int clusterX = random.Next( mapWidth );
                 int clusterY = random.Next( mapLength );
                 int clusterZ = random.Next( mapHeight );
-                for( int shroom = 0; shroom < 20; shroom++ ) {
+                for( int shroom = 0; shroom < ShroomChainsPerCluster; shroom++ ) {
                     int x = clusterX;
                     int y = clusterY;
                     int z = clusterZ;
-                    for( int hop = 0; hop < 5; hop++ ) {
-                        x += random.Next( 6 ) - random.Next( 6 );
-                        z += random.Next( 2 ) - random.Next( 2 );
-                        y += random.Next( 6 ) - random.Next( 6 );
+                    for( int hop = 0; hop < ShroomHopsPerChain; hop++ ) {
+                        x += random.Next( ShroomSpreadHozirontal ) - random.Next( ShroomSpreadHozirontal );
+                        y += random.Next( ShroomSpreadHozirontal ) - random.Next( ShroomSpreadHozirontal );
+                        z += random.Next( ShroomSpreadVertical ) - random.Next( ShroomSpreadVertical );
                         if( ( x < 0 ) || ( y < 0 ) || ( z < 1 ) || ( x >= mapWidth ) || ( y >= mapLength ) ||
                             ( z >= heightmap[( x + y * mapWidth )] - 1 ) )
                             continue;
@@ -286,7 +303,7 @@ namespace FemtoCraft {
 
 
         void Carve() {
-            int maxCaves = mapWidth * mapLength * mapHeight / 256 / 64 * 2;
+            int maxCaves = mapWidth * mapLength * mapHeight / CaveDensity / 64 * 2;
             for( int i = 0; i < maxCaves; i++ ) {
                 double startX = random.NextDouble() * mapWidth;
                 double startY = random.NextDouble() * mapLength;
@@ -339,30 +356,30 @@ namespace FemtoCraft {
 
         void MakeOreVeins( Block oreTile, int density ) {
             int maxVeins = mapWidth * mapLength * mapHeight / 256 / 64 * density / 100;
-            for( int i = 0; i < maxVeins; i++ ) {
-                double f1 = random.NextDouble() * mapWidth;
-                double f2 = random.NextDouble() * mapHeight;
-                double f3 = random.NextDouble() * mapLength;
-                int m = (int)( ( random.NextDouble() + random.NextDouble() ) * 75 * density / 100 );
+            for( int vein = 0; vein < maxVeins; vein++ ) {
+                double startX = random.NextDouble() * mapWidth;
+                double startY = random.NextDouble() * mapLength;
+                double startZ = random.NextDouble() * mapHeight;
                 double f4 = random.NextDouble() * Math.PI * 2;
                 double f5 = 0;
                 double f6 = random.NextDouble() * Math.PI * 2;
                 double f7 = 0;
+                int m = (int)( ( random.NextDouble() + random.NextDouble() ) * 75 * density / 100 );
                 for( int n = 0; n < m; n++ ) {
-                    f1 += Math.Sin( f4 ) * Math.Cos( f6 );
-                    f3 += Math.Cos( f4 ) * Math.Sin( f6 );
-                    f2 += Math.Sin( f6 );
+                    startX += Math.Sin( f4 ) * Math.Cos( f6 );
+                    startY += Math.Cos( f4 ) * Math.Sin( f6 );
+                    startZ += Math.Sin( f6 );
                     f4 += f5 * 0.2;
                     f5 = (f5 * 0.9) + ( random.NextDouble() - random.NextDouble() );
                     f6 = ( f6 + f7 * 0.5 ) * 0.5;
                     f7 = (f7 * 0.9) + ( random.NextDouble() - random.NextDouble() );
                     double f8 = Math.Sin( n * Math.PI / m ) * density / 100 + 1;
-                    for( int x = (int)( f1 - f8 ); x <= (int)( f1 + f8 ); x++ ) {
-                        for( int z = (int)( f2 - f8 ); z <= (int)( f2 + f8 ); z++ ) {
-                            for( int y = (int)( f3 - f8 ); y <= (int)( f3 + f8 ); y++ ) {
-                                double f9 = x - f1;
-                                double f10 = z - f2;
-                                double f11 = y - f3;
+                    for( int x = (int)( startX - f8 ); x <= (int)( startX + f8 ); x++ ) {
+                        for( int z = (int)( startZ - f8 ); z <= (int)( startZ + f8 ); z++ ) {
+                            for( int y = (int)( startY - f8 ); y <= (int)( startY + f8 ); y++ ) {
+                                double f9 = x - startX;
+                                double f10 = z - startZ;
+                                double f11 = y - startY;
                                 f9 = f9 * f9 + f10 * f10 * 2 + f11 * f11;
                                 if( ( f9 >= f8 * f8 ) || ( x < 1 ) || ( z < 1 ) || ( y < 1 ) ||
                                     ( x >= mapWidth - 1 ) || ( z >= mapHeight - 1 ) || ( y >= mapLength - 1 ) )

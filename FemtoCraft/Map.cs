@@ -294,12 +294,12 @@ namespace FemtoCraft {
 
             for( int z = startZ - 3 + treeHeight; z <= startZ + treeHeight; z++ ) {
                 int n = z - ( startZ + treeHeight );
-                int i1 = 1 - n / 2;
-                for( int x = startX - i1; x <= startX + i1; x++ ) {
+                int foliageExtent = 1 - n / 2;
+                for( int x = startX - foliageExtent; x <= startX + foliageExtent; x++ ) {
                     int j = x - startX;
-                    for( int y = startY - i1; y <= startY + i1; y++ ) {
+                    for( int y = startY - foliageExtent; y <= startY + foliageExtent; y++ ) {
                         int i3 = y - startY;
-                        if( ( Math.Abs( j ) == i1 ) && ( Math.Abs( i3 ) == i1 ) &&
+                        if( ( Math.Abs( j ) == foliageExtent ) && ( Math.Abs( i3 ) == foliageExtent ) &&
                             ( ( random.Next( 2 ) == 0 ) || ( n == 0 ) ) )
                             continue;
                         SetBlock( null, x, y, z, Block.Leaves );

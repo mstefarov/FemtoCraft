@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 0.97";
+        public const string VersionString = "FemtoCraft 0.99";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
@@ -63,6 +63,7 @@ namespace FemtoCraft {
                     Map = LvlMapConverter.Load( MapFileName );
                     Logger.Log( "Loaded map from {0}", MapFileName );
                 } else {
+                    Logger.Log( "Generating the map..." );
                     Map = NotchyMapGenerator.Generate( 256, 256, 64 );
                     Map.Save( MapFileName );
                 }
