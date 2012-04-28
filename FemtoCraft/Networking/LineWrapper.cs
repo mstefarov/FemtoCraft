@@ -17,12 +17,12 @@ namespace FemtoCraft {
 
         const int LineSize = 64;
         const int PacketSize = 66; // opcode + id + 64
-
         const byte NoColor = (byte)'f';
-        bool expectingColor;
+
+        public Packet Current { get; private set; }
+
         byte color, lastColor;
         bool hadColor;
-
         int spaceCount, wordLength;
 
         readonly byte[] input;
@@ -36,6 +36,7 @@ namespace FemtoCraft {
         int wrapIndex,
             wrapOutputIndex;
         byte wrapColor;
+        bool expectingColor;
 
 
         public LineWrapper( [NotNull] string message ) {
@@ -50,10 +51,9 @@ namespace FemtoCraft {
             color = NoColor;
             wordLength = 0;
             inputIndex = 0;
+            wrapIndex = 0;
+            wrapOutputIndex = 0;
         }
-
-
-        public Packet Current { get; private set; }
 
 
         public bool MoveNext() {
@@ -71,11 +71,9 @@ namespace FemtoCraft {
             lastColor = NoColor;
             Current = new Packet( output );
 
-            wordLength = 0;
-            wrapIndex = 0;
             wrapColor = NoColor;
-            wrapOutputIndex = outputStart;
             expectingColor = false;
+            wrapOutputIndex = outputStart;
 
             // Prepend line prefix, if needed
             if( inputIndex > 0 && prefix.Length > 0 ) {
@@ -83,6 +81,8 @@ namespace FemtoCraft {
                 byte preBufferColor = color;
                 color = NoColor;
                 inputIndex = 0;
+                wrapIndex = 0;
+                wordLength = 0;
                 while( inputIndex < prefix.Length ) {
                     byte ch = prefix[inputIndex];
                     if( ProcessChar( ch ) ) {
@@ -96,6 +96,9 @@ namespace FemtoCraft {
                 wrapColor = preBufferColor;
             }
 
+            wordLength = 0;
+            wrapIndex = inputIndex;
+
             // Append as much of the remaining input as possible
             while( inputIndex < input.Length ) {
                 byte ch = input[inputIndex];
@@ -106,6 +109,7 @@ namespace FemtoCraft {
                 }
                 inputIndex++;
             }
+
             PrepareOutput();
             return true;
         }
@@ -126,40 +130,41 @@ namespace FemtoCraft {
 
                 case (byte)'&':
                     if( expectingColor ) {
-                        // append "&&"
+                        // skip double ampersands
                         expectingColor = false;
-                        if( !Append( ch ) ) {
-                            if( wordLength < LineSize - 1 - prefix.Length ) {
-                                inputIndex = wrapIndex;
-                                outputIndex = wrapOutputIndex;
-                                color = wrapColor;
-                            }// else word is too long, dont backtrack to wrap
-                            return true;
-                        }
-                        spaceCount = 0;
                     } else {
                         expectingColor = true;
                     }
                     break;
 
                 case (byte)'-':
+                    if( spaceCount > 0 ) {
+                        // set wrapping point, if at beginning of a word
+                        wrapIndex = inputIndex;
+                        wrapColor = color;
+                    }
                     expectingColor = false;
                     if( !Append( ch ) ) {
                         if( wordLength < LineSize - prefix.Length ) {
+                            // word doesn't fit in line, backtrack to wrapping point
                             inputIndex = wrapIndex;
                             outputIndex = wrapOutputIndex;
                             color = wrapColor;
-                        }
+                        }// else force wrap (word is too long), don't backtrack
                         return true;
                     }
                     spaceCount = 0;
-                    // allow wrapping after dash
-                    wrapIndex = inputIndex + 1;
-                    wrapOutputIndex = outputIndex;
-                    wrapColor = color;
+                    if( wordLength > 2 ) {
+                        // allow wrapping after hyphen, if at least 2 word characters precede this hyphen
+                        wrapIndex = inputIndex + 1;
+                        wrapOutputIndex = outputIndex;
+                        wrapColor = color;
+                        wordLength = 0;
+                    }
                     break;
 
                 case (byte)'\n':
+                    // break the line early
                     inputIndex++;
                     return true;
 
@@ -172,6 +177,7 @@ namespace FemtoCraft {
                         }// else colorcode is invalid, skip
                     } else {
                         if( spaceCount > 0 ) {
+                            // set wrapping point, if at beginning of a word
                             wrapIndex = inputIndex;
                             wrapColor = color;
                         }
@@ -195,16 +201,14 @@ namespace FemtoCraft {
 
 
         void PrepareOutput() {
+            // pad the packet with spaces
             for( int i = outputIndex; i < PacketSize; i++ ) {
                 output[i] = (byte)' ';
             }
-            for( ; outputIndex > outputStart; outputIndex-- ) {
-                if( output[outputIndex - 1] == '&' ) {
-                    output[outputIndex - 1] = (byte)' ';
-                } else if( output[outputIndex - 1] != ' ' ) {
-                    return;
-                }
-            }
+#if DEBUG_LINE_WRAPPER
+            Console.WriteLine( "\"" + Encoding.ASCII.GetString( output, outputStart, outputIndex - outputStart ) + "\"" );
+            Console.WriteLine();
+#endif
         }
 
 
@@ -220,7 +224,7 @@ namespace FemtoCraft {
                 return false;
             }
 
-            // append color, if changed since last word
+            // append color, if changed since last inserted character
             if( prependColor ) {
                 output[outputIndex++] = (byte)'&';
                 output[outputIndex++] = color;
