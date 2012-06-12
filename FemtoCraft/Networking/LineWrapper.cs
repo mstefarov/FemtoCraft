@@ -15,15 +15,17 @@ namespace FemtoCraft {
             DefaultPrefix = Encoding.ASCII.GetBytes( DefaultPrefixString );
         }
 
-        const int LineSize = 64;
         const int PacketSize = 66; // opcode + id + 64
         const byte NoColor = (byte)'f';
 
         public Packet Current { get; private set; }
 
-        byte color, lastColor;
-        bool hadColor;
-        int spaceCount, wordLength;
+        byte color,
+             lastColor;
+        bool hadColor, // used to see if white (&f) colorcodes should be inserted
+             hadSpace; // used to see if a word needs to be forcefully wrapped (i.e. doesnt fit in one line)
+        int spaceCount,
+            wordLength; // used to see whether to wrap at hyphens
 
         readonly byte[] input;
         int inputIndex;
@@ -98,6 +100,7 @@ namespace FemtoCraft {
 
             wordLength = 0;
             wrapIndex = inputIndex;
+            hadSpace = false;
 
             // Append as much of the remaining input as possible
             while( inputIndex < input.Length ) {
@@ -118,6 +121,7 @@ namespace FemtoCraft {
         bool ProcessChar( byte ch ) {
             switch( ch ) {
                 case (byte)' ':
+                    hadSpace = true;
                     expectingColor = false;
                     if( spaceCount == 0 ) {
                         // first space after a word, set wrapping point
@@ -145,7 +149,7 @@ namespace FemtoCraft {
                     }
                     expectingColor = false;
                     if( !Append( ch ) ) {
-                        if( wordLength < LineSize - prefix.Length ) {
+                        if( hadSpace ) {
                             // word doesn't fit in line, backtrack to wrapping point
                             inputIndex = wrapIndex;
                             outputIndex = wrapOutputIndex;
@@ -186,7 +190,7 @@ namespace FemtoCraft {
                             ch = (byte)'?';
                         }
                         if( !Append( ch ) ) {
-                            if( wordLength < LineSize - prefix.Length ) {
+                            if( hadSpace ) {
                                 inputIndex = wrapIndex;
                                 outputIndex = wrapOutputIndex;
                                 color = wrapColor;
@@ -205,10 +209,6 @@ namespace FemtoCraft {
             for( int i = outputIndex; i < PacketSize; i++ ) {
                 output[i] = (byte)' ';
             }
-#if DEBUG_LINE_WRAPPER
-            Console.WriteLine( "\"" + Encoding.ASCII.GetString( output, outputStart, outputIndex - outputStart ) + "\"" );
-            Console.WriteLine();
-#endif
         }
 
 
@@ -231,6 +231,7 @@ namespace FemtoCraft {
                 lastColor = color;
             }
 
+            int spacesToAppend = spaceCount;
             if( spaceCount > 0 && outputIndex > outputStart ) {
                 // append spaces that accumulated since last word
                 while( spaceCount > 0 ) {
@@ -276,6 +277,6 @@ namespace FemtoCraft {
             return this;
         }
 
-        public void Dispose() { }
+        void IDisposable.Dispose() { }
     }
 }
