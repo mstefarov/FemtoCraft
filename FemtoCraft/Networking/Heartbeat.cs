@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace FemtoCraft {
     static class Heartbeat {
-        const string MinecraftUri = "http://www.minecraft.net/heartbeat.jsp";
+        const string MinecraftUri = "https://minecraft.net/heartbeat.jsp";
         static readonly TimeSpan Timeout = TimeSpan.FromSeconds( 10 );
         static readonly TimeSpan Delay = TimeSpan.FromSeconds( 25 );
         const string UrlFileName = "externalurl.txt";
