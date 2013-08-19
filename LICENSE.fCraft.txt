@@ -3,7 +3,7 @@ and binaries are licensed and distributed under the permissive MIT License,
 reproduced here:
 
 ----
-Copyright 2009-2012 Matvei Stefarov <me@matvei.org>
+Copyright 2009-2013 Matvei Stefarov <me@matvei.org>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,6 @@ If you create fCraft plugins that do not include any substantial portions of
 fCraft's original code, they belong to you and you are free to do absolutely
 anything with them. However, if you would like to distribute whole modified
 copies of fCraft, please follow the MIT License terms.
-
-fCraft uses and bundles Devart dotConnect for MySQL, under free license.
-Full text of the Devart dotConnect for MySQL license should be included with
-your copy of fCraft in LICENSE.dotConnect.txt
-
-fCraft.Python uses and bundles Microsoft Dynamic Language Runtime, licensed
-under Microsoft Public License. See LICENSE.MicrosoftDLR.txt
-
-fCraft.Python uses and bundles IronPython, licensed under Apache License, v2.0.
-See LICENSE.IronPython.txt
 
 Original Minecraft was developed by Markus "Notch" Persson of Mojang AB, and
 is not affiliated with fCraft in any way. fCraft does not make use of any code,
