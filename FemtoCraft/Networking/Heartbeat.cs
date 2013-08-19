@@ -1,4 +1,4 @@
-﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.IO;
 using System.Net;
@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace FemtoCraft {
     static class Heartbeat {
-        const string MinecraftUri = "https://minecraft.net/heartbeat.jsp";
         static readonly TimeSpan Timeout = TimeSpan.FromSeconds( 10 );
         static readonly TimeSpan Delay = TimeSpan.FromSeconds( 25 );
         const string UrlFileName = "externalurl.txt";
@@ -27,7 +26,7 @@ namespace FemtoCraft {
                 try {
                     string requestUri =
                         String.Format( "{0}?public={1}&max={2}&users={3}&port={4}&version=7&salt={5}&name={6}",
-                                       MinecraftUri,
+                                       Config.HeartbeatUrl,
                                        Config.Public,
                                        Config.MaxPlayers,
                                        Server.Players.Length,

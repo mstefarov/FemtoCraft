@@ -1,4 +1,4 @@
-﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.IO;
 using System.Net;
@@ -15,6 +15,7 @@ namespace FemtoCraft {
         public static bool UseWhitelist = false;
         public static bool AdminSlot = true;
         public static bool RevealOps = false;
+        public static string HeartbeatUrl = "https://minecraft.net/heartbeat.jsp";
 
         public static int MaxConnections = 3;
         public static bool LimitClickRate = true;
@@ -104,6 +105,9 @@ namespace FemtoCraft {
                             break;
                         case "reveal-ops":
                             RevealOps = Boolean.Parse( value );
+                            break;
+                        case "heartbeat-url":
+                            HeartbeatUrl = value;
                             break;
 
                         case "max-connections":
@@ -218,6 +222,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "use-whitelist=" + UseWhitelist );
                 writer.WriteLine( "admin-slot=" + AdminSlot );
                 writer.WriteLine( "reveal-ops=" + RevealOps );
+                writer.WriteLine( "heartbeat-url=" + HeartbeatUrl );
                 writer.WriteLine();
                 writer.WriteLine( "max-connections=" + MaxConnections );
                 writer.WriteLine( "limit-click-rate=" + LimitClickRate );
