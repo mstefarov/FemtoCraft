@@ -1,4 +1,4 @@
-﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 /*
  * Copyright 2007-2011 JetBrains s.r.o.
  *

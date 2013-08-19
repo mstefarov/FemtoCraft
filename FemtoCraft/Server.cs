@@ -1,4 +1,4 @@
-﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 1.03";
+        public const string VersionString = "FemtoCraft 1.06";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }

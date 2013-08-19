@@ -1,4 +1,4 @@
-﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 // Based on ZombieDev code, contributed by Conrad "Redshift" Morgan
 namespace FemtoCraft {
     sealed class SandPhysics {

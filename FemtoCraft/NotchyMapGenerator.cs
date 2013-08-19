@@ -1,4 +1,4 @@
-﻿// Part of FemtoCraft | Copyright 2012 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 // Based on Minecraft Classic's "com.mojang.minecraft.level.a.a" - Minecraft is Copyright 2009-2012 Mojang
 using System;
 using System.Collections.Generic;
