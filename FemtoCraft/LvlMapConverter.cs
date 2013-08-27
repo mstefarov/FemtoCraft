@@ -19,7 +19,7 @@ namespace FemtoCraft {
                         throw new Exception( "Could not load map (incorrect header)." );
                     }
 
-                    // Read in the map dimesions
+                    // Read in the map dimensions
                     int width = bs.ReadInt16();
                     int length = bs.ReadInt16();
                     int height = bs.ReadInt16();
@@ -35,7 +35,7 @@ namespace FemtoCraft {
                         L = bs.ReadByte(),
                     };
 
-                    // Write the VistPermission and BuildPermission bytes
+                    // Write the VisitPermission and BuildPermission bytes
                     bs.ReadByte();
                     bs.ReadByte();
 
@@ -90,7 +90,7 @@ namespace FemtoCraft {
                     bs.Write( map.Spawn.R );
                     bs.Write( map.Spawn.L );
 
-                    // Write the VistPermission and BuildPermission bytes
+                    // Write the VisitPermission and BuildPermission bytes
                     bs.Write( (byte)0 );
                     bs.Write( (byte)0 );
 
@@ -127,7 +127,7 @@ namespace FemtoCraft {
             Mapping[118] = (byte)Block.Wood;        // door7
             Mapping[119] = (byte)Block.Green;       // door8
             Mapping[120] = (byte)Block.TNT;         // door9
-            Mapping[121] = (byte)Block.Stair;       // door10
+            Mapping[121] = (byte)Block.Slab;       // door10
 
             Mapping[122] = (byte)Block.Log;         // tdoor
             Mapping[123] = (byte)Block.Obsidian;    // tdoor2
@@ -145,7 +145,7 @@ namespace FemtoCraft {
             Mapping[134] = (byte)Block.Lava;        // MsgLava
 
             Mapping[135] = (byte)Block.TNT;         // tdoor9
-            Mapping[136] = (byte)Block.Stair;       // tdoor10
+            Mapping[136] = (byte)Block.Slab;       // tdoor10
             Mapping[137] = (byte)Block.Air;         // tdoor11
             Mapping[138] = (byte)Block.Water;       // tdoor12
             Mapping[139] = (byte)Block.Lava;        // tdoor13
@@ -169,7 +169,7 @@ namespace FemtoCraft {
             Mapping[154] = (byte)Block.Wood;        // odoor7
             Mapping[155] = (byte)Block.Green;       // odoor8
             Mapping[156] = (byte)Block.TNT;         // odoor9
-            Mapping[157] = (byte)Block.Stair;       // odoor10
+            Mapping[157] = (byte)Block.Slab;       // odoor10
             Mapping[158] = (byte)Block.Lava;        // odoor11
             Mapping[159] = (byte)Block.Water;       // odoor12
 

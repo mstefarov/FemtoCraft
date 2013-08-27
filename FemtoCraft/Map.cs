@@ -6,9 +6,12 @@ using System.Diagnostics;
 
 namespace FemtoCraft {
     sealed class Map {
-        public readonly int Width, Length, Height,
+        public readonly int Width,
+                            Length,
+                            Height,
                             Volume,
                             WaterLevel;
+
         public readonly byte[] Blocks;
         public Position Spawn;
         public bool ChangedSinceSave;
@@ -16,43 +19,40 @@ namespace FemtoCraft {
 
 
         public Map( int width, int length, int height ) {
-            if( width < 16 || width > 2048 ||
-                length < 16 || length > 2048 ||
-                height < 16 || height > 2048 ) {
+            if( width < 16 || width > 2048 || length < 16 || length > 2048 || height < 16 || height > 2048 ) {
                 throw new ArgumentException( "Invalid map dimension(s)." );
             }
             Width = width;
             Length = length;
             Height = height;
-            Volume = width * length * height;
-            WaterLevel = Height / 2;
+            Volume = width*length*height;
+            WaterLevel = Height/2;
             Blocks = new byte[Volume];
-            Spawn = new Position( Width * 16, Length * 16,
-                                  Math.Min( Height * 32, Int16.MaxValue ) );
+            Spawn = new Position( Width*16, Length*16, Math.Min( Height*32, Int16.MaxValue ) );
         }
 
 
         [DebuggerStepThrough]
         public int Index( int x, int y, int z ) {
-            return ( z * Length + y ) * Width + x;
+            return ( z*Length + y )*Width + x;
         }
 
 
         [DebuggerStepThrough]
-        public int X( int i) {
-            return i % Width;
+        public int X( int i ) {
+            return i%Width;
         }
 
 
         [DebuggerStepThrough]
         public int Y( int i ) {
-            return ( i / Width ) % Length;
+            return ( i/Width )%Length;
         }
 
 
         [DebuggerStepThrough]
         public int Z( int i ) {
-            return i / ( Length * Width );
+            return i/( Length*Width );
         }
 
 
@@ -70,15 +70,16 @@ namespace FemtoCraft {
 
         public bool SetBlockNoNeighborChange( Player except, int x, int y, int z, Block newBlock ) {
             Block oldBlock = GetBlock( x, y, z );
-            if( oldBlock == newBlock || oldBlock == Block.Undefined ) return false;
+            if( oldBlock == newBlock || oldBlock == Block.Undefined )
+                return false;
 
             // water at map edges
-            if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) &&
-                ( z >= WaterLevel - 2 && z < WaterLevel ) && ( newBlock == Block.Air ) ) {
+            if( ( x == 0 || y == 0 || x == Width - 1 || y == Length - 1 ) && ( z >= WaterLevel - 2 && z < WaterLevel ) &&
+                ( newBlock == Block.Air ) ) {
                 newBlock = Block.Water;
 
-            // stair stacking
-            } else if( newBlock == Block.Stair && GetBlock( x, y, z - 1 ) == Block.Stair ) {
+                // stair stacking
+            } else if( newBlock == Block.Slab && GetBlock( x, y, z - 1 ) == Block.Slab ) {
                 SetBlock( null, x, y, z, Block.Air );
                 SetBlock( null, x, y, z - 1, Block.DoubleStair );
                 return true;
@@ -99,7 +100,8 @@ namespace FemtoCraft {
 
         public bool SetBlockNoUpdate( int x, int y, int z, Block newBlock ) {
             Block oldBlock = GetBlock( x, y, z );
-            if( oldBlock == newBlock || oldBlock == Block.Undefined ) return false;
+            if( oldBlock == newBlock || oldBlock == Block.Undefined )
+                return false;
 
             Blocks[Index( x, y, z )] = (byte)newBlock;
             ChangedSinceSave = true;
@@ -145,7 +147,8 @@ namespace FemtoCraft {
 
 
         void PhysicsOnRemoved( int x, int y, int z, Block oldBlock ) {
-            if( !physicsEnabled ) return;
+            if( !physicsEnabled )
+                return;
             if( Config.PhysicsWater && oldBlock == Block.Sponge ) {
                 waterPhysics.OnSpongeRemoved( x, y, z );
             }
@@ -153,7 +156,8 @@ namespace FemtoCraft {
 
 
         void PhysicsOnPlaced( int x, int y, int z, Block newBlock ) {
-            if( !physicsEnabled ) return;
+            if( !physicsEnabled )
+                return;
 
             if( Config.PhysicsWater && newBlock == Block.Water ) {
                 PhysicsQueueTick( x, y, z, Block.Water );
@@ -172,7 +176,8 @@ namespace FemtoCraft {
 
 
         void PhysicsOnNeighborUpdate( int x, int y, int z, Block updatedNeighbor ) {
-            if( !physicsEnabled || !InBounds( x, y, z ) ) return;
+            if( !physicsEnabled || !InBounds( x, y, z ) )
+                return;
             Block thisBlock = GetBlock( x, y, z );
 
             if( Config.PhysicsSand && ( thisBlock == Block.Sand || thisBlock == Block.Gravel ) ) {
@@ -188,7 +193,8 @@ namespace FemtoCraft {
 
 
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
-            if( !physicsEnabled ) return;
+            if( !physicsEnabled )
+                return;
             if( newBlock == Block.Water ) {
                 waterPhysics.OnTick( x, y, z );
             } else if( newBlock == Block.Lava ) {
@@ -199,9 +205,10 @@ namespace FemtoCraft {
 
         public void Tick() {
             lock( physicsLock ) {
-                if( !physicsEnabled ) return;
+                if( !physicsEnabled )
+                    return;
                 tickNumber++;
-                if( tickNumber % 5 == 0 ) {
+                if( tickNumber%5 == 0 ) {
                     int oldLength = tickQueue.Count;
                     for( int i = 0; i < oldLength; i++ ) {
                         PhysicsUpdate update = tickQueue.Dequeue();
@@ -229,7 +236,8 @@ namespace FemtoCraft {
 
 
         public void PhysicsQueueTick( int x, int y, int z, Block oldBlock ) {
-            if( !InBounds( x, y, z ) ) return;
+            if( !InBounds( x, y, z ) )
+                return;
             PhysicsUpdate update = new PhysicsUpdate( x, y, z, oldBlock, TickDelays[(int)oldBlock] );
             lock( physicsLock ) {
                 tickQueue.Enqueue( update );
@@ -276,8 +284,10 @@ namespace FemtoCraft {
 
             for( int z = startZ; z <= startZ + 1 + treeHeight; z++ ) {
                 int extent = 1;
-                if( z == startZ ) extent = 0;
-                if( z >= startZ + 1 + treeHeight - 2 ) extent = 2;
+                if( z == startZ )
+                    extent = 0;
+                if( z >= startZ + 1 + treeHeight - 2 )
+                    extent = 2;
                 for( int x = startX - extent; ( x <= startX + extent ); x++ ) {
                     for( int y = startY - extent; ( y <= startY + extent ); y++ ) {
                         if( ( x >= 0 ) && ( z >= 0 ) && ( y >= 0 ) && ( x < Width ) && ( z < Height ) && ( y < Length ) ) {
@@ -294,7 +304,7 @@ namespace FemtoCraft {
 
             for( int z = startZ - 3 + treeHeight; z <= startZ + treeHeight; z++ ) {
                 int n = z - ( startZ + treeHeight );
-                int foliageExtent = 1 - n / 2;
+                int foliageExtent = 1 - n/2;
                 for( int x = startX - foliageExtent; x <= startX + foliageExtent; x++ ) {
                     int j = x - startX;
                     for( int y = startY - foliageExtent; y <= startY + foliageExtent; y++ ) {
@@ -321,13 +331,53 @@ namespace FemtoCraft {
 
         public static Map CreateFlatgrass( int width, int length, int height ) {
             Map map = new Map( width, length, height );
-            map.Blocks.MemSet( (byte)Block.Stone, 0, width * length * ( height / 2 - 5 ) );
-            map.Blocks.MemSet( (byte)Block.Dirt, width * length * ( height / 2 - 5 ), width * length * 4 );
-            map.Blocks.MemSet( (byte)Block.Grass, width * length * ( height / 2 - 1 ), width * length );
+            map.Blocks.MemSet( (byte)Block.Stone, 0, width*length*( height/2 - 5 ) );
+            map.Blocks.MemSet( (byte)Block.Dirt, width*length*( height/2 - 5 ), width*length*4 );
+            map.Blocks.MemSet( (byte)Block.Grass, width*length*( height/2 - 1 ), width*length );
             if( Config.Physics ) {
                 map.EnablePhysics();
             }
             return map;
+        }
+
+
+        public static Block TranslateBlock( Block block ) {
+            switch( block ) {
+                case Block.CobbleSlab:
+                    return Block.Slab;
+                case Block.SpiderWeb:
+                    return Block.Sapling;
+                case Block.Sandstone:
+                    return Block.Sand;
+                case Block.Snow:
+                    return Block.White;
+                case Block.Fire:
+                    return Block.StillLava;
+                case Block.LightPink:
+                    return Block.Pink;
+                case Block.DarkGreen:
+                    return Block.Green;
+                case Block.Brown:
+                    return Block.Dirt;
+                case Block.DarkBlue:
+                    return Block.Blue;
+                case Block.Turquoise:
+                    return Block.Cyan;
+                case Block.Ice:
+                    return Block.Glass;
+                case Block.Tile:
+                    return Block.Iron;
+                case Block.Magma:
+                    return Block.Obsidian;
+                case Block.Pillar:
+                    return Block.White;
+                case Block.Crate:
+                    return Block.Wood;
+                case Block.StoneBrick:
+                    return Block.Stone;
+                default:
+                    return block;
+            }
         }
     }
 }
