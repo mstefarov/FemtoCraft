@@ -7,6 +7,8 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     unsafe static class LvlMapConverter {
+        const ushort MagicNumber = 0xFECF;
+
         [NotNull]
         public static Map Load( [NotNull] string fileName ) {
             if( fileName == null ) throw new ArgumentNullException( "fileName" );
@@ -36,8 +38,8 @@ namespace FemtoCraft {
                     };
 
                     // Write the VisitPermission and BuildPermission bytes
-                    bs.ReadByte();
-                    bs.ReadByte();
+                    ushort magic = bs.ReadUInt16();
+                    bool isFemto = (magic == MagicNumber);
 
                     // Read map data
                     int bytesRead = 0;
@@ -48,12 +50,14 @@ namespace FemtoCraft {
                         bytesRead += readPass;
                         bytesLeft -= readPass;
                     }
-                    
-                    // Map custom MCSharp+ blocktypes to standard/presentation blocktypes
-                    fixed( byte* ptr = map.Blocks ) {
-                        for( int j = 0; j < map.Blocks.Length; j++ ) {
-                            if( ptr[j] > 49 ) {
-                                ptr[j] = Mapping[ptr[j]];
+
+                    if( !isFemto ) {
+                        // Map custom MCSharp+ blocktypes to standard/presentation blocktypes
+                        fixed( byte* ptr = map.Blocks ) {
+                            for( int j = 0; j < map.Blocks.Length; j++ ) {
+                                if( ptr[j] > 49 ) {
+                                    ptr[j] = Mapping[ptr[j]];
+                                }
                             }
                         }
                     }
@@ -91,8 +95,7 @@ namespace FemtoCraft {
                     bs.Write( map.Spawn.L );
 
                     // Write the VisitPermission and BuildPermission bytes
-                    bs.Write( (byte)0 );
-                    bs.Write( (byte)0 );
+                    bs.Write( MagicNumber );
 
                     // Write the map data
                     bs.Write( map.Blocks, 0, map.Volume );

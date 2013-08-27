@@ -323,12 +323,6 @@ namespace FemtoCraft {
         }
 
 
-        static Map() {
-            TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
-            TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
-        }
-
-
         public static Map CreateFlatgrass( int width, int length, int height ) {
             Map map = new Map( width, length, height );
             map.Blocks.MemSet( (byte)Block.Stone, 0, width*length*( height/2 - 5 ) );
@@ -341,43 +335,34 @@ namespace FemtoCraft {
         }
 
 
-        public static Block TranslateBlock( Block block ) {
-            switch( block ) {
-                case Block.CobbleSlab:
-                    return Block.Slab;
-                case Block.SpiderWeb:
-                    return Block.Sapling;
-                case Block.Sandstone:
-                    return Block.Sand;
-                case Block.Snow:
-                    return Block.White;
-                case Block.Fire:
-                    return Block.StillLava;
-                case Block.LightPink:
-                    return Block.Pink;
-                case Block.DarkGreen:
-                    return Block.Green;
-                case Block.Brown:
-                    return Block.Dirt;
-                case Block.DarkBlue:
-                    return Block.Blue;
-                case Block.Turquoise:
-                    return Block.Cyan;
-                case Block.Ice:
-                    return Block.Glass;
-                case Block.Tile:
-                    return Block.Iron;
-                case Block.Magma:
-                    return Block.Obsidian;
-                case Block.Pillar:
-                    return Block.White;
-                case Block.Crate:
-                    return Block.Wood;
-                case Block.StoneBrick:
-                    return Block.Stone;
-                default:
-                    return block;
+        readonly static Block[] BlockTranslation = new Block[256];
+        static Map() {
+            TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
+            TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
+            for( int i = 0; i <= (int)Block.Obsidian; i++ ) {
+                BlockTranslation[i] = (Block)i;
             }
+            BlockTranslation[(int)Block.CobbleSlab] = Block.Slab;
+            BlockTranslation[(int)Block.SpiderWeb] = Block.Sapling;
+            BlockTranslation[(int)Block.Sandstone] = Block.Sand;
+            BlockTranslation[(int)Block.Snow] = Block.Air;
+            BlockTranslation[(int)Block.Fire] = Block.StillLava;
+            BlockTranslation[(int)Block.LightPink] = Block.Pink;
+            BlockTranslation[(int)Block.DarkGreen] = Block.Green;
+            BlockTranslation[(int)Block.Brown] = Block.Dirt;
+            BlockTranslation[(int)Block.DarkBlue] = Block.Blue;
+            BlockTranslation[(int)Block.Turquoise] = Block.Cyan;
+            BlockTranslation[(int)Block.Ice] = Block.Glass;
+            BlockTranslation[(int)Block.Tile] = Block.Iron;
+            BlockTranslation[(int)Block.Magma] = Block.Obsidian;
+            BlockTranslation[(int)Block.Pillar] = Block.White;
+            BlockTranslation[(int)Block.Crate] = Block.Wood;
+            BlockTranslation[(int)Block.StoneBrick] = Block.Stone;
+        }
+
+
+        public static Block TranslateBlock( Block block ) {
+            return BlockTranslation[(int)block];
         }
     }
 }

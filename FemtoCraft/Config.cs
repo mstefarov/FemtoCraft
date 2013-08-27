@@ -48,6 +48,8 @@ namespace FemtoCraft {
         public static bool OpAllowGrassBlocks = true;
         public static bool OpAllowSolidBlocks = true;
 
+        public static bool ClassicProtocolExtension = true;
+
         public const string OpColor = "&3";
 
         const string ConfigFileName = "server.properties";
@@ -195,6 +197,10 @@ namespace FemtoCraft {
                             OpAllowSolidBlocks = Boolean.Parse( value );
                             break;
 
+                        case "classic-protocol-extension":
+                            ClassicProtocolExtension = Boolean.Parse( value );
+                            break;
+
                         default:
                             Logger.LogWarning( "Config: Unknown key in {0} line {1}: {2}",
                                                ConfigFileName, lineNumber, line );
@@ -254,6 +260,8 @@ namespace FemtoCraft {
                 writer.WriteLine( "op-allow-lava-blocks=" + OpAllowLavaBlocks );
                 writer.WriteLine( "op-allow-grass-blocks=" + OpAllowGrassBlocks );
                 writer.WriteLine( "op-allow-solid-blocks=" + OpAllowSolidBlocks );
+                writer.WriteLine();
+                writer.WriteLine( "classic-protocol-extension=" + ClassicProtocolExtension );
             }
         }
     }
