@@ -28,6 +28,7 @@ namespace FemtoCraft {
         #region Packet-Making
 
         public static Packet MakeHandshake( bool isOp ) {
+            Logger.Log( "Send: Handshake({0},{1},{2})", Config.ServerName, Config.MOTD, isOp ? (byte)100 : (byte)0 );
             Packet packet = new Packet( OpCode.Handshake );
             packet.Bytes[1] = ProtocolVersion;
             Encoding.ASCII.GetBytes( Config.ServerName.PadRight( 64 ), 0, 64, packet.Bytes, 2 );
