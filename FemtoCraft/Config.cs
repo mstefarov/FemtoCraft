@@ -48,7 +48,7 @@ namespace FemtoCraft {
         public static bool OpAllowGrassBlocks = true;
         public static bool OpAllowSolidBlocks = true;
 
-        public static bool ClassicProtocolExtension = true;
+        public static bool ProtocolExtension = true;
 
         public const string OpColor = "&3";
 
@@ -198,7 +198,7 @@ namespace FemtoCraft {
                             break;
 
                         case "classic-protocol-extension":
-                            ClassicProtocolExtension = Boolean.Parse( value );
+                            ProtocolExtension = Boolean.Parse( value );
                             break;
 
                         default:
@@ -261,7 +261,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "op-allow-grass-blocks=" + OpAllowGrassBlocks );
                 writer.WriteLine( "op-allow-solid-blocks=" + OpAllowSolidBlocks );
                 writer.WriteLine();
-                writer.WriteLine( "classic-protocol-extension=" + ClassicProtocolExtension );
+                writer.WriteLine( "classic-protocol-extension=" + ProtocolExtension );
             }
         }
     }

@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace FemtoCraft {
-    sealed class Map {
+    sealed partial class Map {
+        public const Block MaxLegalBlockType = Block.Obsidian;
+
         public readonly int Width,
                             Length,
                             Height,
@@ -335,34 +337,10 @@ namespace FemtoCraft {
         }
 
 
-        readonly static Block[] BlockTranslation = new Block[256];
         static Map() {
             TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
             TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
-            for( int i = 0; i <= (int)Block.Obsidian; i++ ) {
-                BlockTranslation[i] = (Block)i;
-            }
-            BlockTranslation[(int)Block.CobbleSlab] = Block.Slab;
-            BlockTranslation[(int)Block.SpiderWeb] = Block.Sapling;
-            BlockTranslation[(int)Block.Sandstone] = Block.Sand;
-            BlockTranslation[(int)Block.Snow] = Block.Air;
-            BlockTranslation[(int)Block.Fire] = Block.StillLava;
-            BlockTranslation[(int)Block.LightPink] = Block.Pink;
-            BlockTranslation[(int)Block.DarkGreen] = Block.Green;
-            BlockTranslation[(int)Block.Brown] = Block.Dirt;
-            BlockTranslation[(int)Block.DarkBlue] = Block.Blue;
-            BlockTranslation[(int)Block.Turquoise] = Block.Cyan;
-            BlockTranslation[(int)Block.Ice] = Block.Glass;
-            BlockTranslation[(int)Block.Tile] = Block.Iron;
-            BlockTranslation[(int)Block.Magma] = Block.Obsidian;
-            BlockTranslation[(int)Block.Pillar] = Block.White;
-            BlockTranslation[(int)Block.Crate] = Block.Wood;
-            BlockTranslation[(int)Block.StoneBrick] = Block.Stone;
-        }
-
-
-        public static Block TranslateBlock( Block block ) {
-            return BlockTranslation[(int)block];
+            DefineTranslations();
         }
     }
 }

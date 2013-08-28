@@ -17,6 +17,11 @@ namespace FemtoCraft {
         RemoveEntity = 12,
         Message = 13,
         Kick = 14,
-        SetPermission = 15
+        SetPermission = 15,
+
+        // CPE
+        ExtInfo = 16,
+        ExtEntry = 17,
+        CustomBlockSupportLevel = 19
     }
 }

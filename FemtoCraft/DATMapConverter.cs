@@ -158,7 +158,7 @@ namespace FemtoCraft {
                     // Map survivaltest/indev blocktypes to standard/presentation blocktypes
                     fixed( byte* ptr = map.Blocks ) {
                         for( int j = 0; j < map.Blocks.Length; j++ ) {
-                            if( ptr[j] > 49 ) {
+                            if( ptr[j] > (byte)Block.Obsidian ) {
                                 ptr[j] = Mapping[ptr[j]];
                             }
                         }

@@ -13,7 +13,7 @@ using System.Threading;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
-    sealed class Player {
+    sealed partial class Player {
         public static readonly Player Console = new Player( "(console)" );
 
         [NotNull]
@@ -89,6 +89,9 @@ namespace FemtoCraft {
                         Packet packet;
                         lock( sendQueueLock ) {
                             packet = sendQueue.Dequeue();
+                        }
+                        if( packet.OpCode == OpCode.SetBlockServer ) {
+                            ProcessOutgoingSetBlock( ref packet );
                         }
                         writer.Write( packet.Bytes );
                         if( packet.OpCode == OpCode.Kick ) {
@@ -180,7 +183,7 @@ namespace FemtoCraft {
             // start reading the first packet
             OpCode opCode = reader.ReadOpCode();
             if( opCode != OpCode.Handshake ) {
-                Logger.LogWarning( "Player from {0}: Enexpected handshake packet opcode ({1})",
+                Logger.LogWarning( "Player from {0}: Unexpected handshake packet opcode ({1})",
                                    IP, opCode );
                 return false;
             }
@@ -196,15 +199,15 @@ namespace FemtoCraft {
             // check if name is valid
             string name = reader.ReadString();
             if( !IsValidName( name ) ) {
-                KickNow( "Unacceptible player name." );
-                Logger.LogWarning( "Player from {0}: Unacceptible player name ({1})",
+                KickNow( "Unacceptable player name." );
+                Logger.LogWarning( "Player from {0}: Unacceptable player name ({1})",
                                    IP, name );
                 return false;
             }
 
             // check if name is verified
             string mppass = reader.ReadString();
-            reader.ReadByte();
+            byte magicNum = reader.ReadByte();
             if( Config.VerifyNames ) {
                 while( mppass.Length < 32 ) {
                     mppass = "0" + mppass;
@@ -251,6 +254,11 @@ namespace FemtoCraft {
             // check if player is op
             IsOp = Server.Ops.Contains( Name );
 
+            // negotiate protocol extensions, if applicable
+            if( Config.ProtocolExtension && magicNum == 0x42 ) {
+                if( !NegotiateProtocolExtension() ) return false;
+            }
+
             // register player and send map
             if( !Server.RegisterPlayer( this ) ) return false;
 
@@ -279,7 +287,8 @@ namespace FemtoCraft {
                 using( GZipStream compressor = new GZipStream( mapStream, CompressionMode.Compress ) ) {
                     int convertedBlockCount = IPAddress.HostToNetworkOrder( map.Volume );
                     compressor.Write( BitConverter.GetBytes( convertedBlockCount ), 0, 4 );
-                    compressor.Write( map.Blocks, 0, map.Blocks.Length );
+                    byte[] rawData = ( UsesCustomBlocks ? map.Blocks : map.TranslateMap() );
+                    compressor.Write( rawData, 0, rawData.Length );
                 }
                 blockData = mapStream.ToArray();
             }
@@ -540,7 +549,6 @@ namespace FemtoCraft {
 
         const int AntiGriefBlocks = 47,
                   AntiGriefSeconds = 6,
-                  MaxLegalBlockType = (int)Block.Obsidian,
                   MaxBlockPlacementRange = 7 * 32;
 
 
@@ -553,7 +561,8 @@ namespace FemtoCraft {
             byte rawType = reader.ReadByte();
 
             // check if block type is valid
-            if( rawType > MaxLegalBlockType ) {
+            if( !UsesCustomBlocks && rawType > (byte)Map.MaxLegalBlockType ||
+                UsesCustomBlocks && rawType > (byte)Map.MaxCustomBlockType ) {
                 KickNow( "Hacking detected." );
                 Logger.LogWarning( "Player {0} tried to place an invalid block type.", Name );
                 return false;
@@ -562,7 +571,7 @@ namespace FemtoCraft {
             Block block = (Block)rawType;
             if( isDeleting ) block = Block.Air;
 
-            // check if coordinates are within map boundaries (dont kick)
+            // check if coordinates are within map boundaries (don't kick)
             if( !Map.InBounds( x, y, z ) ) return true;
 
             // check if player is close enough to place

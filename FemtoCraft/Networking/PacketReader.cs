@@ -20,6 +20,11 @@ namespace FemtoCraft {
         }
 
 
+        public override int ReadInt32() {
+            return IPAddress.NetworkToHostOrder( base.ReadInt32() );
+        }
+
+
         public override string ReadString() {
             return Encoding.ASCII.GetString( ReadBytes( 64 ) ).Trim();
         }

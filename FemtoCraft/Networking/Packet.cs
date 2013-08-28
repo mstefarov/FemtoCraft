@@ -4,7 +4,7 @@ using System.Text;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
-    struct Packet {
+    partial struct Packet {
         public const byte ProtocolVersion = 7;
         public readonly byte[] Bytes;
 
@@ -39,9 +39,9 @@ namespace FemtoCraft {
 
         public static Packet MakeSetBlock( int x, int y, int z, Block type ) {
             Packet packet = new Packet( OpCode.SetBlockServer );
-            ToNetOrder( x, packet.Bytes, 1 );
-            ToNetOrder( z, packet.Bytes, 3 );
-            ToNetOrder( y, packet.Bytes, 5 );
+            ToNetOrder( (short)x, packet.Bytes, 1 );
+            ToNetOrder( (short)z, packet.Bytes, 3 );
+            ToNetOrder( (short)y, packet.Bytes, 5 );
             packet.Bytes[7] = (byte)type;
             return packet;
         }
@@ -133,10 +133,19 @@ namespace FemtoCraft {
         #endregion
 
 
-        static void ToNetOrder( int number, [NotNull] byte[] arr, int offset ) {
+        static void ToNetOrder( short number, [NotNull] byte[] arr, int offset ) {
             if( arr == null ) throw new ArgumentNullException( "arr" );
             arr[offset] = (byte)( ( number & 0xff00 ) >> 8 );
             arr[offset + 1] = (byte)( number & 0x00ff );
+        }
+
+
+        static void ToNetOrder( int number, [NotNull] byte[] arr, int offset ) {
+            if( arr == null ) throw new ArgumentNullException( "arr" );
+            arr[offset] = (byte)((number & 0xff000000) >> 24);
+            arr[offset + 1] = (byte)((number & 0x00ff0000) >> 16);
+            arr[offset + 2] = (byte)((number & 0x0000ff00) >> 8);
+            arr[offset + 3] = (byte)(number & 0x000000ff);
         }
 
 
@@ -161,7 +170,12 @@ namespace FemtoCraft {
             2,      // RemoveEntity
             66,     // Message
             65,     // Kick
-            2       // SetPermission
+            2,      // SetPermission
+
+            67,     // ExtInfo
+            69,     // ExtEntry
+            0,      // (unused by CPE)
+            2       // CustomBlockSupportLevel
         };
     }
 }
