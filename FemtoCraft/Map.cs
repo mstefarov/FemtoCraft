@@ -340,7 +340,7 @@ namespace FemtoCraft {
         static Map() {
             TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
             TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
-            DefineTranslations();
+            DefineFallbackBlocks();
         }
     }
 }

@@ -182,7 +182,7 @@ namespace FemtoCraft {
         bool LoginSequence() {
             // start reading the first packet
             OpCode opCode = reader.ReadOpCode();
-            Logger.Log( "Expected: {0} / Received: {1}", OpCode.Handshake, opCode );
+            //Logger.Log( "Expected: {0} / Received: {1}", OpCode.Handshake, opCode );
             if( opCode != OpCode.Handshake ) {
                 Logger.LogWarning( "Player from {0}: Unexpected handshake packet opcode ({1})",
                                    IP, opCode );
@@ -271,7 +271,7 @@ namespace FemtoCraft {
             Server.Players.Message( this, false,
                                     "Player {0} connected.", Name );
             HasBeenAnnounced = true;
-            Logger.Log( "Send: Message({0})", Config.MOTD );
+            //Logger.Log( "Send: Message({0})", Config.MOTD );
             Message( Config.MOTD );
             Commands.PlayersHandler( this );
             return true;
@@ -280,7 +280,7 @@ namespace FemtoCraft {
 
         void SendMap() {
             // write MapBegin
-            Logger.Log( "Send: MapBegin()" );
+            //Logger.Log( "Send: MapBegin()" );
             writer.Write( OpCode.MapBegin );
 
             // grab a compressed copy of the map
@@ -290,7 +290,7 @@ namespace FemtoCraft {
                 using( GZipStream compressor = new GZipStream( mapStream, CompressionMode.Compress ) ) {
                     int convertedBlockCount = IPAddress.HostToNetworkOrder( map.Volume );
                     compressor.Write( BitConverter.GetBytes( convertedBlockCount ), 0, 4 );
-                    byte[] rawData = ( UsesCustomBlocks ? map.Blocks : map.TranslateMap() );
+                    byte[] rawData = ( UsesCustomBlocks ? map.Blocks : map.GetFallbackMap() );
                     compressor.Write( rawData, 0, rawData.Length );
                 }
                 blockData = mapStream.ToArray();
@@ -313,7 +313,7 @@ namespace FemtoCraft {
                 byte progress = (byte)( 100 * mapBytesSent / blockData.Length );
 
                 // write in chunks of 1024 bytes or less
-                Logger.Log( "Send: MapChunk({0},{1})", chunkSize, progress );
+                //Logger.Log( "Send: MapChunk({0},{1})", chunkSize, progress );
                 writer.Write( OpCode.MapChunk );
                 writer.Write( (short)chunkSize );
                 writer.Write( buffer, 0, 1024 );
