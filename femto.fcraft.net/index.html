@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title> FemtoCraft - Minecraft Clasic custom server </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="femto-100.css" />
+    <link rel="shortcut icon" href="/femtocraft.ico" />
+</head>
+<body>
+<a name="top" id="top"></a>
+<img class="banner" width="710" height="333" src="banner.png" alt="An idyllic view of a FemtoCraft server." />
+
+<div class="segment intro">
+    <b>FemtoCraft</b> is a minimalistic Minecraft Classic server.
+    It implements only the same features as vanilla server,
+    plus various improvements and bugfixes.
+    FemtoCraft is free/open-source software, available under <a href="http://svn.fcraft.net:8080/svn/femtocraft/LICENSE.txt">BSD License</a>.
+    FemtoCraft requires either Microsoft .NET Framework 3.5 or 4.0 to run (client profile is sufficient), or Mono 2.10+<hr />
+    <div class="intro-nav">
+    <a href="#features">Features</a> <span class="intro-dash">&mdash;</span>
+    <a href="#download">Download</a> <span class="intro-dash">&mdash;</span>
+    <a href="#commands">Commands</a> <span class="intro-dash">&mdash;</span>
+    <a href="#configuration">Configuration</a> <span class="intro-dash">&mdash;</span>
+    <a href="#version-history">Version History</a> <span class="intro-dash">&mdash;</span>
+    <a href="#source">Source</a>
+    </div>
+</div>
+
+<a name="features" id="features"></a>
+<div class="segment">
+    <a class="toplink" href="#top">&#x2191;</a>
+    <h2>Features</h2>
+    <ul>
+    <li> All of Minecraft Classic features, including original physics. </li>
+    <li> Improved hack detection and prevention. </li>
+    <li> New commands: /ops, /bring, /paint, /water, /lava, /grass, /physics, etc. </li>
+    <li> New configuration options for physics and security. </li>
+    <li> Optional player whitelist. </li>
+    <li> Load map files from .dat or .lvl format without needing to restart. </li>
+    <li> Improved event logging. </li>
+    <li> Reduced memory and CPU use. </li>
+    </ul>
+</div>
+
+<a name="download" id="download"></a>
+<div class="segment links">
+    <a class="toplink" href="#top">&#x2191;</a>
+    <h2>Download</h2>
+    <a class="downlink" href="FemtoCraft_1.06_net35.zip">FemtoCraft 1.06 (for .NET 3.5)</a> 48.2 KB, 2013-08-18<br />
+    <a class="downlink" href="FemtoCraft_1.06_net40.zip">FemtoCraft 1.06 (for .NET 4.0)</a> 48.4 KB, 2013-08-18
+</div>
+
+<a name="commands" id="commands"></a>
+<div class="segment">
+    <a class="toplink" href="#top">&#x2191;</a>
+    <h2>Commands</h2>
+    <br />
+    There are only two player ranks: regular (non-op) and op.
+    All FemtoCraft commands require player to be an op, unless otherwise specified.
+    List of ops is stored in <b>admins.txt</b>. Bans are stored in <b>banned.txt</b>.
+    IP-Bans are stored in <b>banned-ip.txt</b>. Whitelist is stored in <b>whitelist.txt</b>.
+    All commands except /bring, /grass, /lava, /paint, /setspawn, /solid, /teleport, and /water may be used from console.
+    Commands marked with <span class="new">a</span> star are specific to FemtoCraft, and not present in original Minecraft Classic server.
+    <br />
+    <dl class="list">
+    <dt>/ban &lt;name&gt;</dt> <dd>Bans a player by name. If player is online, they are kicked.</dd>
+    <dt>/banip &lt;name&gt;</dt> <dd>Bans an online player's IP address. Kicks all players who use this IP.</dd>
+    <dt class="new">/banip &lt;ip&gt;</dt> <dd>Bans a given IP address. Also kicks all players who use this IP.</dd>
+    <dt class="new">/bring &lt;name&gt;</dt> <dd>Brings another player to your location. This command cannot be used from console.</dd>
+    <dt>/broadcast &lt;message&gt;</dt> <dd>Shows a message to all players on the server, highlighted in red.
+        <br />Shortcut: <b>/say &lt;message&gt;</b></dd>
+    <dt>/deop &lt;name&gt;</dt> <dd>Demotes an op.</dd>
+    <dt class="new">/gen X Y Z filename</dt> <dd>Generates a new map with realistic terrain, and saves it to a given file.
+        Filename must end with ".lvl".
+        Note that X/Y dimensions are horizontal (width/length), and Z dimension is vertical (height/depth).</dd>
+    <dt class="new">/genflat X Y Z filename</dt> <dd>Same as <b>/gen</b>, but generated terrain is completely flat.</dd>
+    <dt class="new">/grass</dt> <dd>Toggles placement of grass blocks. When enabled, placed dirt blocks are replaced with grass. This command cannot be used from console.
+        <br />Shortcut: <b>/g</b></dd>
+    <dt>/kick &lt;name&gt;</dt> <dd>Kicks an online player from the server.
+        <br />Shortcut: <b>/k &lt;name&gt;</b>
+    <dt class="new">/lava</dt> <dd>Toggles placement of lava blocks. When enabled, placed red blocks are replaced with lava. This command cannot be used from console.
+        <br />Shortcut: <b>/l</b></dd>
+    <dt class="new">/load &lt;filename&gt;</dt> <dd>Replaces current map with one loaded from the given file. Only .dat and .lvl map files are supported for loading.</dd>
+    <dt>/op &lt;name&gt;</dt> <dd>Promotes a player to op.</dd>
+    <dt class="new">/ops</dt> <dd>Shows a list of ops.</dd>
+    <dt class="new">/paint</dt> <dd>Toggles painting mode. When enabled, left-clicking a block replaces it instead of deleting it. Available to all players. This command cannot be used from console.
+        <br />Shortcut: <b>/p</b></dd>
+    <dt class="new">/physics</dt> <dd>Shows the enabled physics options on the server.</dd>
+    <dt class="new">/physics on/off</dt> <dd>Turns all physics on/off.</dd>
+    <dt class="new">/physics &lt;module&gt;</dt> <dd>Toggles individual physics modules. Modules are: grass, plants, sand, trees, water, lava.</dd>
+    <dt class="new">/players</dt> <dd>Shows a list of all online players.</dd>
+    <dt class="new">/save &lt;filename&gt;</dt> <dd>Saves current map to a given file. Only .lvl map files are supported for saving.</dd>
+    <dt>/setspawn</dt> <dd>Sets a new spawn point for the map. This command cannot be used from console.</dd>
+    <dt>/solid</dt> <dd>Toggles placement of admincrete blocks. When enabled, placed stone blocks are replaced with admincrete. This command cannot be used from console.
+        <br />Shortcut: <b>/s</b></dd>
+    <dt>/teleport &lt;name&gt;</dt> <dd>Teleports you to another player. This command cannot be used from console.
+        <br />Shortcut: <b>/tp &lt;name&gt;</b></dd>
+    <dt>/unban &lt;name&gt;</dt> <dd>Removes a ban on the given player.</dd>
+    <dt class="new">/unbanip &lt;ip&gt;</dt> <dd>Removed a ban on the given IP address.</dd>
+    <dt class="new">/water</dt> <dd>Toggles placement of water blocks. When enabled, placed blue blocks are replaced with water. This command cannot be used from console.
+        <br />Shortcut: <b>/w</b></dd>
+    <dt class="new">/whitelist</dt> <dd>If whitelist is enabled, shows a list of players who are allowed to join the server. Available to all players.</dd>
+    <dt class="new">/whitelistadd</dt> <dd>If whitelist is enabled, adds a name to the whitelist.</dd>
+    <dt class="new">/whitelistremove</dt> <dd>If whitelist is enabled, removes a name to the whitelist.</dd>
+    </dl>
+    <br style="clear:both" />
+</div>
+
+<a name="configuration" id="configuration"></a>
+<div class="segment">
+    <a class="toplink" href="#top">&#x2191;</a>
+    <h2>Configuration</h2>
+    <br />
+    Configuration is stored in <b>server.properties</b> file.
+    If no file is found, FemtoCraft will generate a default configuration file.
+    Options marked with <span class="new">a</span> star are specific to FemtoCraft, and not present in original Minecraft Classic server.
+    <br />
+    <dl class="list">
+    <dt>server-name</dt> <dd>Name of the server, as it will appear to connecting players and on minecraft.net server list.
+        Up to 64 characters long. Default is "FemtoCraft Server"</dd>
+    <dt>motd</dt> <dd>Message-of-the-day (MOTD) - Text to show to connecting players.
+        Up to 64 characters long. Default is "Welcome to the server!"</dd>
+    <dt>port</dt> <dd>Port number to run the server on. You will need to set up
+        <a href="http://portforward.com/english/applications/port_forwarding/Minecraft_Server/Minecraft_Serverindex.htm">port forwarding</a>.
+        Should be between 1024 and 65535. Default is 25565.</dd>
+    <dt class="new">ip</dt> <dd>Internal IP address to bind to. Do not touch this setting unless the server machine
+        has multiple IP addresses or NICs. Default is "0.0.0.0" (meaning "any").</dd>
+    <dt>max-players</dt> <dd>Maximum number of playes to allow on the server.
+        Should be between 1 and 128. Default is 20.</dd>
+    <dt>public</dt> <dd>Whether the server should be listed on minecraft.net's <a href="http://www.minecraft.net/classic/list">public server list</a>.
+        Should be either "true" or "false". Default is "false"</dd>
+    <dt>verify-names</dt> <dd>Whether player names should be verified with Minecraft.net.
+        It is very dangerous to disable name verification; that allows players to impersonate others.
+        Should be either "true" or "false". Default (recommended) is "true"</dd>
+    <dt class="new">use-whitelist</dt> <dd>Whether FemtoCraft should only allow players on the whitelist (whitelist.txt) to join.
+        Should be either "true" or "false". Default is "false"</dd>
+    <dt>admin-slot</dt> <dd>Whether the server should kick someone to make room for an op if the server is full.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">reveal-ops</dt> <dd>If enabled, ops' names are highlighted in a different color in chat and in-game, and /ops command becomes available to all players.
+        Should be either "true" or "false". Default is "false"</dd>
+    <dt class="new">heartbeat-url</dt> <dd>Server to send heartbeats to. You don't need to touch this setting unless you use something other than Minecraft.net.
+        Should be a valid URL. Default is "https://minecraft.net/heartbeat.jsp"</dd>
+
+    <dt class="list-separator">max-connections</dt> <dd class="list-separator">Maximum number of non-op players that FemtoCraft should allow from a single IP address at a time.
+        Should be between 1 and 128. Default is 3.</dd>
+    <dt class="new">limit-click-rate</dt> <dd>Whether to limit non-op players' clicking rate. Useful for blocking tool-assisted griefers and bots.
+        If enabled, limits click rate to ~7.8/second, averaged over 6 seconds.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">limit-click-distance</dt> <dd>Whether to limit non-op players' clicking distance. Useful for blocking tool-assisted griefers and bots.
+        If enabled, limits click distance to ~7 blocks.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">limit-chat-rate</dt> <dd>Whether to limit non-op players' message-sending rate. Useful for blocking spam bots.
+        If enabed, limits chat rate to 0.75/second, averaged over 4 seconds.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">allow-speed-hack</dt> <dd>Whether to allow non-op players to use speedhacks.
+        If enabed, limits horizontal delta to 32 units/packet horizontal, upwards delta 24 units/packet, and packet rate to 40 packets/second (averaged over 5 seconds).
+        Should be either "true" or "false". Default is "false"</dd>
+
+    <dt class="new list-separator">op-max-connections</dt> <dd class="list-separator">Same as <b>max-connections</b>, but applied to op players. Default is 3.</dd>
+    <dt class="new">op-limit-click-rate</dt> <dd>Same as <b>limit-click-rate</b>, but applied to op players. Default is "true"</dd>
+    <dt class="new">op-limit-click-distance</dt> <dd>Same as <b>limit-click-distance</b>, but applied to op players. Default is "true"</dd>
+    <dt class="new">op-limit-chat-rate</dt> <dd>Same as <b>limit-chat-rate</b>, but applied to op players. Default is "true"</dd>
+    <dt class="new">op-allow-speed-hack</dt> <dd>Same as <b>allow-speed-hack</b>, but applied to op players. Default is "true"</dd>
+
+    <dt class="new list-separator">physics</dt> <dd class="list-separator">Whether to enable/disable ALL physics.
+        None of the physics behaviors run unless this is "true".
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">physics-tick</dt> <dd>Delay, in milliseconds, between physics "tick".
+        The lower the value, the faster all physics behaviors run.
+        Should be between 10 and 1000. Default is 50.</dd>
+    <dt class="new">physics-flood-protection</dt> <dd>Whether to disable liquids in upper half of the map.
+        Useful to prevent massive accidental floods.
+        Should be either "true" or "false". Default is "false"</dd>
+    <dt class="new">physics-grass</dt> <dd>Whether grass should grow/die on the server.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">physics-plants</dt> <dd>Whether flowers and mushrooms should respond to their environment.
+        If enabled, flowers can only grow in the sun on dirt or grass, and mushrooms can only grow in the shade on stone, gravel, or cobblestone.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">physics-sand</dt> <dd>Whether sand and gravel should collapse.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt>physics-trees</dt> <dd>Whether saplings should grow into full-size blocky trees.
+        This setting was used to be known as <b>grow-trees</b> in original Minecraft Classic server.
+        Should be either "true" or "false". Default is "false"</dd>
+    <dt class="new">physics-water</dt> <dd>Whether water should flow, spread, and be repelled by sponges.
+        Should be either "true" or "false". Default is "true"</dd>
+    <dt class="new">physics-lava</dt> <dd>Whether lava should flow and spread.
+        Should be either "true" or "false". Default is "true"</dd>
+
+    <dt class="new list-separator">allow-water-blocks</dt> <dd class="list-separator">
+        Whether regular players can use <b>/water</b> command and place water blocks. Default is "false"</dd>
+    <dt class="new">allow-lava-blocks</dt> <dd>
+        Whether regular players can use <b>/lava</b> command and place lava blocks. Default is "false"</dd>
+    <dt class="new">allow-grass-blocks</dt> <dd>
+        Whether regular players can use <b>/grass</b> command and place grass blocks. Default is "false"</dd>
+    <dt class="new">allow-solid-blocks</dt> <dd>
+        Whether regular players can use <b>/solid</b> command and place/delete solid (admincrete) blocks. Default is "false"</dd>
+    <dt class="new">op-allow-water-blocks</dt> <dd>Same as <b>allow-water-blocks</b>, but applied to op players. Default is "true"</dd>
+    <dt class="new">op-allow-lava-blocks</dt> <dd>Same as <b>allow-lava-blocks</b>, but applied to op players. Default is "true"</dd>
+    <dt class="new">op-allow-grass-blocks</dt> <dd>Same as <b>allow-grass-blocks</b>, but applied to op players. Default is "true"</dd>
+    <dt class="new">op-allow-solid-blocks</dt> <dd>Same as <b>allow-solid-blocks</b>, but applied to op players. Default is "true"</dd>
+    </dl>
+    <br style="clear:both" />
+</div>
+
+<a name="version-history" id="version-history"></a>
+<div class="segment changelog">
+    <a class="toplink" href="#top">&#x2191;</a>
+    <h2>Version History</h2>
+    <dl class="list">
+    <dt>1.06 &mdash; 2013-08-18</dt>
+        <dd>
+        Added heartbeat-url configuration option
+        </dd>
+    <dt>1.03 &mdash; 2012-06-14</dt>
+        <dd>
+        Fixed excessive "Map saved to ___" messages popping up every minute.<br />
+        Ported LineWrapper fixes and improvements from fCraft to FemtoCraft.
+        </dd>
+    <dt>1.00 &mdash; 2012-03-02</dt>
+        <dd>
+        Added /gen (realistic terrain) and /genflat (flatgrass) commands, for creating new map files.<br />
+        Added new configuration options to control whether guests/ops can use solid, water, lava, and grass blocks.<br />
+        Added a packet-throttling system to prevent client disconnects during particularly huge floods.<br />
+        Fixed /solid, /water, /lava, and /grass being usable from console.<br />
+        Fixed generated tree appearance to match Minecraft Classic more closely.<br />
+        Fixed stairs not stacking when physics are off.<br />
+        Fixed server re-sending the packet back to client when deleting blocks.
+        </dd>
+    <dt>0.92 &mdash; 2012-02-27</dt>
+        <dd>
+        Added "reveal-ops" config key.<br />
+        Fixed a bug that sometimes redirected commands to the caller instead of the target.<br />
+        Fixed an offset error in /setspawn.<br />
+        Map will now only be auto-saved if it has been modified since last save.<br />
+        Fixed server announcing departure of players who haven't fully connected yet.<br />
+        /Players is now automatically called for newly-connected players.
+        </dd>
+    <dt>0.87 &mdash; 2012-02-27</dt>
+        <dd>
+        /ops, /whitelist, and /players now sort players by name.<br />
+        Fixed /save not working from console (thanks Hellenion)<br />
+        Fixed /players (thanks Hellenion)<br />
+        Fixed /setspawn not preserving look angle.<br />
+        Fixed leading/trailing whitespace not getting stripped from commands typed in from console.<br />
+        Added a slightly more graceful way to shut down the server - Ctrl+D in console (Ctrl+Z on Windows).<br />
+        </dd>
+    <dt>0.82 &mdash; 2012-02-26</dt>
+        <dd>
+        Added feedback messages to /save<br />
+        Added /players command<br />
+        Fixed "/physics off" not working<br />
+        Fixed a typo in /UnbanIP (thanks Moose)<br />
+        Capped packet sending rate at 100/tick<br />
+        Fixed "invalid cross-device link" error under Mono (thanks Hellenion)
+        </dd>
+    <dt>0.77 &mdash; 2012-01-23</dt>
+        <dd>Initial release</dd>
+    </dl>
+    <br style="clear:both">
+</div>
+
+<a name="source" id="source"></a>
+<div class="segment links">
+    <a class="toplink" href="#top">&#x2191;</a>
+    <h2>Source Code etc</h2>
+    <a class="downlink" href="http://svn.fcraft.net:8080/svn/femtocraft/">SVN</a> &mdash;
+    <a class="downlink" href="http://cia.vc/stats/project/femtocraft">CIA.vc</a> &mdash;
+    <a class="downlink" href="https://www.ohloh.net/p/FemtoCraft">ohloh.net</a>
+</div>
+
+<!-- Scootaloo is best pony! -->
+<img src="logo-huge.png" width="723" height="674" class="logo" alt="FemtoCraft logo" />
+
+<div class="footer"><i>FemtoCraft</i> Copyright &copy; 2012, Matvei Stefarov &lt;me@matvei.org&gt;<br />
+FemtoCraft is based, in part, on the <a href="http://www.fcraft.net/">fCraft</a> custom server.<br />
+Minecraft is &copy; 2009-2012 Mojang AB. Mojang is not affiliated with fCraft or FemtoCraft in any way.<br />
+FemtoCraft does not make use of any code, assets, or any other files from Minecraft. </div>
+</body>
+</html>
