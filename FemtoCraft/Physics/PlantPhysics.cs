@@ -160,6 +160,8 @@ namespace FemtoCraft {
                 case Block.BrownMushroom:
                 case Block.RedMushroom:
                 case Block.Sapling:
+                case Block.SpiderWeb:
+                case Block.Fire:
                     return false;
                 default:
                     return true;
