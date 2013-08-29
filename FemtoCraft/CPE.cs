@@ -85,7 +85,7 @@ namespace FemtoCraft {
 
     partial struct Packet {
         public static Packet MakeExtInfo( short extCount ) {
-            Logger.Log( "Send: ExtInfo({0},{1})", Server.VersionString, extCount );
+            // Logger.Log( "Send: ExtInfo({0},{1})", Server.VersionString, extCount );
             Packet packet = new Packet( OpCode.ExtInfo );
             Encoding.ASCII.GetBytes( Server.VersionString.PadRight( 64 ), 0, 64, packet.Bytes, 1 );
             ToNetOrder( extCount, packet.Bytes, 65 );
@@ -93,7 +93,7 @@ namespace FemtoCraft {
         }
 
         public static Packet MakeExtEntry( string name, int version ) {
-            Logger.Log( "Send: ExtEntry({0},{1})", name, version );
+            // Logger.Log( "Send: ExtEntry({0},{1})", name, version );
             Packet packet = new Packet( OpCode.ExtEntry );
             Encoding.ASCII.GetBytes( name.PadRight( 64 ), 0, 64, packet.Bytes, 1 );
             ToNetOrder( version, packet.Bytes, 65 );
@@ -101,7 +101,7 @@ namespace FemtoCraft {
         }
 
         public static Packet MakeCustomBlockSupportLevel( byte level ) {
-            Logger.Log( "Send: CustomBlockSupportLevel({0})", level );
+            // Logger.Log( "Send: CustomBlockSupportLevel({0})", level );
             Packet packet = new Packet( OpCode.CustomBlockSupportLevel );
             packet.Bytes[1] = level;
             return packet;
