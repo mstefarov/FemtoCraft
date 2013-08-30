@@ -46,7 +46,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CPE.cs" />
+    <Compile Include="Networking\CPE.cs" />
     <Compile Include="LvlMapConverter.cs" />
     <Compile Include="NotchyMapGenerator.cs" />
     <Compile Include="Utils\PerlinNoise.cs" />
