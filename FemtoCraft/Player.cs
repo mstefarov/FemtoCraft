@@ -273,13 +273,13 @@ namespace FemtoCraft {
                 return false;
             }
 
-            // check if player is op
-            IsOp = Server.Ops.Contains( Name );
-
             // negotiate protocol extensions, if applicable
             if( Config.ProtocolExtension && magicNum == 0x42 ) {
                 if( !NegotiateProtocolExtension() ) return false;
             }
+
+            // check if player is op
+            IsOp = Server.Ops.Contains( Name );
 
             // register player and send map
             if( !Server.RegisterPlayer( this ) ) return false;

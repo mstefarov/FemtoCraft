@@ -147,7 +147,6 @@ namespace FemtoCraft {
                 Player target = Server.FindPlayerExact( targetName );
                 if( target != null ) {
                     target.IsOp = true;
-                    target.Send( Packet.MakeSetPermission( target.CanUseSolid ) );
                     target.Message( "You are now op!" );
                     Server.Players.Message( "Player {0} was opped by {1}",
                                             target.Name, player.Name );
@@ -172,7 +171,6 @@ namespace FemtoCraft {
                     target.PlaceWater = false;
                     target.PlaceLava = false;
                     target.PlaceGrass = false;
-                    target.Send( Packet.MakeSetPermission( target.CanUseSolid ) );
                     target.Message( "You are no longer op." );
                     Server.Players.Message( "Player {0} was deopped by {1}",
                                             targetName, player.Name );

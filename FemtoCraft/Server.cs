@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 1.14";
+        public const string VersionString = "FemtoCraft 1.24";
 
         const string MapFileName = "map.lvl";
         public static Map Map { get; private set; }
