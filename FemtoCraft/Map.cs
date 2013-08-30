@@ -139,6 +139,7 @@ namespace FemtoCraft {
 
         bool physicsEnabled;
         SandPhysics sandPhysics;
+        SnowPhysics snowPhysics;
         PlantPhysics plantPhysics;
         WaterPhysics waterPhysics;
         LavaPhysics lavaPhysics;
@@ -170,6 +171,9 @@ namespace FemtoCraft {
             } else if( Config.PhysicsSand && ( newBlock == Block.Sand || newBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
 
+            } else if( newBlock == Block.Snow ) {
+                snowPhysics.Trigger( x, y, z );
+
             } else if( newBlock == Block.Sponge ) {
                 waterPhysics.OnSpongePlaced( x, y, z );
             }
@@ -184,6 +188,9 @@ namespace FemtoCraft {
 
             if( Config.PhysicsSand && ( thisBlock == Block.Sand || thisBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
+            }
+            if( thisBlock == Block.Snow ) {
+                snowPhysics.Trigger( x, y, z );
             }
             if( Config.PhysicsWater ) {
                 waterPhysics.OnNeighborUpdated( x, y, z, thisBlock, updatedNeighbor );
@@ -250,6 +257,7 @@ namespace FemtoCraft {
         public void DisablePhysics() {
             lock( physicsLock ) {
                 sandPhysics = null;
+                snowPhysics = null;
                 plantPhysics = null;
                 waterPhysics = null;
                 lavaPhysics = null;
@@ -264,6 +272,7 @@ namespace FemtoCraft {
             Stopwatch sw = Stopwatch.StartNew();
             lock( physicsLock ) {
                 sandPhysics = new SandPhysics( this );
+                snowPhysics = new SnowPhysics( this );
                 plantPhysics = new PlantPhysics( this );
                 waterPhysics = new WaterPhysics( this );
                 lavaPhysics = new LavaPhysics( this );
