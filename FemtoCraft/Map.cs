@@ -208,6 +208,8 @@ namespace FemtoCraft {
                 waterPhysics.OnTick( x, y, z );
             } else if( newBlock == Block.Lava ) {
                 lavaPhysics.OnTick( x, y, z );
+            }else if( newBlock == Block.Snow ) {
+                snowPhysics.OnTick( x, y, z );
             }
         }
 
@@ -349,6 +351,7 @@ namespace FemtoCraft {
         static Map() {
             TickDelays[(int)Block.Water] = WaterPhysics.TickDelay;
             TickDelays[(int)Block.Lava] = LavaPhysics.TickDelay;
+            TickDelays[(int)Block.Snow] = SnowPhysics.TickDelay;
             DefineFallbackBlocks();
         }
     }

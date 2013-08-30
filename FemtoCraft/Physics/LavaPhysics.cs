@@ -47,14 +47,13 @@ namespace FemtoCraft {
 
 
         public void OnTick( int x, int y, int z ) {
-            if( Config.PhysicsFloodProtection && z >= map.WaterLevel ) return;
+            if( Config.PhysicsFloodProtection && z >= map.WaterLevel )
+                return;
             bool updated = false;
 
-            z--;
-            if( z >= 0 && CanSpreadTo(map.GetBlock( x, y, z )) ) {
-                updated = map.SetBlock( null, x, y, z, Block.Lava );
+            if( z > 1 && CanSpreadTo( map.GetBlock( x, y, z - 1 ) ) ) {
+                updated = map.SetBlock( null, x, y, z - 1, Block.Lava );
             }
-            z++;
 
             if( !updated ) {
                 updated |= Propagate( x - 1, y, z );
