@@ -37,6 +37,7 @@ namespace FemtoCraft {
                 case Block.StillWater:
                 case Block.StillLava:
                 case Block.Fire:
+                case Block.Snow:
                     return true;
                 default:
                     return false;
