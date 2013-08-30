@@ -29,13 +29,14 @@ namespace FemtoCraft {
         public static bool OpLimitChatRate = true;
         public static bool OpAllowSpeedHack = true;
 
-        public static bool Physics = true;
         public static int PhysicsTick = 50;
+        public static bool Physics = true;
         public static bool PhysicsFloodProtection = false;
         public static bool PhysicsGrass = true;
         public static bool PhysicsLava = true;
         public static bool PhysicsPlants = true;
         public static bool PhysicsSand = true;
+        public static bool PhysicsSnow = true;
         public static bool PhysicsTrees = false;
         public static bool PhysicsWater = true;
 
@@ -165,6 +166,9 @@ namespace FemtoCraft {
                         case "physics-sand":
                             PhysicsSand = Boolean.Parse( value );
                             break;
+                        case "physics-snow":
+                            PhysicsSnow = Boolean.Parse( value );
+                            break;
                         case "physics-trees":
                             PhysicsTrees = Boolean.Parse( value );
                             break;
@@ -249,6 +253,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "physics-lava=" + PhysicsLava );
                 writer.WriteLine( "physics-plants=" + PhysicsPlants );
                 writer.WriteLine( "physics-sand=" + PhysicsSand );
+                writer.WriteLine( "physics-snow=" + PhysicsSnow );
                 writer.WriteLine( "physics-trees=" + PhysicsTrees );
                 writer.WriteLine( "physics-water=" + PhysicsWater );
                 writer.WriteLine();

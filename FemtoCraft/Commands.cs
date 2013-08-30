@@ -446,6 +446,7 @@ namespace FemtoCraft {
                     if( Config.PhysicsLava ) modules.Add( "lava" );
                     if( Config.PhysicsPlants ) modules.Add( "plants" );
                     if( Config.PhysicsSand ) modules.Add( "sand" );
+                    if( Config.PhysicsSnow && Config.ProtocolExtension ) modules.Add( "snow" );
                     if( Config.PhysicsTrees ) modules.Add( "trees" );
                     if( Config.PhysicsWater ) modules.Add( "water" );
                     if( modules.Count == 0 ) {
@@ -520,6 +521,19 @@ namespace FemtoCraft {
                                 player.Name, Config.PhysicsSand ? "on" : "off" );
                     player.Message( "Sand physics: {0}",
                                     Config.PhysicsSand ? "ON" : "OFF" );
+                    break;
+
+                case "snow":
+                    if( !Config.ProtocolExtension ) {
+                        player.Message( "Cannot enable snow physics: protocol extensions are off." );
+                        return;
+                    }
+                    Config.PhysicsSnow = !Config.PhysicsSnow;
+                    Config.Save();
+                    Logger.Log( "Player {0} turned {1} snow physics.",
+                                player.Name, Config.PhysicsSnow ? "on" : "off" );
+                    player.Message( "Snow physics: {0}",
+                                    Config.PhysicsSnow ? "ON" : "OFF" );
                     break;
 
                 case "tree":
