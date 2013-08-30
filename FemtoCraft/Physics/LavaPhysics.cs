@@ -22,14 +22,26 @@ namespace FemtoCraft {
                 map.PhysicsQueueTick( x, y, z, updatedNeighbor );
 
             } else if( thisBlock == Block.StillLava ) {
-                if( map.GetBlock( x - 1, y, z ) == Block.Air ||
-                    map.GetBlock( x + 1, y, z ) == Block.Air ||
-                    map.GetBlock( x, y - 1, z ) == Block.Air ||
-                    map.GetBlock( x, y + 1, z ) == Block.Air ||
-                    map.GetBlock( x, y, z - 1 ) == Block.Air ) {
+                if( CanSpreadTo(map.GetBlock( x - 1, y, z )) ||
+                    CanSpreadTo(map.GetBlock( x + 1, y, z )) ||
+                    CanSpreadTo(map.GetBlock( x, y - 1, z )) ||
+                    CanSpreadTo(map.GetBlock( x, y + 1, z )) ||
+                    CanSpreadTo(map.GetBlock( x, y, z - 1 )) ) {
                     map.SetBlockNoUpdate( x, y, z, Block.Lava );
                     map.PhysicsQueueTick( x, y, z, Block.Lava );
                 }
+            }
+        }
+
+
+        static bool CanSpreadTo( Block block ) {
+            switch( block ) {
+                case Block.Air:
+                case Block.Snow:
+                case Block.Fire:
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -38,10 +50,10 @@ namespace FemtoCraft {
             if( Config.PhysicsFloodProtection && z >= map.WaterLevel ) return;
             bool updated = false;
 
-                z--;
-                if( z >= 0 && map.GetBlock( x, y, z ) == Block.Air ) {
-                    updated = map.SetBlock( null, x, y, z, Block.Lava );
-                }
+            z--;
+            if( z >= 0 && CanSpreadTo(map.GetBlock( x, y, z )) ) {
+                updated = map.SetBlock( null, x, y, z, Block.Lava );
+            }
             z++;
 
             if( !updated ) {
@@ -61,7 +73,7 @@ namespace FemtoCraft {
 
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
-            if( currentBlock == Block.Air && map.SetBlock( null, x, y, z, Block.Lava ) ) {
+            if( CanSpreadTo(currentBlock) && map.SetBlock( null, x, y, z, Block.Lava ) ) {
                 map.PhysicsQueueTick( x, y, z, Block.Lava );
                 return true;
             } else {

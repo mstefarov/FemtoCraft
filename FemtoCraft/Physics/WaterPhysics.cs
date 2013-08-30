@@ -31,14 +31,26 @@ namespace FemtoCraft {
                 map.PhysicsQueueTick( x, y, z, updatedNeighbor );
 
             } else if( thisBlock == Block.StillWater ) {
-                if( map.GetBlock( x - 1, y, z ) == Block.Air ||
-                    map.GetBlock( x + 1, y, z ) == Block.Air ||
-                    map.GetBlock( x, y - 1, z ) == Block.Air ||
-                    map.GetBlock( x, y + 1, z ) == Block.Air ||
-                    map.GetBlock( x, y, z - 1 ) == Block.Air ) {
+                if( CanSpreadTo(map.GetBlock( x - 1, y, z )) ||
+                    CanSpreadTo(map.GetBlock( x + 1, y, z )) ||
+                    CanSpreadTo(map.GetBlock( x, y - 1, z )) ||
+                    CanSpreadTo(map.GetBlock( x, y + 1, z )) ||
+                    CanSpreadTo(map.GetBlock( x, y, z - 1 )) ) {
                     map.SetBlockNoUpdate( x, y, z, Block.Water );
                     map.PhysicsQueueTick( x, y, z, Block.Water );
                 }
+            }
+        }
+
+
+        static bool CanSpreadTo( Block block ) {
+            switch( block ) {
+                case Block.Air:
+                case Block.Snow:
+                case Block.Fire:
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -48,7 +60,7 @@ namespace FemtoCraft {
             bool updated = false;
             do {
                 z--;
-                if( z < 0 || map.GetBlock( x, y, z ) != Block.Air || IsSponged( x, y, z ) ) {
+                if( z < 0 || !CanSpreadTo(map.GetBlock( x, y, z )) || IsSponged( x, y, z ) ) {
                     break;
                 }
                 updated = map.SetBlock( null, x, y, z, Block.Water );
@@ -70,7 +82,7 @@ namespace FemtoCraft {
 
         bool Propagate( int x, int y, int z ) {
             Block currentBlock = map.GetBlock( x, y, z );
-            if( currentBlock == Block.Air && !IsSponged( x, y, z ) && map.SetBlock( null, x, y, z, Block.Water ) ) {
+            if( CanSpreadTo(currentBlock) && !IsSponged( x, y, z ) && map.SetBlock( null, x, y, z, Block.Water ) ) {
                 map.PhysicsQueueTick( x, y, z, Block.Water );
                 return true;
             } else {
