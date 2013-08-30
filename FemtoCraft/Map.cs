@@ -171,7 +171,7 @@ namespace FemtoCraft {
             } else if( Config.PhysicsSand && ( newBlock == Block.Sand || newBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
 
-            } else if( newBlock == Block.Snow ) {
+            } else if( Config.PhysicsSnow && newBlock == Block.Snow ) {
                 snowPhysics.Trigger( x, y, z );
 
             } else if( newBlock == Block.Sponge ) {
@@ -188,8 +188,7 @@ namespace FemtoCraft {
 
             if( Config.PhysicsSand && ( thisBlock == Block.Sand || thisBlock == Block.Gravel ) ) {
                 sandPhysics.Trigger( x, y, z );
-            }
-            if( thisBlock == Block.Snow ) {
+            } else if( Config.PhysicsSnow && thisBlock == Block.Snow ) {
                 snowPhysics.Trigger( x, y, z );
             }
             if( Config.PhysicsWater ) {
@@ -204,12 +203,16 @@ namespace FemtoCraft {
         void PhysicsOnTick( int x, int y, int z, Block newBlock ) {
             if( !physicsEnabled )
                 return;
-            if( newBlock == Block.Water ) {
-                waterPhysics.OnTick( x, y, z );
-            } else if( newBlock == Block.Lava ) {
-                lavaPhysics.OnTick( x, y, z );
-            }else if( newBlock == Block.Snow ) {
-                snowPhysics.OnTick( x, y, z );
+            switch( newBlock ) {
+                case Block.Water:
+                    waterPhysics.OnTick( x, y, z );
+                    break;
+                case Block.Lava:
+                    lavaPhysics.OnTick( x, y, z );
+                    break;
+                case Block.Snow:
+                    snowPhysics.OnTick( x, y, z );
+                    break;
             }
         }
 
