@@ -5,17 +5,20 @@ namespace FemtoCraft {
     sealed partial class Player {
         const string CustomBlocksExtName = "CustomBlocks";
         const int CustomBlocksExtVersion = 1;
+        const string BlockPermissionsExtName = "BlockPermissions";
+        const int BlockPermissionsExtVersion = 1;
         const byte CustomBlocksLevel = 1;
 
         // Note: if more levels are added, change UsesCustomBlocks from bool to int
         public bool UsesCustomBlocks { get; private set; }
+        public bool SupportsBlockPermissions { get; private set; }
         public string ClientName { get; private set; }
 
         bool NegotiateProtocolExtension() {
-            client.NoDelay = true;
             // write our ExtInfo and ExtEntry packets
-            writer.Write( Packet.MakeExtInfo( 1 ).Bytes );
+            writer.Write( Packet.MakeExtInfo( 2 ).Bytes );
             writer.Write( Packet.MakeExtEntry( CustomBlocksExtName, CustomBlocksExtVersion ).Bytes );
+            writer.Write( Packet.MakeExtEntry( BlockPermissionsExtName, BlockPermissionsExtVersion ).Bytes );
 
             // Expect ExtInfo reply from the client
             OpCode extInfoReply = reader.ReadOpCode();
@@ -43,13 +46,20 @@ namespace FemtoCraft {
                 if( extName == CustomBlocksExtName && extVersion == CustomBlocksExtVersion ) {
                     // Hooray, client supports custom blocks! We still need to check support level.
                     sendCustomBlockPacket = true;
+                    clientExts.Add( extName + " " + extVersion );
+                } else if( extName == BlockPermissionsExtName && extVersion == BlockPermissionsExtVersion ) {
+                    SupportsBlockPermissions = true;
+                    clientExts.Add( extName + " " + extVersion );
                 }
-                clientExts.Add( extName + " " + extVersion );
             }
-            Logger.Log( "Player {0} is using \"{1}\", supporting: {2}",
-                        Name,
-                        ClientName,
-                        clientExts.JoinToString( ", " ) );
+
+            // log client's capabilities
+            if( clientExts.Count > 0 ) {
+                Logger.Log( "Player {0} is using \"{1}\", supporting: {2}",
+                            Name,
+                            ClientName,
+                            clientExts.JoinToString( ", " ) );
+            }
 
             if( sendCustomBlockPacket ) {
                 // if client also supports CustomBlockSupportLevel, figure out what level to use
@@ -70,7 +80,6 @@ namespace FemtoCraft {
                 byte clientLevel = reader.ReadByte();
                 UsesCustomBlocks = ( clientLevel >= CustomBlocksLevel );
             }
-            client.NoDelay = false;
             return true;
         }
 
@@ -104,6 +113,14 @@ namespace FemtoCraft {
             // Logger.Log( "Send: CustomBlockSupportLevel({0})", level );
             Packet packet = new Packet( OpCode.CustomBlockSupportLevel );
             packet.Bytes[1] = level;
+            return packet;
+        }
+
+        public static Packet MakeSetBlockPermission( Block block, bool canPlace, bool canDelete ) {
+            Packet packet = new Packet( OpCode.SetBlockPermission );
+            packet.Bytes[1] = (byte)block;
+            packet.Bytes[2] = (byte)(canPlace ? 1 : 0);
+            packet.Bytes[3] = (byte)(canDelete ? 1 : 0);
             return packet;
         }
     }

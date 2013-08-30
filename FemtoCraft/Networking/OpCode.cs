@@ -22,6 +22,7 @@ namespace FemtoCraft {
         // CPE
         ExtInfo = 16,
         ExtEntry = 17,
-        CustomBlockSupportLevel = 19
+        CustomBlockSupportLevel = 19,
+        SetBlockPermission = 28
     }
 }

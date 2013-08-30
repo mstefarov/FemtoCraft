@@ -25,7 +25,28 @@ namespace FemtoCraft {
         public Map Map { get; set; }
         Map mapToJoin;
 
-        public bool IsOp { get; set; }
+        bool isOp;
+        public bool IsOp {
+            get {
+                return isOp;
+            }
+            set {
+                if( value == isOp )
+                    return;
+                isOp = value;
+                if( SupportsBlockPermissions ) {
+                    Send( Packet.MakeSetBlockPermission( Block.Water, CanUseWater, true ) );
+                    Send( Packet.MakeSetBlockPermission( Block.StillWater, CanUseWater, true ) );
+                    Send( Packet.MakeSetBlockPermission( Block.Lava, CanUseLava, true ) );
+                    Send( Packet.MakeSetBlockPermission( Block.StillLava, CanUseLava, true ) );
+                    Send( Packet.MakeSetBlockPermission( Block.Admincrete, CanUseSolid, CanUseSolid ) );
+                    Send( Packet.MakeSetBlockPermission( Block.Grass, CanUseGrass, true ) );
+                } else {
+                    Send( Packet.MakeSetPermission( CanUseSolid ) );
+                }
+            }
+        }
+
         public bool HasRegistered { get; set; }
         public bool HasBeenAnnounced { get; private set; }
         public bool IsPainting { get; set; }
