@@ -639,6 +639,7 @@ namespace FemtoCraft {
             }
         }
 
+        [Pure]
         static bool IsPowerOfTwo( int x ) {
             return ( x != 0 ) && ( ( x & ( x - 1 ) ) == 0 );
         }

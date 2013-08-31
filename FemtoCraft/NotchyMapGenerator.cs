@@ -44,6 +44,7 @@ namespace FemtoCraft {
             return new NotchyMapGenerator( mapWidth, mapLength, mapHeight ).Generate();
         }
 
+
         NotchyMapGenerator( int mapWidth, int mapLength, int mapHeight ) {
             this.mapWidth = mapWidth;
             this.mapLength = mapLength;
@@ -54,6 +55,7 @@ namespace FemtoCraft {
             map = new Map( mapWidth, mapLength, mapHeight );
             blocks = map.Blocks;
         }
+
 
         Map Generate() {
             Raise();
@@ -433,6 +435,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         int Index( int x, int y, int z ) {
             return ( z * mapLength + y ) * mapWidth + x;
         }

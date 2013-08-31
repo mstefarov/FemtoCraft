@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System.Collections.Generic;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed partial class Player {
@@ -10,9 +12,9 @@ namespace FemtoCraft {
         const byte CustomBlocksLevel = 1;
 
         // Note: if more levels are added, change UsesCustomBlocks from bool to int
-        public bool UsesCustomBlocks { get; private set; }
-        public bool SupportsBlockPermissions { get; private set; }
-        public string ClientName { get; private set; }
+        bool UsesCustomBlocks { get; set; }
+        bool SupportsBlockPermissions { get; set; }
+        string ClientName { get; set; }
 
         bool NegotiateProtocolExtension() {
             // write our ExtInfo and ExtEntry packets
@@ -84,15 +86,27 @@ namespace FemtoCraft {
         }
 
 
+        // For non-extended players, use appropriate substitution
         void ProcessOutgoingSetBlock( ref Packet packet ) {
             if( packet.Bytes[7] > (byte)Map.MaxLegalBlockType && !UsesCustomBlocks ) {
                 packet.Bytes[7] = (byte)Map.GetFallbackBlock( (Block)packet.Bytes[7] );
             }
         }
+
+
+        void SendBlockPermissions() {
+            Send( Packet.MakeSetBlockPermission( Block.Water, CanUseWater, true ) );
+            Send( Packet.MakeSetBlockPermission( Block.StillWater, CanUseWater, true ) );
+            Send( Packet.MakeSetBlockPermission( Block.Lava, CanUseLava, true ) );
+            Send( Packet.MakeSetBlockPermission( Block.StillLava, CanUseLava, true ) );
+            Send( Packet.MakeSetBlockPermission( Block.Admincrete, CanUseSolid, CanUseSolid ) );
+            Send( Packet.MakeSetBlockPermission( Block.Grass, CanUseGrass, true ) );
+        }
     }
 
 
     partial struct Packet {
+        [Pure]
         public static Packet MakeExtInfo( short extCount ) {
             // Logger.Log( "Send: ExtInfo({0},{1})", Server.VersionString, extCount );
             Packet packet = new Packet( OpCode.ExtInfo );
@@ -101,6 +115,7 @@ namespace FemtoCraft {
             return packet;
         }
 
+        [Pure]
         public static Packet MakeExtEntry( string name, int version ) {
             // Logger.Log( "Send: ExtEntry({0},{1})", name, version );
             Packet packet = new Packet( OpCode.ExtEntry );
@@ -109,6 +124,7 @@ namespace FemtoCraft {
             return packet;
         }
 
+        [Pure]
         public static Packet MakeCustomBlockSupportLevel( byte level ) {
             // Logger.Log( "Send: CustomBlockSupportLevel({0})", level );
             Packet packet = new Packet( OpCode.CustomBlockSupportLevel );
@@ -116,6 +132,7 @@ namespace FemtoCraft {
             return packet;
         }
 
+        [Pure]
         public static Packet MakeSetBlockPermission( Block block, bool canPlace, bool canDelete ) {
             Packet packet = new Packet( OpCode.SetBlockPermission );
             packet.Bytes[1] = (byte)block;

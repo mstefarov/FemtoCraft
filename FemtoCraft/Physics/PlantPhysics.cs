@@ -1,6 +1,7 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed class PlantPhysics {
@@ -11,7 +12,8 @@ namespace FemtoCraft {
         readonly short[,] shadows;
 
 
-        public PlantPhysics( Map map ) {
+        public PlantPhysics( [NotNull] Map map ) {
+            if( map == null ) throw new ArgumentNullException( "map" );
             this.map = map;
             random = new Random();
             traversePattern = Enumerable.Range( 0, TraverseStep ).ToArray();
@@ -150,6 +152,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static bool CastsShadow( Block block ) {
             switch( block ) {
                 case Block.Air:

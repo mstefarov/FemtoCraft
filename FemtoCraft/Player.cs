@@ -18,7 +18,7 @@ namespace FemtoCraft {
 
         [NotNull]
         public string Name { get; private set; }
-        public byte ID { get; set; }
+        public byte Id { get; set; }
 
         public IPAddress IP { get; private set; }
         public Position Position { get; private set; }
@@ -35,12 +35,7 @@ namespace FemtoCraft {
                     return;
                 isOp = value;
                 if( SupportsBlockPermissions ) {
-                    Send( Packet.MakeSetBlockPermission( Block.Water, CanUseWater, true ) );
-                    Send( Packet.MakeSetBlockPermission( Block.StillWater, CanUseWater, true ) );
-                    Send( Packet.MakeSetBlockPermission( Block.Lava, CanUseLava, true ) );
-                    Send( Packet.MakeSetBlockPermission( Block.StillLava, CanUseLava, true ) );
-                    Send( Packet.MakeSetBlockPermission( Block.Admincrete, CanUseSolid, CanUseSolid ) );
-                    Send( Packet.MakeSetBlockPermission( Block.Grass, CanUseGrass, true ) );
+                    SendBlockPermissions();
                 } else {
                     Send( Packet.MakeSetPermission( CanUseSolid ) );
                 }
@@ -58,16 +53,15 @@ namespace FemtoCraft {
         NetworkStream stream;
         PacketReader reader;
         PacketWriter writer;
-        readonly Thread thread;
 
         static readonly TimeSpan ThrottleInterval = new TimeSpan( 0, 0, 1 );
         DateTime throttleCheckTimer;
         int throttlePacketCount;
         const int ThrottleThreshold = 2500;
 
-        bool canReceive = true,
-             canSend = true,
-             canQueue = true;
+        volatile bool canReceive = true,
+                      canSend = true,
+                      canQueue = true;
 
 
         Player( [NotNull] string name ) {
@@ -80,7 +74,7 @@ namespace FemtoCraft {
             if( newClient == null ) throw new ArgumentNullException( "newClient" );
             try {
                 client = newClient;
-                thread = new Thread( IoThread ) {
+                Thread thread = new Thread( IoThread ) {
                     IsBackground = true
                 };
                 thread.Start();
@@ -505,7 +499,7 @@ namespace FemtoCraft {
             if( delta.FitsIntoMoveRotatePacket && positionSyncCounter < PositionSyncInterval ) {
                 if( posChanged && rotChanged ) {
                     // incremental position + rotation update
-                    packet = Packet.MakeMoveRotate( ID, new Position {
+                    packet = Packet.MakeMoveRotate( Id, new Position {
                         X = delta.X,
                         Y = delta.Y,
                         Z = delta.Z,
@@ -515,18 +509,18 @@ namespace FemtoCraft {
 
                 } else if( posChanged ) {
                     // incremental position update
-                    packet = Packet.MakeMove( ID, delta );
+                    packet = Packet.MakeMove( Id, delta );
 
                 } else if( rotChanged ) {
                     // absolute rotation update
-                    packet = Packet.MakeRotate( ID, newPos );
+                    packet = Packet.MakeRotate( Id, newPos );
                 } else {
                     return;
                 }
 
             } else {
                 // full (absolute position + rotation) update
-                packet = Packet.MakeTeleport( ID, newPos );
+                packet = Packet.MakeTeleport( Id, newPos );
             }
 
             positionSyncCounter++;
@@ -809,6 +803,7 @@ namespace FemtoCraft {
         }
 
 
+        [ContractAnnotation( "givenName:null => false" )]
         public bool CheckPlayerName( [CanBeNull] string givenName ) {
             if( givenName == null ) {
                 Message( "This command requires a player name." );
@@ -853,19 +848,19 @@ namespace FemtoCraft {
 
         #region Permissions
 
-        public bool CanUseWater {
+        bool CanUseWater {
             get { return ( Config.AllowWaterBlocks || Config.OpAllowWaterBlocks && IsOp ); }
         }
 
-        public bool CanUseLava {
+        bool CanUseLava {
             get { return ( Config.AllowLavaBlocks || Config.OpAllowLavaBlocks && IsOp ); }
         }
 
-        public bool CanUseGrass {
+        bool CanUseGrass {
             get { return ( Config.AllowGrassBlocks || Config.OpAllowGrassBlocks && IsOp ); }
         }
 
-        public bool CanUseSolid {
+        bool CanUseSolid {
             get { return ( Config.AllowSolidBlocks || Config.OpAllowSolidBlocks && IsOp ); }
         }
 

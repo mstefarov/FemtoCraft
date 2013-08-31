@@ -133,12 +133,7 @@ namespace FemtoCraft {
                     break;
 
                 case (byte)'&':
-                    if( expectingColor ) {
-                        // skip double ampersands
-                        expectingColor = false;
-                    } else {
-                        expectingColor = true;
-                    }
+                    expectingColor = !expectingColor;
                     break;
 
                 case (byte)'-':
@@ -231,7 +226,6 @@ namespace FemtoCraft {
                 lastColor = color;
             }
 
-            int spacesToAppend = spaceCount;
             if( spaceCount > 0 && outputIndex > outputStart ) {
                 // append spaces that accumulated since last word
                 while( spaceCount > 0 ) {
@@ -249,11 +243,13 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static bool IsWordChar( byte ch ) {
             return ( ch > (byte)' ' && ch <= (byte)'~' );
         }
 
 
+        [Pure]
         static bool ProcessColor( ref byte ch ) {
             if( ch >= (byte)'A' && ch <= (byte)'Z' ) {
                 ch += 32;

@@ -1,11 +1,15 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 // Based on ZombieDev code, contributed by Conrad "Redshift" Morgan
+using System;
+using JetBrains.Annotations;
+
 namespace FemtoCraft {
     sealed class SandPhysics {
         readonly Map map;
 
 
-        public SandPhysics( Map map ) {
+        public SandPhysics( [NotNull] Map map ) {
+            if( map == null ) throw new ArgumentNullException( "map" );
             this.map = map;
         }
 
@@ -29,6 +33,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static bool LetsSandThrough( Block block ) {
             switch( block ) {
                 case Block.Air:

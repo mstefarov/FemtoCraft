@@ -10,6 +10,7 @@ namespace FemtoCraft {
         public static int Port = 25565;
         public static IPAddress IP = IPAddress.Any;
         public static int MaxPlayers = 20;
+        // ReSharper disable RedundantDefaultFieldInitializer
         public static bool Public = false;
         public static bool VerifyNames = true;
         public static bool UseWhitelist = false;
@@ -50,6 +51,7 @@ namespace FemtoCraft {
         public static bool OpAllowSolidBlocks = true;
 
         public static bool ProtocolExtension = true;
+        // ReSharper restore RedundantDefaultFieldInitializer
 
         public const string OpColor = "&3";
 

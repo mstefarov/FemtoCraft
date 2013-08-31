@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     sealed partial class Map {
@@ -34,24 +35,28 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         [DebuggerStepThrough]
         public int Index( int x, int y, int z ) {
             return ( z*Length + y )*Width + x;
         }
 
 
+        [Pure]
         [DebuggerStepThrough]
         public int X( int i ) {
             return i%Width;
         }
 
 
+        [Pure]
         [DebuggerStepThrough]
         public int Y( int i ) {
             return ( i/Width )%Length;
         }
 
 
+        [Pure]
         [DebuggerStepThrough]
         public int Z( int i ) {
             return i/( Length*Width );
@@ -100,17 +105,13 @@ namespace FemtoCraft {
         }
 
 
-        public bool SetBlockNoUpdate( int x, int y, int z, Block newBlock ) {
-            Block oldBlock = GetBlock( x, y, z );
-            if( oldBlock == newBlock || oldBlock == Block.Undefined )
-                return false;
-
+        public void SetBlockNoUpdate( int x, int y, int z, Block newBlock ) {
             Blocks[Index( x, y, z )] = (byte)newBlock;
             ChangedSinceSave = true;
-            return true;
         }
 
 
+        [Pure]
         public Block GetBlock( int x, int y, int z ) {
             if( x < Width && y < Length && z < Height && x >= 0 && y >= 0 && z >= 0 ) {
                 return (Block)Blocks[Index( x, y, z )];
@@ -120,6 +121,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public bool InBounds( int x, int y, int z ) {
             return x < Width && y < Length && z < Height && x >= 0 && y >= 0 && z >= 0;
         }

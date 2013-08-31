@@ -34,7 +34,7 @@ namespace FemtoCraft {
                 throw new ArgumentOutOfRangeException( "startIndex" );
             }
 
-            byte[] rawValue = new[] { value, value, value, value, value, value, value, value };
+            byte[] rawValue = { value, value, value, value, value, value, value, value };
             Int64 fillValue = BitConverter.ToInt64( rawValue, 0 );
 
             fixed( byte* ptr = &array[startIndex] ) {

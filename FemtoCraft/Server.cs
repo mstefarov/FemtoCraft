@@ -161,8 +161,9 @@ namespace FemtoCraft {
 
 
         static void AcceptCallback( [NotNull] IAsyncResult e ) {
-            TcpClient client = listener.EndAcceptTcpClient( e );
-            new Player( client );
+            // ReSharper disable ObjectCreationAsStatement
+            new Player( listener.EndAcceptTcpClient( e ) );
+            // ReSharper restore ObjectCreationAsStatement
         }
 
 
@@ -233,11 +234,11 @@ namespace FemtoCraft {
                 }
 
                 // Assign index and spawn player
-                player.ID = FreePlayerIDs.Pop();
+                player.Id = FreePlayerIDs.Pop();
                 if( Config.RevealOps && player.IsOp ) {
-                    PlayerIndex.Send( null, Packet.MakeAddEntity( player.ID, Config.OpColor + player.Name, Map.Spawn ) );
+                    PlayerIndex.Send( null, Packet.MakeAddEntity( player.Id, Config.OpColor + player.Name, Map.Spawn ) );
                 } else {
-                    PlayerIndex.Send( null, Packet.MakeAddEntity( player.ID, player.Name, Map.Spawn ) );
+                    PlayerIndex.Send( null, Packet.MakeAddEntity( player.Id, player.Name, Map.Spawn ) );
                 }
                 player.HasRegistered = true;
                 player.Map = Map;
@@ -257,7 +258,7 @@ namespace FemtoCraft {
             lock( PlayerListLock ) {
                 foreach( Player other in PlayerIndex ) {
                     if( other != player ) {
-                        player.Send( Packet.MakeAddEntity( other.ID, other.Name, other.Position ) );
+                        player.Send( Packet.MakeAddEntity( other.Id, other.Name, other.Position ) );
                     }
                 }
             }
@@ -275,8 +276,8 @@ namespace FemtoCraft {
                 }
 
                 // Despawn player entity
-                Players.Send( player, Packet.MakeRemoveEntity( player.ID ) );
-                FreePlayerIDs.Push( player.ID );
+                Players.Send( player, Packet.MakeRemoveEntity( player.Id ) );
+                FreePlayerIDs.Push( player.Id );
 
                 // Remove player from index
                 PlayerIndex.Remove( player );

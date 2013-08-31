@@ -1,5 +1,6 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
 using System;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     // Based on Minecraft Classic's "com.mojang.minecraft.level.a.a.a"
@@ -11,6 +12,7 @@ namespace FemtoCraft {
             this.noise2 = noise2;
         }
 
+        [Pure]
         public double GetNoise( double x, double y ) {
             return noise1.GetNoise( x + noise2.GetNoise( x, y ), y );
         }
@@ -29,6 +31,7 @@ namespace FemtoCraft {
             }
         }
 
+        [Pure]
         public double GetNoise( double x, double y ) {
             double sum = 0;
             double scale = 1;
@@ -60,6 +63,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public double Noise( double x, double y, double z ) {
             int X = (int)Math.Floor( x ) & 255, // FIND UNIT CUBE THAT
                 Y = (int)Math.Floor( y ) & 255, // CONTAINS POINT.
@@ -84,16 +88,19 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static double Fade( double t ) {
             return t * t * t * ( t * ( t * 6 - 15 ) + 10 );
         }
 
 
+        [Pure]
         static double Lerp( double t, double a, double b ) {
             return a + t * ( b - a );
         }
 
 
+        [Pure]
         static double Grad( int hash, double x, double y, double z ) {
             int h = hash & 15; // CONVERT LO 4 BITS OF HASH CODE
             double u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.

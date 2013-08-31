@@ -42,7 +42,9 @@ namespace FemtoCraft {
                     request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;
 
                     using( HttpWebResponse response = (HttpWebResponse)request.GetResponse() ) {
-                        using( StreamReader responseReader = new StreamReader( response.GetResponseStream() ) ) {
+                        var rs = response.GetResponseStream();
+                        if( rs == null ) continue;
+                        using( StreamReader responseReader = new StreamReader( rs ) ) {
                             string responseText = responseReader.ReadToEnd().Trim();
                             Uri newUri;
                             if( Uri.TryCreate( responseText, UriKind.Absolute, out newUri ) ) {

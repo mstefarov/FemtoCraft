@@ -1,11 +1,15 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System;
+using JetBrains.Annotations;
+
 namespace FemtoCraft {
     sealed class SnowPhysics {
         readonly Map map;
         public const int TickDelay = 2;
 
 
-        public SnowPhysics( Map map ) {
+        public SnowPhysics( [NotNull] Map map ) {
+            if( map == null ) throw new ArgumentNullException( "map" );
             this.map = map;
         }
 
@@ -57,6 +61,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static bool MeltsSnow( Block block ) {
             switch( block ) {
                 case Block.Fire:
@@ -70,6 +75,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static bool LetsSnowThrough( Block block ) {
             return block == Block.Air || block == Block.Snow;
         }

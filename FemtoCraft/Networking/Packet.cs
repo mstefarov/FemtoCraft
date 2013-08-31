@@ -27,6 +27,7 @@ namespace FemtoCraft {
 
         #region Packet-Making
 
+        [Pure]
         public static Packet MakeHandshake( bool isOp ) {
             //Logger.Log( "Send: Handshake({0},{1},{2})", Config.ServerName, Config.MOTD, isOp ? (byte)100 : (byte)0 );
             Packet packet = new Packet( OpCode.Handshake );
@@ -38,6 +39,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeSetBlock( int x, int y, int z, Block type ) {
             Packet packet = new Packet( OpCode.SetBlockServer );
             ToNetOrder( (short)x, packet.Bytes, 1 );
@@ -48,6 +50,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeAddEntity( byte id, [NotNull] string name, Position pos ) {
             if( name == null ) throw new ArgumentNullException( "name" );
             Packet packet = new Packet( OpCode.AddEntity );
@@ -62,6 +65,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeTeleport( byte id, Position pos ) {
             Packet packet = new Packet( OpCode.Teleport );
             packet.Bytes[1] = id;
@@ -74,11 +78,13 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeSelfTeleport( Position pos ) {
             return MakeTeleport( 255, pos.GetFixed() );
         }
 
 
+        [Pure]
         public static Packet MakeMoveRotate( int id, Position pos ) {
             Packet packet = new Packet( OpCode.MoveRotate );
             packet.Bytes[1] = (byte)id;
@@ -91,6 +97,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeMove( int id, Position pos ) {
             Packet packet = new Packet( OpCode.Move );
             packet.Bytes[1] = (byte)id;
@@ -101,6 +108,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeRotate( int id, Position pos ) {
             Packet packet = new Packet( OpCode.Rotate );
             packet.Bytes[1] = (byte)id;
@@ -110,6 +118,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeRemoveEntity( int id ) {
             Packet packet = new Packet( OpCode.RemoveEntity );
             packet.Bytes[1] = (byte)id;
@@ -125,6 +134,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         public static Packet MakeSetPermission( bool isOp ) {
             Packet packet = new Packet( OpCode.SetPermission );
             if( isOp ) packet.Bytes[1] = 100;

@@ -1,4 +1,6 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+using System;
+using JetBrains.Annotations;
 
 namespace FemtoCraft {
     unsafe sealed class WaterPhysics {
@@ -8,7 +10,8 @@ namespace FemtoCraft {
         readonly BitList spongeData;
 
 
-        public WaterPhysics( Map map ) {
+        public WaterPhysics( [NotNull] Map map ) {
+            if( map == null ) throw new ArgumentNullException( "map" );
             this.map = map;
             spongeData = new BitList( map.Volume );
             fixed( byte* ptr = map.Blocks ) {
@@ -43,6 +46,7 @@ namespace FemtoCraft {
         }
 
 
+        [Pure]
         static bool CanSpreadTo( Block block ) {
             switch( block ) {
                 case Block.Air:
