@@ -141,8 +141,8 @@ namespace FemtoCraft {
 
                     // Read input from player
                     while( canReceive && stream.DataAvailable ) {
-                        OpCode opcode = reader.ReadOpCode();
-                        switch( opcode ) {
+                        OpCode opCode = reader.ReadOpCode();
+                        switch( opCode ) {
                             case OpCode.Message:
                                 if( !ProcessMessagePacket() ) return;
                                 break;
@@ -159,9 +159,9 @@ namespace FemtoCraft {
                                 break;
 
                             default:
-                                Logger.Log( "Player {0} was kicked after sending an invalid opcode ({1}).",
-                                            Name, opcode );
-                                KickNow( "Unknown packet opcode " + opcode );
+                                Logger.Log( "Player {0} was kicked after sending an invalid opCode ({1}).",
+                                            Name, opCode );
+                                KickNow( "Unknown packet opCode " + opCode );
                                 return;
                         }
                     }

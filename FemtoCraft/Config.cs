@@ -203,7 +203,7 @@ namespace FemtoCraft {
                             OpAllowSolidBlocks = Boolean.Parse( value );
                             break;
 
-                        case "classic-protocol-extension":
+                        case "protocol-extension":
                             ProtocolExtension = Boolean.Parse( value );
                             break;
 
@@ -268,7 +268,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "op-allow-grass-blocks=" + OpAllowGrassBlocks );
                 writer.WriteLine( "op-allow-solid-blocks=" + OpAllowSolidBlocks );
                 writer.WriteLine();
-                writer.WriteLine( "classic-protocol-extension=" + ProtocolExtension );
+                writer.WriteLine( "protocol-extension=" + ProtocolExtension );
             }
         }
     }
