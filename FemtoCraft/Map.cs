@@ -88,7 +88,11 @@ namespace FemtoCraft {
                 // stair stacking
             } else if( newBlock == Block.Slab && GetBlock( x, y, z - 1 ) == Block.Slab ) {
                 SetBlock( null, x, y, z, Block.Air );
-                SetBlock( null, x, y, z - 1, Block.DoubleStair );
+                SetBlock( null, x, y, z - 1, Block.DoubleSlab );
+                return true;
+            } else if( newBlock == Block.CobbleSlab && GetBlock( x, y, z - 1 ) == Block.CobbleSlab ) {
+                SetBlock( null, x, y, z, Block.Air );
+                SetBlock( null, x, y, z - 1, Block.Cobble );
                 return true;
             }
 

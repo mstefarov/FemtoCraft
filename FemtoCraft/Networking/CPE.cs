@@ -153,7 +153,7 @@ namespace FemtoCraft {
                 FallbackBlocks[i] = (Block)i;
             }
             FallbackBlocks[(int)Block.CobbleSlab] = Block.Slab;
-            FallbackBlocks[(int)Block.SpiderWeb] = Block.Sapling;
+            FallbackBlocks[(int)Block.Rope] = Block.BrownMushroom;
             FallbackBlocks[(int)Block.Sandstone] = Block.Sand;
             FallbackBlocks[(int)Block.Snow] = Block.Air;
             FallbackBlocks[(int)Block.Fire] = Block.StillLava;

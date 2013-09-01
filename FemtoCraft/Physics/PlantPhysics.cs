@@ -94,7 +94,7 @@ namespace FemtoCraft {
         void TriggerMushroom( int x, int y, int z ) {
             if( !Config.PhysicsPlants ) return;
             Block blockUnder = map.GetBlock( x, y, z - 1 );
-            if( blockUnder != Block.Stone && blockUnder != Block.Gravel && blockUnder != Block.Cobblestone ||
+            if( blockUnder != Block.Stone && blockUnder != Block.Gravel && blockUnder != Block.Cobble ||
                 IsLit( x, y, z ) ) {
                 map.SetBlock( null, x, y, z, Block.Air );
             }
@@ -163,7 +163,7 @@ namespace FemtoCraft {
                 case Block.BrownMushroom:
                 case Block.RedMushroom:
                 case Block.Sapling:
-                case Block.SpiderWeb:
+                case Block.Rope:
                 case Block.Fire:
                     return false;
                 default:

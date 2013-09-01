@@ -9,7 +9,7 @@ namespace FemtoCraft {
         Stone = 1,
         Grass = 2,
         Dirt = 3,
-        Cobblestone = 4,
+        Cobble = 4,
         Wood = 5,
         Sapling = 6,
         Admincrete = 7,
@@ -51,7 +51,7 @@ namespace FemtoCraft {
 
         Gold = 41,
         Iron = 42,
-        DoubleStair = 43,
+        DoubleSlab = 43,
         Slab = 44,
         Brick = 45,
         TNT = 46,
@@ -61,7 +61,7 @@ namespace FemtoCraft {
 
         // CPE level 1
         CobbleSlab = 50,
-        SpiderWeb = 51,
+        Rope = 51,
         Sandstone = 52,
         Snow = 53,
         Fire = 54,
