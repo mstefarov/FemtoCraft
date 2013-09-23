@@ -16,6 +16,7 @@ namespace FemtoCraft {
         public static bool UseWhitelist = false;
         public static bool AdminSlot = true;
         public static bool RevealOps = false;
+        public static bool AllowEmails = false;
         public static string HeartbeatUrl = "https://minecraft.net/heartbeat.jsp";
 
         public static int MaxConnections = 3;
@@ -110,6 +111,9 @@ namespace FemtoCraft {
                             break;
                         case "reveal-ops":
                             RevealOps = Boolean.Parse( value );
+                            break;
+                        case "allow-emails":
+                            AllowEmails = Boolean.Parse( value );
                             break;
                         case "heartbeat-url":
                             HeartbeatUrl = value;
@@ -234,6 +238,7 @@ namespace FemtoCraft {
                 writer.WriteLine( "use-whitelist=" + UseWhitelist );
                 writer.WriteLine( "admin-slot=" + AdminSlot );
                 writer.WriteLine( "reveal-ops=" + RevealOps );
+                writer.WriteLine( "allow-emails=" + AllowEmails );
                 writer.WriteLine( "heartbeat-url=" + HeartbeatUrl );
                 writer.WriteLine();
                 writer.WriteLine( "max-connections=" + MaxConnections );

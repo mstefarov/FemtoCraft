@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using JetBrains.Annotations;
 
@@ -872,13 +873,11 @@ namespace FemtoCraft {
         }
 
 
+        static readonly Regex EmailRegex = new Regex( @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$", RegexOptions.Compiled ),
+              AccountRegex = new Regex( @"^[a-zA-Z0-9._]{2,16}$", RegexOptions.Compiled );
+
         public static bool IsValidName( [NotNull] string name ) {
-            if( name.Length < 2 || name.Length > 16 ) return false;
-            return name.All( ch => ( ch >= '0' || ch == '.' ) &&
-                                   ( ch <= '9' || ch >= 'A' ) &&
-                                   ( ch <= 'Z' || ch >= '_' ) &&
-                                   ( ch <= '_' || ch >= 'a' ) &&
-                                   ch <= 'z' );
+            return AccountRegex.IsMatch( name ) || Config.AllowEmails && EmailRegex.IsMatch( name );
         }
 
 
