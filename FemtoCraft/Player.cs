@@ -80,7 +80,7 @@ namespace FemtoCraft {
                 thread.Start();
 
             } catch( Exception ex ) {
-                Logger.LogError( "Player: Error setting up session: {0}", ex );
+                Logger.LogError( "Could not start a player session: {0}", ex );
                 Disconnect();
             }
         }
@@ -90,7 +90,8 @@ namespace FemtoCraft {
             try {
                 client.SendTimeout = Timeout;
                 client.ReceiveTimeout = Timeout;
-                IP = ( (IPEndPoint)( client.Client.RemoteEndPoint ) ).Address;
+                IP = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address;
+                Name = "from " + IP; // placeholder for logging
                 stream = client.GetStream();
                 reader = new PacketReader( stream );
                 writer = new PacketWriter( stream );
@@ -197,9 +198,8 @@ namespace FemtoCraft {
         bool LoginSequence() {
             // start reading the first packet
             OpCode opCode = reader.ReadOpCode();
-            //Logger.Log( "Expected: {0} / Received: {1}", OpCode.Handshake, opCode );
             if( opCode != OpCode.Handshake ) {
-                Logger.LogWarning( "Player from {0}: Unexpected handshake packet opcode ({1})",
+                Logger.LogWarning( "Player from {0}: Unexpected handshake packet opCode ({1})",
                                    IP, opCode );
                 return false;
             }

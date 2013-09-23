@@ -209,8 +209,12 @@ namespace FemtoCraft {
                 if( !player.IP.Equals( IPAddress.Loopback ) &&
                     ( !player.IsOp && Config.MaxConnections > 0 || player.IsOp && Config.OpMaxConnections > 0 ) ) {
                     int connections = PlayerIndex.Count( p => p.IP.Equals( player.IP ) );
+                    int maxConnections = ( player.IsOp ? Config.OpMaxConnections : Config.MaxConnections );
                     if( connections >= Config.MaxConnections ) {
                         player.Kick( "Too many connections from your IP address!" );
+                        Logger.LogWarning(
+                            "Player {0} was not allowed to join: connection limit of {1} reached for {2}.",
+                            player.Name, maxConnections, player.IP );
                         return false;
                     }
                 }
@@ -222,12 +226,18 @@ namespace FemtoCraft {
                         Player playerToKick = Players.OrderBy( p => p.LastActiveTime )
                                                      .FirstOrDefault( p => p.IsOp );
                         if( playerToKick != null ) {
+                            Logger.Log( "Kicked player {0} to make room for player {1} from {2}.",
+                                        playerToKick.Name, player.Name, player.IP );
                             playerToKick.KickSynchronously( "Making room for an op." );
                         } else {
+                            Logger.Log( "Player {0} from {1} was not allowed to join (server is full and no one to kick).",
+                                        player.Name, player.IP );
                             player.Kick( "Server is full of ops!" );
                             return false;
                         }
                     } else {
+                        Logger.Log( "Player {0} from {1} was not allowed to join (server is full).",
+                                    player.Name, player.IP );
                         player.Kick( "Server is full!" );
                         return false;
                     }
