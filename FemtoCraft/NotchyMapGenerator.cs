@@ -17,7 +17,7 @@ namespace FemtoCraft {
                   ShroomClusterDensity = 2000,
                   ShroomChainsPerCluster = 20,
                   ShroomHopsPerChain = 5,
-                  ShroomSpreadHozirontal = 6,
+                  ShroomSpreadHorizontal = 6,
                   ShroomSpreadVertical = 2,
                   TreeClusterDensity = 4000,
                   TreeChainsPerCluster = 20,
@@ -57,6 +57,7 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         Map Generate() {
             Raise();
             Erode();
@@ -255,8 +256,8 @@ namespace FemtoCraft {
                     int y = clusterY;
                     int z = clusterZ;
                     for( int hop = 0; hop < ShroomHopsPerChain; hop++ ) {
-                        x += random.Next( ShroomSpreadHozirontal ) - random.Next( ShroomSpreadHozirontal );
-                        y += random.Next( ShroomSpreadHozirontal ) - random.Next( ShroomSpreadHozirontal );
+                        x += random.Next( ShroomSpreadHorizontal ) - random.Next( ShroomSpreadHorizontal );
+                        y += random.Next( ShroomSpreadHorizontal ) - random.Next( ShroomSpreadHorizontal );
                         z += random.Next( ShroomSpreadVertical ) - random.Next( ShroomSpreadVertical );
                         if( ( x < 0 ) || ( y < 0 ) || ( z < 1 ) || ( x >= mapWidth ) || ( y >= mapLength ) ||
                             ( z >= heightmap[( x + y * mapWidth )] - 1 ) )

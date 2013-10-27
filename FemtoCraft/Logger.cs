@@ -66,13 +66,13 @@ namespace FemtoCraft {
         }
 
 
-        [Pure]
+        [NotNull,Pure]
         static string FileTimestamp() {
             return DateTime.Now.ToString( "yyyy'-'MM'-'dd' 'HH':'mm':'ss" );
         }
 
 
-        [Pure]
+        [NotNull,Pure]
         static string ConsoleTimestamp() {
             return DateTime.Now.ToString( "HH':'mm':'ss" );
         }

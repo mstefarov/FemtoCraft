@@ -644,7 +644,9 @@ namespace FemtoCraft {
             return ( x != 0 ) && ( ( x & ( x - 1 ) ) == 0 );
         }
 
-        static void PrintGenUsage( string cmdName, Player player ) {
+        static void PrintGenUsage( [NotNull] string cmdName, [NotNull] Player player ) {
+            if( cmdName == null ) throw new ArgumentNullException( "cmdName" );
+            if( player == null ) throw new ArgumentNullException( "player" );
             player.Message( "Usage: /{0} Width Length Height filename.lvl", cmdName );
         }
     }

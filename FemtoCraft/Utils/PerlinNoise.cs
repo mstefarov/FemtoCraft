@@ -7,7 +7,9 @@ namespace FemtoCraft {
     public sealed class FilteredNoise {
         readonly PerlinNoise noise1, noise2;
 
-        public FilteredNoise( PerlinNoise noise1, PerlinNoise noise2 ) {
+        public FilteredNoise( [NotNull] PerlinNoise noise1, [NotNull] PerlinNoise noise2 ) {
+            if( noise1 == null ) throw new ArgumentNullException( "noise1" );
+            if( noise2 == null ) throw new ArgumentNullException( "noise2" );
             this.noise1 = noise1;
             this.noise2 = noise2;
         }
@@ -23,7 +25,8 @@ namespace FemtoCraft {
         readonly ImprovedNoise[] noiseLayers;
         readonly int octaves;
 
-        public PerlinNoise( Random rand, int octaves ) {
+        public PerlinNoise( [NotNull] Random rand, int octaves ) {
+            if( rand == null ) throw new ArgumentNullException( "rand" ); 
             this.octaves = octaves;
             noiseLayers = new ImprovedNoise[octaves];
             for( int i = 0; i < octaves; i++ ) {
@@ -47,7 +50,8 @@ namespace FemtoCraft {
     // Based on: http://mrl.nyu.edu/~perlin/noise/
     // JAVA REFERENCE IMPLEMENTATION OF IMPROVED NOISE - COPYRIGHT 2002 KEN PERLIN.
     public sealed class ImprovedNoise {
-        public ImprovedNoise( Random random ) {
+        public ImprovedNoise( [NotNull] Random random ) {
+            if( random == null ) throw new ArgumentNullException( "random" );
             for( int i = 0; i < 256; i++ ) {
                 P[i] = i;
             }

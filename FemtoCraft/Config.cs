@@ -226,7 +226,7 @@ namespace FemtoCraft {
         public static void Save() {
             using( var writer = new StreamWriter( ConfigFileName ) ) {
                 writer.WriteLine( "#{0} configuration file", Server.VersionString );
-                writer.WriteLine( "#For instructions, see http://femto.fcraft.net/#configuration" );
+                writer.WriteLine( "#For instructions, see http://femto.fCraft.net/#configuration" );
                 writer.WriteLine();
                 writer.WriteLine( "server-name=" + ServerName );
                 writer.WriteLine( "motd=" + MOTD );

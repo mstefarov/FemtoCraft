@@ -6,7 +6,7 @@ using System.IO.Compression;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
-    unsafe static class LvlMapConverter {
+    static class LvlMapConverter {
         const ushort MagicNumber = 0xFECF;
 
         [NotNull]

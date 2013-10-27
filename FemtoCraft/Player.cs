@@ -21,8 +21,11 @@ namespace FemtoCraft {
         public string Name { get; private set; }
         public byte Id { get; set; }
 
+        [NotNull]
         public IPAddress IP { get; private set; }
         public Position Position { get; private set; }
+
+        [NotNull]
         public Map Map { get; set; }
         Map mapToJoin;
 
@@ -67,6 +70,7 @@ namespace FemtoCraft {
 
         Player( [NotNull] string name ) {
             Name = name;
+            ClientName = "Unknown";
             IsOp = true;
         }
 
@@ -351,10 +355,10 @@ namespace FemtoCraft {
         }
 
 
-        public void ChangeMap( Map newMap ) {
+        public void ChangeMap( [NotNull] Map newMap ) {
+            if( newMap == null ) throw new ArgumentNullException( "newMap" );
             mapToJoin = newMap;
         }
-
 
         #region Send / Kick
 

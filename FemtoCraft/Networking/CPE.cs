@@ -1,4 +1,6 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using JetBrains.Annotations;
@@ -14,6 +16,7 @@ namespace FemtoCraft {
         // Note: if more levels are added, change UsesCustomBlocks from bool to int
         bool UsesCustomBlocks { get; set; }
         bool SupportsBlockPermissions { get; set; }
+        [NotNull]
         string ClientName { get; set; }
 
         bool NegotiateProtocolExtension() {
@@ -116,7 +119,8 @@ namespace FemtoCraft {
         }
 
         [Pure]
-        public static Packet MakeExtEntry( string name, int version ) {
+        public static Packet MakeExtEntry( [NotNull] string name, int version ) {
+            if( name == null ) throw new ArgumentNullException( "name" );
             // Logger.Log( "Send: ExtEntry({0},{1})", name, version );
             Packet packet = new Packet( OpCode.ExtEntry );
             Encoding.ASCII.GetBytes( name.PadRight( 64 ), 0, 64, packet.Bytes, 1 );
@@ -176,6 +180,7 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         public unsafe byte[] GetFallbackMap() {
             byte[] translatedBlocks = (byte[])Blocks.Clone();
             int volume = translatedBlocks.Length;

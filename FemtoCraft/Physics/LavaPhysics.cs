@@ -1,4 +1,6 @@
 ﻿// Part of FemtoCraft | Copyright 2012-2013 Matvei Stefarov <me@matvei.org> | See LICENSE.txt
+
+using System;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
@@ -8,7 +10,8 @@ namespace FemtoCraft {
         readonly Map map;
 
 
-        public LavaPhysics( Map map ) {
+        public LavaPhysics( [NotNull] Map map ) {
+            if( map == null ) throw new ArgumentNullException( "map" );
             this.map = map;
         }
 

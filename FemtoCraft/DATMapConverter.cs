@@ -7,7 +7,7 @@ using System.Net;
 using JetBrains.Annotations;
 
 namespace FemtoCraft {
-    unsafe static class DatMapConverter {
+    static class DatMapConverter {
         static readonly byte[] Mapping = new byte[256];
 
         static DatMapConverter() {
@@ -23,7 +23,7 @@ namespace FemtoCraft {
             Mapping[59] = (byte)Block.Leaves; // crops
             Mapping[60] = (byte)Block.Dirt; // soil
             Mapping[61] = (byte)Block.Stone; // furnace
-            Mapping[62] = (byte)Block.Stone; // burning furnance
+            Mapping[62] = (byte)Block.Stone; // burning furnace
             Mapping[63] = (byte)Block.Air; // sign post
             Mapping[64] = (byte)Block.Air; // wooden door
             Mapping[65] = (byte)Block.Air; // ladder
@@ -57,6 +57,7 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         public static Map Load( [NotNull] string fileName ) {
             if( fileName == null ) throw new ArgumentNullException( "fileName" );
             using( FileStream mapStream = File.OpenRead( fileName ) ) {
@@ -123,13 +124,13 @@ namespace FemtoCraft {
                             length = (ushort)IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) );
                         } else if( MemCmp( data, pointer, "xSpawn" ) ) {
                             spawn.X =
-                                (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
+                                (short)(IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) )*32 + 16);
                         } else if( MemCmp( data, pointer, "ySpawn" ) ) {
                             spawn.Z =
-                                (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
+                                (short)(IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) )*32 + 16);
                         } else if( MemCmp( data, pointer, "zSpawn" ) ) {
                             spawn.Y =
-                                (short)( IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) ) * 32 + 16 );
+                                (short)(IPAddress.HostToNetworkOrder( BitConverter.ToInt32( temp, 0 ) )*32 + 16);
                         }
 
                         pointer += skip;
@@ -156,10 +157,13 @@ namespace FemtoCraft {
                     Array.Copy( data, pointer, map.Blocks, 0, map.Blocks.Length );
 
                     // Map survivaltest/indev blocktypes to standard/presentation blocktypes
-                    map.ConvertBlockTypes(Mapping);
+                    map.ConvertBlockTypes( Mapping );
 
                     if( Config.Physics ) map.EnablePhysics();
                     break;
+                }
+                if( map == null ) {
+                    throw new Exception( "DatMapConverter: Error loading map." );
                 }
                 return map;
             }

@@ -10,22 +10,27 @@ using JetBrains.Annotations;
 
 namespace FemtoCraft {
     static class Server {
-        public const string VersionString = "FemtoCraft 1.28";
+        public const string VersionString = "FemtoCraft 1.34";
 
-        const string MapFileName = "map.lvl";
+        [NotNull]
         public static Map Map { get; private set; }
+        const string MapFileName = "map.lvl";
 
-        const string BansFileName = "banned.txt";
+        [NotNull]
         public static PlayerNameSet Bans { get; private set; }
+        const string BansFileName = "banned.txt";
 
-        const string OpsFileName = "admins.txt";
+        [NotNull]
         public static PlayerNameSet Ops { get; private set; }
+        const string OpsFileName = "admins.txt";
 
-        const string IPBanFileName = "banned-ip.txt";
+        [NotNull]
         public static IPAddressSet IPBans { get; private set; }
+        const string IPBanFileName = "banned-ip.txt";
 
-        const string WhitelistFileName = "whitelist.txt";
+        [NotNull]
         public static PlayerNameSet Whitelist { get; private set; }
+        const string WhitelistFileName = "whitelist.txt";
 
 
         static int Main() {
@@ -167,7 +172,7 @@ namespace FemtoCraft {
         }
 
 
-        static void MapSaveCallback( object unused ) {
+        static void MapSaveCallback( [NotNull] object unused ) {
             try {
                 if( Map.ChangedSinceSave ) {
                     Map.ChangedSinceSave = false;
@@ -264,7 +269,8 @@ namespace FemtoCraft {
         }
 
 
-        public static void SpawnPlayers( Player player ) {
+        public static void SpawnPlayers( [NotNull] Player player ) {
+            if( player == null ) throw new ArgumentNullException( "player" );
             lock( PlayerListLock ) {
                 foreach( Player other in PlayerIndex ) {
                     if( other != player ) {

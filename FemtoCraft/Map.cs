@@ -63,7 +63,7 @@ namespace FemtoCraft {
         }
 
 
-        public bool SetBlock( Player except, int x, int y, int z, Block newBlock ) {
+        public bool SetBlock( [CanBeNull] Player except, int x, int y, int z, Block newBlock ) {
             lock( physicsLock ) {
                 if( SetBlockNoNeighborChange( except, x, y, z, newBlock ) ) {
                     PhysicsUpdateNeighbors( x, y, z, newBlock );
@@ -75,7 +75,7 @@ namespace FemtoCraft {
         }
 
 
-        public bool SetBlockNoNeighborChange( Player except, int x, int y, int z, Block newBlock ) {
+        public bool SetBlockNoNeighborChange( [CanBeNull] Player except, int x, int y, int z, Block newBlock ) {
             Block oldBlock = GetBlock( x, y, z );
             if( oldBlock == newBlock || oldBlock == Block.Undefined )
                 return false;
@@ -297,7 +297,8 @@ namespace FemtoCraft {
 
 
         // Based on Minecraft Classic's "com.mojang.minecraft.level.maybeGrowTree"
-        public bool GrowTree( Random random, int startX, int startY, int startZ ) {
+        public bool GrowTree( [NotNull] Random random, int startX, int startY, int startZ ) {
+            if( random == null ) throw new ArgumentNullException( "random" );
             int treeHeight = random.Next( 3 ) + 4;
 
             Block blockUnder = GetBlock( startX, startY, startZ - 1 );
@@ -345,11 +346,12 @@ namespace FemtoCraft {
         }
 
 
+        [NotNull]
         public static Map CreateFlatgrass( int width, int length, int height ) {
             Map map = new Map( width, length, height );
-            map.Blocks.MemSet( (byte)Block.Stone, 0, width*length*( height/2 - 5 ) );
-            map.Blocks.MemSet( (byte)Block.Dirt, width*length*( height/2 - 5 ), width*length*4 );
-            map.Blocks.MemSet( (byte)Block.Grass, width*length*( height/2 - 1 ), width*length );
+            map.Blocks.MemSet( (byte)Block.Stone, 0, width*length*(height/2 - 5) );
+            map.Blocks.MemSet( (byte)Block.Dirt, width*length*(height/2 - 5), width*length*4 );
+            map.Blocks.MemSet( (byte)Block.Grass, width*length*(height/2 - 1), width*length );
             if( Config.Physics ) {
                 map.EnablePhysics();
             }
