@@ -363,5 +363,17 @@ namespace FemtoCraft {
             TickDelays[(int)Block.Snow] = SnowPhysics.TickDelay;
             DefineFallbackBlocks();
         }
+
+
+        public unsafe void ConvertBlockTypes( [NotNull] byte[] mapping) {
+            if( mapping == null ) throw new ArgumentNullException( "mapping" );
+            fixed( byte* blocksPointer = Blocks ) {
+                for( int j = 0; j < Blocks.Length; j++ ) {
+                    if( blocksPointer[j] > (byte)Block.Obsidian ) {
+                        blocksPointer[j] = mapping[blocksPointer[j]];
+                    }
+                }
+            }
+        }
     }
 }

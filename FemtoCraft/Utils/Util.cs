@@ -72,16 +72,7 @@ namespace FemtoCraft {
 
         [NotNull]
         public static string JoinToString<T>( [NotNull] this IEnumerable<T> items, [NotNull] string separator ) {
-            if( items == null ) throw new ArgumentNullException( "items" );
-            if( separator == null ) throw new ArgumentNullException( "separator" );
-            StringBuilder sb = new StringBuilder();
-            bool first = true;
-            foreach( T item in items ) {
-                if( !first ) sb.Append( separator );
-                sb.Append( item );
-                first = false;
-            }
-            return sb.ToString();
+            return JoinToString( items, separator, str => str.ToString() );
         }
 
 

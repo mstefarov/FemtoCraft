@@ -354,19 +354,7 @@ namespace FemtoCraft {
         [StringFormatMethod( "message" )]
         public static void Message( [NotNull] this IEnumerable<Player> source,
                                     [NotNull] string message, [NotNull] params object[] formatArgs ) {
-            if( source == null ) throw new ArgumentNullException( "source" );
-            if( message == null ) throw new ArgumentNullException( "message" );
-            if( formatArgs == null ) throw new ArgumentNullException( "formatArgs" );
-            if( formatArgs.Length > 0 ) {
-                message = String.Format( message, formatArgs );
-            }
-            Packet[] packets = new LineWrapper( "&E" + message ).ToArray();
-            foreach( Player player in source ) {
-                for( int i = 0; i < packets.Length; i++ ) {
-                    player.Send( packets[i] );
-                }
-            }
-            Logger.Log( message );
+            Message( source, null, true, message, formatArgs );
         }
 
 
