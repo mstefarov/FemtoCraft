@@ -111,9 +111,6 @@ namespace FemtoCraft {
                         lock( sendQueueLock ) {
                             packet = sendQueue.Dequeue();
                         }
-                        if( packet.OpCode == OpCode.SetBlockServer ) {
-                            ProcessOutgoingSetBlock( ref packet );
-                        }
                         writer.Write( packet.Bytes );
                         if( packet.OpCode == OpCode.Kick ) {
                             writer.Flush();
@@ -127,6 +124,7 @@ namespace FemtoCraft {
                         lock( blockSendQueueLock ) {
                             packet = blockSendQueue.Dequeue();
                         }
+                        ProcessOutgoingSetBlock(ref packet);
                         writer.Write( packet.Bytes );
                         throttlePacketCount++;
                     }
@@ -393,8 +391,8 @@ namespace FemtoCraft {
             Packet packet = Packet.MakeKick( message );
             lock( sendQueueLock ) {
                 canReceive = false;
+                Send(packet);
                 canQueue = false;
-                sendQueue.Enqueue( packet );
             }
         }
 
