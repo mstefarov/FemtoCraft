@@ -215,7 +215,7 @@ namespace FemtoCraft {
                     ( !player.IsOp && Config.MaxConnections > 0 || player.IsOp && Config.OpMaxConnections > 0 ) ) {
                     int connections = PlayerIndex.Count( p => p.IP.Equals( player.IP ) );
                     int maxConnections = ( player.IsOp ? Config.OpMaxConnections : Config.MaxConnections );
-                    if( connections >= Config.MaxConnections ) {
+                    if( connections >= maxConnections ) {
                         player.Kick( "Too many connections from your IP address!" );
                         Logger.LogWarning(
                             "Player {0} was not allowed to join: connection limit of {1} reached for {2}.",
