@@ -14,8 +14,8 @@ Features
 
 Download
 ----
-- [FemtoCraft 1.35 (for .NET 3.5)](http://femto.fcraft.net/FemtoCraft_1.35_net35.zip) 51.5 KB, 2013-10-27
-- [FemtoCraft 1.35 (for .NET 4.0)](http://femto.fcraft.net/FemtoCraft_1.35_net40.zip) 51.6 KB, 2013-10-27
+- [FemtoCraft 1.40 (for .NET 3.5)](http://femto.fcraft.net/FemtoCraft_1.40_net35.zip) 51.3 KB, 2017-11-18
+- [FemtoCraft 1.40 (for .NET 4.0)](http://femto.fcraft.net/FemtoCraft_1.40_net40.zip) 51.5 KB, 2017-11-18
 
 More Information
 ----
