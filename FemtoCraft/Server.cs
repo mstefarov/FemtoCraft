@@ -229,7 +229,7 @@ namespace FemtoCraft {
                     if( Config.AdminSlot && player.IsOp ) {
                         // if player has a reserved slot, kick someone to make room
                         Player playerToKick = Players.OrderBy( p => p.LastActiveTime )
-                                                     .FirstOrDefault( p => p.IsOp );
+                                                     .FirstOrDefault( p => !p.IsOp );
                         if( playerToKick != null ) {
                             Logger.Log( "Kicked player {0} to make room for player {1} from {2}.",
                                         playerToKick.Name, player.Name, player.IP );
