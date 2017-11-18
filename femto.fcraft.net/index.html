@@ -47,8 +47,8 @@
 <div class="segment links">
     <a class="toplink" href="#top">&#x2191;</a>
     <h2>Download</h2>
-    <a class="downlink" href="FemtoCraft_1.35_net35.zip">FemtoCraft 1.35 (for .NET 3.5)</a> 51.5 KB, 2013-10-27<br />
-    <a class="downlink" href="FemtoCraft_1.35_net40.zip">FemtoCraft 1.35 (for .NET 4.0)</a> 51.6 KB, 2013-10-27
+    <a class="downlink" href="FemtoCraft_1.40_net35.zip">FemtoCraft 1.40 (for .NET 3.5)</a> 51.3 KB, 2017-11-18<br />
+    <a class="downlink" href="FemtoCraft_1.40_net40.zip">FemtoCraft 1.40 (for .NET 4.0)</a> 51.5 KB, 2017-11-18
 </div>
 
 <a name="commands" id="commands"></a>
@@ -216,6 +216,16 @@
     <a class="toplink" href="#top">&#x2191;</a>
     <h2>Version History</h2>
     <dl class="list">
+    <dt>1.40 &mdash; 2017-11-18</dt>
+        <dd>
+        Fixed server not respecting OpMaxConnections config setting, and using regular MaxConnections limit instead (thanks umby24).<br />
+        Fixed IPAddressSet not being written to disk correctly (thanks UnknownShadow200).<br />
+        Fixed AdminSlot kicking first idle Op, instead of first non-Op (thanks UnknownShadow200).
+        </dd>
+    <dt>1.39 &mdash; 2014-06-28</dt>
+        <dd>
+        Fixed non-CustomBlocks-supporting clients occasionally receiving SetBlock packets with block IDs outside standard range.
+        </dd>
     <dt>1.35 &mdash; 2013-10-27</dt>
         <dd>
         Fixed ops being checked against <b>max-connections</b> setting, instead of <b>op-max-connections</b> setting.<br />
