@@ -11,19 +11,23 @@ namespace FemtoCraft {
         const int CustomBlocksExtVersion = 1;
         const string BlockPermissionsExtName = "BlockPermissions";
         const int BlockPermissionsExtVersion = 1;
+        const string LongerMessagesExtName = "LongerMessages";
+        const int LongerMessagesExtVersion = 1;
         const byte CustomBlocksLevel = 1;
 
         // Note: if more levels are added, change UsesCustomBlocks from bool to int
         bool UsesCustomBlocks { get; set; }
         bool SupportsBlockPermissions { get; set; }
+        bool SupportsLongerMessages { get; set; }
         [NotNull]
         string ClientName { get; set; }
 
         bool NegotiateProtocolExtension() {
             // write our ExtInfo and ExtEntry packets
-            writer.Write( Packet.MakeExtInfo( 2 ).Bytes );
+            writer.Write( Packet.MakeExtInfo( 3 ).Bytes );
             writer.Write( Packet.MakeExtEntry( CustomBlocksExtName, CustomBlocksExtVersion ).Bytes );
             writer.Write( Packet.MakeExtEntry( BlockPermissionsExtName, BlockPermissionsExtVersion ).Bytes );
+            writer.Write( Packet.MakeExtEntry( LongerMessagesExtName, LongerMessagesExtVersion ).Bytes );
 
             // Expect ExtInfo reply from the client
             OpCode extInfoReply = reader.ReadOpCode();
@@ -55,7 +59,10 @@ namespace FemtoCraft {
                 } else if( extName == BlockPermissionsExtName && extVersion == BlockPermissionsExtVersion ) {
                     SupportsBlockPermissions = true;
                     clientExts.Add( extName + " " + extVersion );
-                }
+                } else if( extName == LongerMessagesExtName && extVersion == LongerMessagesExtVersion ) {
+                    SupportsLongerMessages = true;
+                    clientExts.Add( extName + " " + extVersion );
+                } // else ignore any extensions we don't recognize
             }
 
             // log client's capabilities

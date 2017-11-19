@@ -26,7 +26,12 @@ namespace FemtoCraft {
 
 
         public override string ReadString() {
-            return Encoding.ASCII.GetString( ReadBytes( 64 ) ).Trim();
+            return Encoding.ASCII.GetString( ReadBytes( 64 ) ).TrimEnd();
+        }
+
+
+        public string ReadStringNoTrim() {
+            return Encoding.ASCII.GetString( ReadBytes( 64 ) );
         }
     }
 }

@@ -680,12 +680,13 @@ namespace FemtoCraft {
                   AntispamInterval = 4;
 
         readonly Queue<DateTime> spamChatLog = new Queue<DateTime>( AntispamMessageCount );
-
+        readonly StringBuilder messageBuffer = new StringBuilder();
 
         bool ProcessMessagePacket() {
             ResetIdleTimer();
-            reader.ReadByte();
-            string message = reader.ReadString();
+            byte tag = reader.ReadByte();
+            bool isContinued = SupportsLongerMessages && (tag == 1);
+            string message = isContinued ? reader.ReadStringNoTrim() : reader.ReadString();
 
             // special handler for WoM id packets
             // (which are erroneously padded with zeroes instead of spaces).
@@ -698,6 +699,22 @@ namespace FemtoCraft {
                 return false;
             }
 
+            if( SupportsLongerMessages ) {
+                bool hasBuffer = (messageBuffer.Length > 0);
+
+                if( isContinued ) {
+                    // Part of a longer message
+                    messageBuffer.Append(message);
+                    return true;
+                } else if( hasBuffer ) {
+                    // End of a longer message
+                    messageBuffer.Append(message);
+                    message = messageBuffer.ToString();
+                    messageBuffer.Clear();
+                } // Else just a single message
+            }
+
+            // Apply chat-rate limiting after longer-messages
             if( !IsOp && Config.LimitChatRate || IsOp && Config.OpLimitChatRate ) {
                 if( DetectChatSpam() ) return false;
             }
