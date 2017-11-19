@@ -186,9 +186,11 @@ namespace FemtoCraft {
             67,     // ExtInfo
             69,     // ExtEntry
             0,
-            2,      // CustomBlockSupportLevel
+            2,      // CustomBlockSupportLevel (#19)
             0,0,0,0,0,0,0,0,
-            4       // SetBlockPermission
+            4,      // SetBlockPermission (#28)
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            4       // TwoWayPing (#43)
         };
     }
 }

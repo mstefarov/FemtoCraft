@@ -13,21 +13,25 @@ namespace FemtoCraft {
         const int BlockPermissionsExtVersion = 1;
         const string LongerMessagesExtName = "LongerMessages";
         const int LongerMessagesExtVersion = 1;
+        const string TwoWayPingExtName = "TwoWayPing";
+        const int TwoWayPingExtVersion = 1;
         const byte CustomBlocksLevel = 1;
 
         // Note: if more levels are added, change UsesCustomBlocks from bool to int
         bool UsesCustomBlocks { get; set; }
         bool SupportsBlockPermissions { get; set; }
         bool SupportsLongerMessages { get; set; }
+        bool SupportsTwoWayPing { get; set; }
         [NotNull]
         string ClientName { get; set; }
 
         bool NegotiateProtocolExtension() {
             // write our ExtInfo and ExtEntry packets
-            writer.Write( Packet.MakeExtInfo( 3 ).Bytes );
+            writer.Write( Packet.MakeExtInfo( 4 ).Bytes );
             writer.Write( Packet.MakeExtEntry( CustomBlocksExtName, CustomBlocksExtVersion ).Bytes );
             writer.Write( Packet.MakeExtEntry( BlockPermissionsExtName, BlockPermissionsExtVersion ).Bytes );
             writer.Write( Packet.MakeExtEntry( LongerMessagesExtName, LongerMessagesExtVersion ).Bytes );
+            writer.Write( Packet.MakeExtEntry( TwoWayPingExtName, TwoWayPingExtVersion ).Bytes );
 
             // Expect ExtInfo reply from the client
             OpCode extInfoReply = reader.ReadOpCode();
@@ -61,6 +65,9 @@ namespace FemtoCraft {
                     clientExts.Add( extName + " " + extVersion );
                 } else if( extName == LongerMessagesExtName && extVersion == LongerMessagesExtVersion ) {
                     SupportsLongerMessages = true;
+                    clientExts.Add( extName + " " + extVersion );
+                } else if( extName == TwoWayPingExtName && extVersion == TwoWayPingExtVersion ) {
+                    SupportsTwoWayPing = true;
                     clientExts.Add( extName + " " + extVersion );
                 } // else ignore any extensions we don't recognize
             }
@@ -112,6 +119,17 @@ namespace FemtoCraft {
             Send( Packet.MakeSetBlockPermission( Block.Admincrete, CanUseSolid, CanUseSolid ) );
             Send( Packet.MakeSetBlockPermission( Block.Grass, CanUseGrass, true ) );
         }
+
+
+        void ProcessTwoWayPingPacket() {
+            byte isServerToClient = reader.ReadByte();
+            short payload = reader.ReadInt16();
+
+            bool shouldEcho = SupportsTwoWayPing && (isServerToClient == 0);
+            if( shouldEcho ) {
+                Send( Packet.MakeTwoWayPingEcho(payload) );
+            }
+        }
     }
 
 
@@ -149,6 +167,14 @@ namespace FemtoCraft {
             packet.Bytes[1] = (byte)block;
             packet.Bytes[2] = (byte)(canPlace ? 1 : 0);
             packet.Bytes[3] = (byte)(canDelete ? 1 : 0);
+            return packet;
+        }
+
+        [Pure]
+        public static Packet MakeTwoWayPingEcho( short payload ) {
+            Packet packet = new Packet( OpCode.TwoWayPing );
+            // Bytes[1] should be 0, meaning "not server-to-client"
+            ToNetOrder( payload, packet.Bytes, 2 );
             return packet;
         }
     }

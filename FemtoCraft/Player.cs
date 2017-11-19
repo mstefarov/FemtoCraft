@@ -162,6 +162,10 @@ namespace FemtoCraft {
                             case OpCode.Ping:
                                 break;
 
+                            case OpCode.TwoWayPing:
+                                ProcessTwoWayPingPacket();
+                                break;
+
                             default:
                                 Logger.Log( "Player {0} was kicked after sending an invalid opCode ({1}).",
                                             Name, opCode );
