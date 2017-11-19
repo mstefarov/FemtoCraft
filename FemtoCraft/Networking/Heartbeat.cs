@@ -9,6 +9,7 @@ namespace FemtoCraft {
     static class Heartbeat {
         static readonly TimeSpan Timeout = TimeSpan.FromSeconds( 10 );
         static readonly TimeSpan Delay = TimeSpan.FromSeconds( 25 );
+        static readonly TimeSpan ErrorDelay = TimeSpan.FromSeconds(5);
         const string UrlFileName = "externalurl.txt";
 
         public static readonly string Salt = Util.GenerateSalt();
@@ -63,6 +64,7 @@ namespace FemtoCraft {
 
                 } catch( Exception ex ) {
                     Logger.LogError( "Heartbeat: {0}: {1}", ex.GetType().Name, ex.Message );
+                    Thread.Sleep( ErrorDelay );
                 }
             }
         }
