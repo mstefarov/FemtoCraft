@@ -1,0 +1,49 @@
+#FemtoCraft 1.40 configuration file
+#For instructions, see http://femto.fCraft.net/#configuration
+
+server-name=FemtoCraft Server
+motd=Welcome to the server!
+port=25565
+ip=0.0.0.0
+max-players=20
+public=False
+verify-names=True
+use-whitelist=False
+admin-slot=True
+reveal-ops=False
+allow-emails=False
+heartbeat-url=https://www.classicube.net/server/heartbeat/
+
+max-connections=3
+limit-click-rate=True
+limit-click-distance=True
+limit-chat-rate=True
+allow-speed-hack=False
+
+op-max-connections=3
+op-limit-click-rate=True
+op-limit-click-distance=True
+op-limit-chat-rate=True
+op-allow-speed-hack=True
+
+physics=True
+physics-tick=50
+physics-flood-protection=False
+physics-grass=True
+physics-lava=True
+physics-plants=True
+physics-sand=True
+physics-snow=True
+physics-trees=False
+physics-water=True
+
+allow-water-blocks=False
+allow-lava-blocks=False
+allow-grass-blocks=False
+allow-solid-blocks=False
+op-allow-water-blocks=True
+op-allow-lava-blocks=True
+op-allow-grass-blocks=True
+op-allow-solid-blocks=True
+
+protocol-extension=True

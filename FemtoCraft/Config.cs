@@ -4,20 +4,20 @@ using System.IO;
 using System.Net;
 
 namespace FemtoCraft {
+    // ReSharper disable RedundantDefaultFieldInitializer
     static class Config {
         public static string ServerName = "FemtoCraft Server";
         public static string MOTD = "Welcome to the server!";
         public static int Port = 25565;
         public static IPAddress IP = IPAddress.Any;
         public static int MaxPlayers = 20;
-        // ReSharper disable RedundantDefaultFieldInitializer
         public static bool Public = false;
         public static bool VerifyNames = true;
         public static bool UseWhitelist = false;
         public static bool AdminSlot = true;
         public static bool RevealOps = false;
         public static bool AllowEmails = false;
-        public static string HeartbeatUrl = "https://minecraft.net/heartbeat.jsp";
+        public static string HeartbeatUrl = "https://www.classicube.net/server/heartbeat/";
 
         public static int MaxConnections = 3;
         public static bool LimitClickRate = true;
