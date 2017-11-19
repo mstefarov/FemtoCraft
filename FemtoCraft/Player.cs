@@ -709,7 +709,7 @@ namespace FemtoCraft {
                 } else if( hasBuffer ) {
                     // End of a longer message
                     messageBuffer.Append(message);
-                    message = messageBuffer.ToString();
+                    message = messageBuffer.ToString().TrimStart();
                     messageBuffer.Clear();
                 } // Else just a single message
             }
